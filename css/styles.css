@@ -3,12 +3,22 @@ body {
 }
 
 header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background-color: #000;
     color: #fff;
 }
 
+header .logo {
+    width: 256px;
+    height: 256px;
+}
+
 header h1 {
     margin: 0;
+    text-align: center;
+    flex-grow: 1;
     font-size: 2.5rem;
 }
 
