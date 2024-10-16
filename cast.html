@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Star Wars Characters</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.18.3/bootstrap-table.min.css">
+    <style>
+        #toolbar {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="text-center">Star Wars Characters</h2>
+        <div id="toolbar" class="select">
+            <select class="form-control">
+                <option value="">Export Basic</option>
+                <option value="all">Export All</option>
+                <option value="selected">Export Selected</option>
+            </select>
+        </div>
+        <table id="characterTable"
+               data-toggle="table"
+               data-url="data/castandcharacters.json"
+               data-show-export="true"
+               data-pagination="true"
+               data-toolbar="#toolbar"
+               >
+            <thead>
+                <tr>
+                    <th data-field="state" checkbox></th>
+                    <th data-field="id" data-sortable="true">ID</th>
+                    <th data-field="name" data-sortable="true">Name</th>
+                    <th data-field="professions" data-sortable="true">Professions</th>
+                    <th data-field="known_for" data-sortable="true">Known For</th>
+                    <th data-field="bio" data-sortable="true">Biography</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.18.3/bootstrap-table.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tableexport.jquery.plugin@1.29.0/tableExport.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tableexport.jquery.plugin@1.29.0/libs/jsPDF/jspdf.umd.min.js"></script>
+    
+    <script>
+        $(function() {
+            var $table = $('#characterTable');
+
+            $('#toolbar').find('select').change(function () {
+                var selectedValue = $(this).val();
+                $table.bootstrapTable('destroy').bootstrapTable({
+                    exportDataType: selectedValue,
+                    exportTypes: ['json', 'xml', 'csv', 'txt', 'sql', 'excel', 'pdf'],
+                    columns: [
+                        {
+                            field: 'state',
+                            checkbox: true,
+                            visible: selectedValue === 'selected'
+                        },
+                        {
+                            field: 'id',
+                            title: 'ID',
+                        },
+                        {
+                            field: 'name',
+                            title: 'Name',
+                        },
+                        {
+                            field: 'professions',
+                            title: 'Professions',
+                        },
+                        {
+                            field: 'known_for',
+                            title: 'Known For',
+                        },
+                        {
+                            field: 'bio',
+                            title: 'Biography',
+                        }
+                    ]
+                });
+            }).trigger('change');
+        });
+    </script>
+</body>
+</html>

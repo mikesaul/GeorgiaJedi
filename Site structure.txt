@@ -1,0 +1,22 @@
+/gallery-website
+�
++-- add-item.html
++-- index.html
++-- autographs.html
++-- catalog.html
++-- collectibles.html
++-- fileuploadtest.html
++-- imageview.html
++-- js
+�   +-- script.js
+�   +-- updateJSON.js
++-- css
+    +-- fonts
+        +-- SF Distant Galaxy AltOutline.ttf
+�  +-- styles.css
++-- data
+    +-- autographs.json
+    +-- catalog.json
+    +-- collectibles.json
+-- images
+    +-- thumbs
