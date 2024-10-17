@@ -1,12 +1,18 @@
 /gallery-website
 �
-+-- add-item.html
-+-- index.html
-+-- autographs.html
-+-- catalog.html
-+-- collectibles.html
-+-- fileuploadtest.html
-+-- imageview.html
++-- add-item.html            form to insert new items into json (trial)
++-- autographs.html          Autographs gallery page
++-- cast.html                Detailed list of cast and/or characters
++-- castDEMO.html            Detailed list of cast and/or characters (demo of features)
++-- catalog.html             Original gallery page example - use for testbed
++-- collectibles.html        Collectibles/Memorabilia gallery page
++-- fileuploadtest.html      page to generate thumbnail images
++-- fileuploadtest1.html     page to generate thumbnail images (demo)
++-- imageview.html           Page to view images for selected gallery items (main image and supporting images)
++-- imageview2.html          Page to view images for selected gallery items (main image and supporting images)
++-- index.html               Home/Landing page
++-- list-images.asp
++-- saveThumbnail.asp
 +-- js
 �   +-- script.js
 �   +-- updateJSON.js
@@ -17,6 +23,10 @@
 +-- data
     +-- autographs.json
     +-- catalog.json
+    +-- CastAndCharacters.json
+    +-- GBPtoUSD_HistoricalRates.json
     +-- collectibles.json
 -- images
+    +-- GeorgiaJedi-logo-256.jpg
+    +-- openartai-logoimage02.jpg
     +-- thumbs
