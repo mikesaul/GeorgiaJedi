@@ -17,7 +17,7 @@
         <h2 class="text-center">Star Wars Characters</h2>
         <div id="toolbar" class="select">
             <select class="form-control">
-                <option value="">Export Basic</option>
+                <option value="basic">Export Basic</option>
                 <option value="all">Export All</option>
                 <option value="selected">Export Selected</option>
             </select>
@@ -28,7 +28,7 @@
                data-show-export="true"
                data-pagination="true"
                data-toolbar="#toolbar"
-               >
+               data-export-types="['json', 'xml', 'csv', 'txt', 'sql', 'excel', 'pdf']">
             <thead>
                 <tr>
                     <th data-field="state" checkbox></th>
@@ -47,6 +47,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.18.3/bootstrap-table.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tableexport.jquery.plugin@1.29.0/tableExport.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tableexport.jquery.plugin@1.29.0/libs/jsPDF/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.18.3/extensions/export/bootstrap-table-export.min.js"></script>
     
     <script>
         $(function() {
