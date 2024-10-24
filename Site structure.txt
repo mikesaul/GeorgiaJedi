@@ -13,6 +13,7 @@
 +-- index.html               Home/Landing page
 +-- list-images.asp
 +-- saveThumbnail.asp
++-- update-item.html         form to update items in json (trial)
 +-- js
 �   +-- script.js
 �   +-- updateJSON.js
