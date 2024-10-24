@@ -6,7 +6,7 @@
     <title>Add Item - Star Wars Memorabilia Gallery</title>
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <script src="js/script.js"></script>
+    <script src="js/updateJSON.js"></script>
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -32,55 +32,59 @@
     </nav>
 
     <main class="container my-5">
+        <h2>Memorabilia Entry Form</h2>
+        <form id="dataForm">
+            <!-- New Dropdown for selecting type -->
+            <label for="itemType">Select Item Type:</label><br>
+            <select id="itemType" name="itemType" required>
+                <option value="">-- Select Type --</option>
+                <option value="autographs">Autographs</option>
+                <option value="collectibles">Collectibles</option>
+                <!-- Add new options here in the future -->
+            </select><br><br>
 
-    <h2>Memorabilia Entry Form</h2>
-    <form id="dataForm">
-        <!-- Form fields as defined earlier -->
-        <label for="id">ID:</label><br>
-        <input type="text" id="id" name="id" required><br><br>
+            <label for="id">ID:</label><br>
+            <input type="text" id="id" name="id" required readonly><br><br>
 
-        <label for="title">Title:</label><br>
-        <input type="text" id="title" name="title" required><br><br>
+            <label for="title">Title:</label><br>
+            <input type="text" id="title" name="title" required><br><br>
 
-        <label for="franchise">Franchise:</label><br>
-        <input type="text" id="franchise" name="franchise" required><br><br>
+            <label for="franchise">Franchise:</label><br>
+            <input type="text" id="franchise" name="franchise" required><br><br>
 
-        <label for="description">Description:</label><br>
-        <input type="text" id="description" name="description"><br><br>
+            <label for="description">Description:</label><br>
+            <input type="text" id="description" name="description"><br><br>
 
-        <label for="size">Size:</label><br>
-        <input type="text" id="size" name="size"><br><br>
+            <label for="size">Size:</label><br>
+            <input type="text" id="size" name="size"><br><br>
 
-        <label for="source">Source:</label><br>
-        <input type="text" id="source" name="source"><br><br>
+            <label for="source">Source:</label><br>
+            <input type="text" id="source" name="source"><br><br>
 
-        <label for="personalized">Personalized:</label><br>
-        <input type="text" id="personalized" name="personalized"><br><br>
+            <label for="personalized">Personalized:</label><br>
+            <input type="text" id="personalized" name="personalized"><br><br>
 
-        <label for="is_verified">Is Verified:</label><br>
-        <input type="text" id="is_verified" name="is_verified"><br><br>
+            <label for="is_verified">Is Verified:</label><br>
+            <input type="text" id="is_verified" name="is_verified"><br><br>
 
-        <label for="serialnumber">Serial Number:</label><br>
-        <input type="text" id="serialnumber" name="serialnumber"><br><br>
+            <label for="serialnumber">Serial Number:</label><br>
+            <input type="text" id="serialnumber" name="serialnumber"><br><br>
 
-        <label for="original_cost">Original Cost:</label><br>
-        <input type="text" id="original_cost" name="original_cost"><br><br>
+            <label for="original_cost">Original Cost:</label><br>
+            <input type="text" id="original_cost" name="original_cost"><br><br>
 
-        <label for="current_value">Current Value:</label><br>
-        <input type="text" id="current_value" name="current_value"><br><br>
+            <label for="current_value">Current Value:</label><br>
+            <input type="text" id="current_value" name="current_value"><br><br>
 
-        <label for="image">Image:</label><br>
-        <input type="text" id="image" name="image"><br><br>
+            <label for="image">Image:</label><br>
+            <input type="text" id="image" name="image"><br><br>
 
-        <button type="submit">Submit</button>
-    </form>
+            <button type="submit">Submit</button>
+        </form>
+    </main>
 
-    <script src="js/updateJSON.js"></script>
-</main>
-
-<footer class="text-center py-4">
-    <p>&copy; 2024 GeorgiaJedi. All rights reserved.</p>
-</footer>
-
+    <footer class="text-center py-4">
+        <p>&copy; 2024 GeorgiaJedi. All rights reserved.</p>
+    </footer>
 </body>
 </html>
