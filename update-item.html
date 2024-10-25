@@ -6,8 +6,22 @@
     <title>Update Item - Star Wars Memorabilia Gallery</title>
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <!-- jQuery UI for the datepicker -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
     <script src="js/updateJSON.js"></script>
     <link rel="stylesheet" href="css/styles.css">
+
+    <script>
+        $(document).ready(function() {
+            // Ensure the datepicker is applied to the correct input
+            $("#acquired").datepicker({
+                dateFormat: "mm/dd/yy"
+            });
+        });
+    </script>
 </head>
 <body>
     <header class="d-flex align-items-center justify-content-center py-4">
@@ -34,12 +48,13 @@
     <main class="container my-5">
         <h2>Update Memorabilia</h2>
         <form id="dataForm">
+
             <label for="id">ID:</label><br>
             <input type="text" id="id" name="id" readonly><br><br>
 
             <!-- Added Acquired Field with Datepicker -->
             <label for="acquired">Acquired Date:</label><br>
-            <input type="text" id="acquired" name="acquired" placeholder="mm/dd/yyyy" required><br><br>
+            <input type="text" id="acquired" name="acquired" placeholder="mm/dd/yyyy"><br><br>
 
             <label for="title">Title:</label><br>
             <input type="text" id="title" name="title" required><br><br>

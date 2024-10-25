@@ -181,6 +181,16 @@ function imageFormatter(index, row) {
     }
 }
 
+function getItemType() {
+  const page = window.location.pathname.split('/').pop(); // Get the filename
+  return page.split('.').shift(); // Remove the extension and return the base name
+}
+// Edit column formatter
+function editFormatter(value, row) {
+  const type = getItemType(); // Get the item type from the page name
+  return `<a href="update-item.html?ID=${row.id}&itemType=${type}" class="btn btn-sm btn-primary">Edit</a>`;
+}
+
 // Row styling function for alternating background colors
 function rowStyle(row, index) {
   var classes = ['bg-blue', 'bg-green', 'bg-orange', 'bg-yellow', 'bg-red'];
