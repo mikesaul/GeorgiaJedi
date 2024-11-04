@@ -40,17 +40,6 @@
                         franchises.forEach(franchise => {
                             franchiseDatalist.append(new Option(franchise));
                         });
-
-                // Generate unique, sorted is_verified list
-                const isVerifiedOptions = [...new Set(data.map(item => item.is_verified).filter(Boolean))];
-                isVerifiedOptions.sort();
-
-                // Populate the is_verified datalist
-                const isVerifiedDatalist = $('#isVerifiedList');
-                isVerifiedDatalist.empty();
-                isVerifiedOptions.forEach(option => {
-                    isVerifiedDatalist.append(new Option(option));
-                });
                     }).fail(function() {
                         alert('Failed to load franchise data.');
                     });
@@ -65,14 +54,14 @@
     </script>
 </head>
 <body>
-    <header class="d-flex align-items-center justify-content-center py-4">
+    <header class="d-flex align-items-center justify-content-center py-4 bg-dark text-white">
         <img src="images/GeorgiaJedi-logo-256.jpg" alt="GeorgiaJedi Logo" class="logo mr-3">
         <h1 class="mx-auto">Star Wars Autograph Catalog</h1>
     </header>
 
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <a class="navbar-brand" href="#">GeorgiaJedi</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
@@ -87,9 +76,9 @@
     </nav>
 
     <main class="container my-5">
-        <h2 class="mb-4 text-center">Add Memorabilia</h2>
-        <form id="dataForm" class="bg-light p-4 rounded shadow row" autocomplete="off">
-            <div class="form-group col-md-3">
+        <h2 class="mb-4 text-center">Memorabilia Entry Form</h2>
+        <form id="dataForm" class="bg-light p-4 rounded shadow">
+            <div class="form-group">
                 <label for="itemType">Select Item Type:</label>
                 <select id="itemType" name="itemType" class="form-control" required>
                     <option value="">-- Select Type --</option>
@@ -97,94 +86,78 @@
                     <option value="collectibles">Collectibles</option>
                 </select>
             </div>
-            <div class="form-group col-md-9">
-                &nbsp;
-            </div>
-        
-        
-            <div class="form-group col-md-3">
+
+            <div class="form-group">
                 <label for="id">ID:</label>
                 <input type="text" id="id" name="id" class="form-control" readonly required>
             </div>
 
-            <div class="form-group col-md-3">
-                <label for="title">Name/Title:</label>
-                <input type="text" id="title" name="title" class="form-control" required>
-            </div>
-
-            <div class="form-group col-md-3">
-                <label for="franchise">Franchise:</label>
-                <input list="franchiseList" id="franchise" name="franchise" class="form-control" required>
-                <datalist id="franchiseList"></datalist>
-            </div>
-        
-            <div class="form-group col-md-3">
+            <div class="form-group">
                 <label for="acquired">Acquired Date:</label>
                 <input type="text" id="acquired" name="acquired" class="form-control" placeholder="mm/dd/yyyy">
             </div>
 
-            <div class="form-group col-md-12">
+            <div class="form-group">
+                <label for="title">Title:</label>
+                <input type="text" id="title" name="title" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="franchise">Franchise:</label>
+                <input list="franchiseList" id="franchise" name="franchise" class="form-control" required>
+                <datalist id="franchiseList"></datalist>
+            </div>
+
+            <div class="form-group">
                 <label for="description">Description:</label>
                 <textarea id="description" name="description" class="form-control"></textarea>
             </div>
 
-            <div class="form-group col-md-3">
+            <div class="form-group">
                 <label for="size">Size:</label>
                 <input type="text" id="size" name="size" class="form-control">
             </div>
 
-            <div class="form-group col-md-3">
+            <div class="form-group">
                 <label for="source">Source:</label>
                 <input type="text" id="source" name="source" class="form-control">
             </div>
 
-            <!-- Dropdown for Personalized field -->
-            <div class="form-group col-md-3">
+            <div class="form-group">
                 <label for="personalized">Personalized:</label>
-                <select id="personalized" name="personalized" class="form-control">
-                    <option value="">-- Select --</option>
-                    <option value="Yes">Yes</option>
-                    <option value="No">No</option>
-                    <option value="N/A">N/A</option>
-                    <option value="Unknown">Unknown</option>
-                </select>
-            </div>
+                <input type="text" id="personalized" name="personalized" class="form-control">
             </div>
 
-            <!-- Combo box for Is Verified field -->
-            <div class="form-group col-md-3">
+            <div class="form-group">
                 <label for="is_verified">Is Verified:</label>
-                <input list="isVerifiedList" id="is_verified" name="is_verified" class="form-control">
-                <datalist id="isVerifiedList"></datalist>
+                <input type="text" id="is_verified" name="is_verified" class="form-control">
             </div>
 
-            <div class="form-group col-md-3">
+            <div class="form-group">
                 <label for="serialnumber">Serial Number:</label>
                 <input type="text" id="serialnumber" name="serialnumber" class="form-control">
             </div>
 
-            <div class="form-group col-md-3">
+            <div class="form-group">
                 <label for="original_cost">Original Cost:</label>
                 <input type="text" id="original_cost" name="original_cost" class="form-control">
             </div>
 
-            <div class="form-group col-md-3">
+            <div class="form-group">
                 <label for="current_value">Current Value:</label>
                 <input type="text" id="current_value" name="current_value" class="form-control">
             </div>
 
-            <div class="form-group col-md-3">
+            <div class="form-group">
                 <label for="image">Image:</label>
                 <input type="text" id="image" name="image" class="form-control">
             </div>
 
-            <div class="form-group col-md-12">
-                <button type="submit" class="btn btn-primary btn-block">Update Item</button>
-            </div>
+            <button type="submit" class="btn btn-primary btn-block">Submit</button>
         </form>
     </main>
 
-    <footer class="text-center py-4">
+    <footer class="text-center py-4 bg-dark text-white">
         <p>&copy; 2024 GeorgiaJedi. All rights reserved.</p>
     </footer>
 </body>

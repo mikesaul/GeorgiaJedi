@@ -12,16 +12,57 @@
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
     <script src="js/updateJSON.js"></script>
+    <script src="js/script.js"></script>
     <link rel="stylesheet" href="css/styles.css">
 
     <script>
         $(document).ready(function() {
             // Ensure the datepicker is applied to the correct input
-            $("#acquired").datepicker({
-                dateFormat: "mm/dd/yy"
+            $("#acquired").datepicker({ dateFormat: "mm/dd/yy" });
+
+            // Function to get query parameter by name
+        function getQueryParam(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // Get itemType from query string
+        const itemType = getQueryParam('itemType');
+        if (itemType) {
+            const jsonFileName = `data/${itemType}.json`; // Set JSON file based on itemType from query string
+
+            // Load the franchise data from the JSON file
+            $.getJSON(jsonFileName, function(data) {
+                // Generate unique, sorted franchise list
+                const franchises = [...new Set(data.map(item => item.franchise).filter(Boolean))];
+                franchises.sort();
+
+                // Populate the franchise datalist
+                const franchiseDatalist = $('#franchiseList');
+                franchiseDatalist.empty();
+                franchises.forEach(franchise => {
+                    franchiseDatalist.append(new Option(franchise));
+                });
+
+                // Generate unique, sorted is_verified list
+                const isVerifiedOptions = [...new Set(data.map(item => item.is_verified).filter(Boolean))];
+                isVerifiedOptions.sort();
+
+                // Populate the is_verified datalist
+                const isVerifiedDatalist = $('#isVerifiedList');
+                isVerifiedDatalist.empty();
+                isVerifiedOptions.forEach(option => {
+                    isVerifiedDatalist.append(new Option(option));
+                });
+            }).fail(function() {
+                alert('Failed to load franchise data.');
             });
-        });
-    </script>
+        } else {
+            alert("itemType query parameter is missing.");
+        }
+    });
+
+</script>
 </head>
 <body>
     <header class="d-flex align-items-center justify-content-center py-4">
@@ -40,58 +81,94 @@
                 <li class="nav-item"><a class="nav-link" href="autographs.html">Autographs</a></li>
                 <li class="nav-item"><a class="nav-link" href="collectibles.html">Collectibles</a></li>
                 <li class="nav-item"><a class="nav-link" href="add-item.html">Add Item</a></li>
-                <li class="nav-item"><a class="nav-link" href="updateitem.html">Update Item</a></li>
+                <li class="nav-item"><a class="nav-link" href="fileuploadtest.html">Thumb Generator</a></li>
             </ul>
         </div>
     </nav>
 
     <main class="container my-5">
         <h2>Update Memorabilia</h2>
-        <form id="dataForm">
+        <form id="dataForm" class="bg-light p-4 rounded shadow row" autocomplete="off">
+            <div class="form-group col-md-3">
+                <label for="id">ID:</label>
+                <input type="text" id="id" name="id" class="form-control" readonly>
+            </div>
+        
+            <div class="form-group col-md-3">
+                <label for="title">Name/Title:</label>
+                <input type="text" id="title" name="title" class="form-control" required>
+            </div>
+        
+            <div class="form-group col-md-3">
+                <label for="franchise">Franchise:</label>
+                <input list="franchiseList" id="franchise" name="franchise" class="form-control" required>
+                <datalist id="franchiseList"></datalist>
+            </div>
+        
+            <div class="form-group col-md-3">
+                <label for="acquired">Acquired Date:</label>
+                <input type="text" id="acquired" name="acquired" class="form-control" placeholder="mm/dd/yyyy">
+            </div>
+        
+            <div class="form-group col-md-12">
+                <label for="description">Description:</label>
+                <textarea id="description" name="description" class="form-control"></textarea>
+            </div>
+        
+            <div class="form-group col-md-3">
+                <label for="size">Size:</label>
+                <input type="text" id="size" name="size" class="form-control">
+            </div>
+        
+            <div class="form-group col-md-3">
+                <label for="source">Source:</label>
+                <input type="text" id="source" name="source" class="form-control">
+            </div>
+        
+            <!-- Dropdown for Personalized field -->
+            <div class="form-group col-md-3">
+                <label for="personalized">Personalized:</label>
+                <select id="personalized" name="personalized" class="form-control">
+                    <option value="">-- Select --</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                    <option value="N/A">N/A</option>
+                    <option value="Unknown">Unknown</option>
+                </select>
+            </div>
 
-            <label for="id">ID:</label><br>
-            <input type="text" id="id" name="id" readonly><br><br>
-
-            <!-- Added Acquired Field with Datepicker -->
-            <label for="acquired">Acquired Date:</label><br>
-            <input type="text" id="acquired" name="acquired" placeholder="mm/dd/yyyy"><br><br>
-
-            <label for="title">Title:</label><br>
-            <input type="text" id="title" name="title" required><br><br>
-
-            <label for="franchise">Franchise:</label><br>
-            <input type="text" id="franchise" name="franchise" required><br><br>
-
-            <label for="description">Description:</label><br>
-            <input type="text" id="description" name="description"><br><br>
-
-            <label for="size">Size:</label><br>
-            <input type="text" id="size" name="size"><br><br>
-
-            <label for="source">Source:</label><br>
-            <input type="text" id="source" name="source"><br><br>
-
-            <label for="personalized">Personalized:</label><br>
-            <input type="text" id="personalized" name="personalized"><br><br>
-
-            <label for="is_verified">Is Verified:</label><br>
-            <input type="text" id="is_verified" name="is_verified"><br><br>
-
-            <label for="serialnumber">Serial Number:</label><br>
-            <input type="text" id="serialnumber" name="serialnumber"><br><br>
-
-            <label for="original_cost">Original Cost:</label><br>
-            <input type="text" id="original_cost" name="original_cost"><br><br>
-
-            <label for="current_value">Current Value:</label><br>
-            <input type="text" id="current_value" name="current_value"><br><br>
-
-            <label for="image">Image:</label><br>
-            <input type="text" id="image" name="image"><br><br>
-
-            <button type="submit">Update Item</button>
+            <!-- Combo box for Is Verified field -->
+            <div class="form-group col-md-3">
+                <label for="is_verified">Is Verified:</label>
+                <input list="isVerifiedList" id="is_verified" name="is_verified" class="form-control">
+                <datalist id="isVerifiedList"></datalist>
+            </div>
+        
+            <div class="form-group col-md-3">
+                <label for="serialnumber">Serial Number:</label>
+                <input type="text" id="serialnumber" name="serialnumber" class="form-control">
+            </div>
+        
+            <div class="form-group col-md-3">
+                <label for="original_cost">Original Cost:</label>
+                <input type="text" id="original_cost" name="original_cost" class="form-control">
+            </div>
+        
+            <div class="form-group col-md-3">
+                <label for="current_value">Current Value:</label>
+                <input type="text" id="current_value" name="current_value" class="form-control">
+            </div>
+        
+            <div class="form-group col-md-3">
+                <label for="image">Image:</label>
+                <input type="text" id="image" name="image" class="form-control">
+            </div>
+        
+            <div class="form-group col-md-12">
+                <button type="submit" class="btn btn-primary btn-block">Update Item</button>
+            </div>
         </form>
-    </main>
+                    </main>
 
     <footer class="text-center py-4">
         <p>&copy; 2024 GeorgiaJedi. All rights reserved.</p>
