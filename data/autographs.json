@@ -33,8 +33,6 @@
   },
   {
     "id": "3",
-    "acquired": "",
-    "type": "autograph",
     "name/brand": "Alec Guinness",
     "franchise": "Star Wars",
     "description": "Obi-Wan Kenobi promotional postcard",
@@ -43,9 +41,10 @@
     "special": "No",
     "is_verified": "No",
     "serialnumber": "",
-    "original_cost": "",
-    "current_value": "",
-    "image": "AlecGuinness_Postcard"
+    "original_cost": "220.00",
+    "current_value": "450.00",
+    "image": "AlecGuinness_Postcard",
+    "acquired": ""
   },
   {
     "id": "4",
