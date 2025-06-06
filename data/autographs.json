@@ -1787,5 +1787,20 @@
     "original_cost": "25",
     "current_value": "",
     "image": ""
+  },
+  {
+    "id": "113",
+    "name/brand": "Book of Boba Fett Multi Poster",
+    "franchise": "Star Wars",
+    "description": "Book of Boba Fett Mini Poster with multiple autographs.<br /><ol>  <li>Eyad Elbitar</li>  <li>Matt Wood</li>  <li>Ming-Na Wen</li>  <li>Brendan Wayne</li>  <li>Temuera Morrison</li>  <li>Leilani Shiu</li>  <li>Carey Jones</li>  <li>Helen Sadler</li>  <li>Lateef Crowder</li>  <li>Frank Trigg</li>  <li>Tait Fletcher</li>  <li>Corey Burton</li>  <li>Dorian King</li>  <li>W. Earl Brown</li>  <li>Collin Hymes</li>  <li>Dmitriy Kara</li></ol>",
+    "size/model#": "11X17",
+    "source": "SWAY",
+    "special": "No",
+    "is_verified": "Yes",
+    "serialnumber": "A85370",
+    "original_cost": "318",
+    "current_value": "850",
+    "image": "BookofBobaFett-Multi",
+    "acquired": "05/25/2025"
   }
 ]
