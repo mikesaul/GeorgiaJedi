@@ -13,7 +13,24 @@
     <link rel="stylesheet" href="css/styles.css">
 
     <script>
-        $(document).ready(function() {
+/*      // Case-insensitive alphanumeric sort with numeric prefix handling
+     function alphanumericCaseInsensitiveSort(a, b) {
+        const regex = /^(\d+)(.*)/i;
+        const matchA = a.match(regex);
+        const matchB = b.match(regex);
+
+        if (matchA && matchB) {
+            const numA = parseInt(matchA[1], 10);
+            const numB = parseInt(matchB[1], 10);
+            if (numA !== numB) return numA - numB;
+            return matchA[2].toLowerCase().localeCompare(matchB[2].toLowerCase());
+        }
+
+        return a.toLowerCase().localeCompare(b.toLowerCase());
+    }
+
+ */
+       $(document).ready(function() {
             // Initialize the datepicker for the acquired field
             $("#acquired").datepicker({ dateFormat: "mm/dd/yy" });
 
@@ -32,7 +49,7 @@
                     $.getJSON(jsonFileName, function(data) {
                         // Generate unique, sorted franchise list
                         const franchises = [...new Set(data.map(item => item.franchise).filter(Boolean))];
-                        franchises.sort();
+                        franchises.sort(alphanumericCaseInsensitiveSort);
 
                         // Populate the franchise datalist
                         const franchiseDatalist = $('#franchiseList');
@@ -40,6 +57,25 @@
                         franchises.forEach(franchise => {
                             franchiseDatalist.append(new Option(franchise));
                         });
+
+                        
+                    // --- Source handling ---
+                    const sourceOptions = [...new Set(data.map(item => item.source).filter(Boolean))];
+                    sourceOptions.sort(alphanumericCaseInsensitiveSort);
+                    const sourceDatalist = $('#sourceList');
+                    sourceDatalist.empty();
+                    sourceOptions.forEach(option => {
+                        sourceDatalist.append(new Option(option));
+                    });
+
+                    // --- Size handling ---
+                    const sizeOptions = [...new Set(data.map(item => item["size/model#"]).filter(Boolean))];
+                    sizeOptions.sort(alphanumericCaseInsensitiveSort);
+                    const sizeDatalist = $('#sizeList');
+                    sizeDatalist.empty();
+                    sizeOptions.forEach(option => {
+                        sizeDatalist.append(new Option(option));
+                    });
 
                 // Generate unique, sorted is_verified list
                 const isVerifiedOptions = [...new Set(data.map(item => item.is_verified).filter(Boolean))];
@@ -130,12 +166,15 @@
 
             <div class="form-group col-md-3">
                 <label for="size">Size:</label>
-                <input type="text" id="size" name="size" class="form-control">
-            </div>
+                <!-- <input type="text" id="size" name="size" class="form-control"> -->
+                <input type="text" id="size" name="size" list="sizeList" class="form-control">
+                <datalist id="sizeList"></datalist>            </div>
 
             <div class="form-group col-md-3">
                 <label for="source">Source:</label>
-                <input type="text" id="source" name="source" class="form-control">
+                <input type="text" id="source" name="source" list="sourceList" class="form-control">
+                <!-- <input type="text" id="source" name="source" class="form-control"> -->
+                <datalist id="sourceList"></datalist>
             </div>
 
             <!-- Dropdown for Personalized field -->

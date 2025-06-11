@@ -49,7 +49,7 @@
         data-search="true"
         data-pagination="true"
         data-page-list="[5, 10, 25, 50]"
-        data-page-size="5"
+        data-page-size="10"
         data-show-columns="true"
         data-show-footer="true"
         data-detail-view="false"
@@ -58,7 +58,7 @@
         >
             <thead>
                 <tr>
-                    <th data-field="image" data-formatter="imageFormatter" data-width=130>Image</th>
+                    <th data-field="image" data-formatter="imageFormatter" data-width=130 data-footer-formatter="imageFooterFormatter"></th>
                     <th data-field="id" data-width=10 data-sortable="true">ID</th>
                     <th data-field="acquired" data-width=120 data-sortable="true">Acquired</th>
                     <th data-field="name/brand" data-width=150 data-sortable="true">Title</th>
@@ -66,15 +66,16 @@
                     <th data-field="description" data-formatter="descFormatter" data-width=300 data-sortable="true">Description</th>
                     <th data-field="size/model#" data-width=50>Size</th>
                     <th data-field="source" data-width=120 data-sortable="true">Source</th>
-                    <th data-field="personalized" data-width=10>Custom</th>
+                    <!-- <th data-field="personalized" data-width=10>Custom</th> -->
                     <th data-field="serialnumber" data-width=100>Serial#</th>
-                    <th data-field="original_cost" data-formatter="currencyFormatter" data-width="100" data-sortable="true" data-footer-formatter="originalCostFooter">Original Cost</th>
-                    <th data-field="current_value" data-formatter="currencyFormatter" data-width="100" data-sortable="true" data-footer-formatter="currentValueFooter">Current Value</th>
+                    <th data-field="original_cost" data-formatter="currencyFormatter" data-width="100" data-sortable="true" data-footer-formatter="originalCostFooter">Original<br />Cost</th>
+                    <th data-field="current_value" data-formatter="currencyFormatter" data-width="100" data-sortable="true" data-footer-formatter="currentValueFooter">Current<br />Value</th>
                     <th data-field="is_verified" data-card-visible="false" data-width=10>Is Verified</th>
-                    <th data-field="edit" data-formatter="editFormatter" data-width=100>Edit</th> <!-- New Edit column -->
+                    <!-- <th data-field="edit" data-formatter="editFormatter" data-width=100>Edit</th> -->
                 </tr>
             </thead>
         </table>
+        <div id="custom-footer" style="margin-top: 10px;"></div>
     </main>
 
     <footer class="text-center py-4">
@@ -104,7 +105,6 @@
             });
         });
     </script>
-
 
 </body>
 </html>

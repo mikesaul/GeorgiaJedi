@@ -1,3 +1,10 @@
+ 
+// Determine folder based on HTML filename
+const pageName = window.location.pathname.split("/").pop().split(".")[0];  // gets 'autographs', etc.
+const thumbPathPrefix = `images/${pageName}/thumbs/`;
+const fullPathPrefix = `images/${pageName}/`;  // for future use if needed
+// alert("pageName: " + pageName + ", thumbPathPrefix: " + thumbPathPrefix + ", fullPathPrefix: " + fullPathPrefix);
+
 // Define detailFormatter function globally
 function detailFormatter(index, row) {
   var html = [];
@@ -8,7 +15,7 @@ function detailFormatter(index, row) {
   // Left side - Image
   html.push('<div class="card-left" style="flex: 1; text-align: center;">');
   if (row.image) {
-      html.push('<img src="images/thumbs/' + row.image + '_thumb.jpg" style="width: 150px; height: 150px; border-radius: 5px;" alt="Item Image">');
+    html.push('<img src="images/thumbs/' + row.image + '_thumb.jpg" style="width: 150px; height: 150px; border-radius: 5px;" alt="Item Image">');
   } else {
       html.push('<img src="images/100.png" style="width: 150px; height: 150px; border-radius: 5px;" alt="No Image">');
   }
@@ -91,26 +98,41 @@ $(document).ready(function () {
     // Get the 'pg' parameter from the URL (if present)
     const page = getQueryParam('pg') ? parseInt(getQueryParam('pg')) : 1;
 
-
-  $('#catalog-table').bootstrapTable({
-      detailView: true,  // Enable detail view
-      detailFormatter: detailFormatter,  // Reference the global detailFormatter function
-      pagination: true,  // Enable pagination
-      pageList: [5, 10, 25, 50, 100],  // Define page size options
-      pageSize: 5,  // Set the fixed page size
-      sidePagination: 'client',  // Ensure pagination works on the client side
-      showFooter: true,  // Ensure footer is shown
-      footerFormatter: sumFooter,  // Set footer formatter
-      pageNumber: page,  // Set to the page number from the query parameter
-
-      // Footer callback
-      onPostFooter: function () {
-          let data = $('#catalog-table').bootstrapTable('getData');
-          let footerValues = sumFooter(data);
-          $('#catalog-table').bootstrapTable('updateFooter', footerValues);
+    function isMobileView() {
+      return window.innerWidth < 1200;
+  }
+  
+  $('#catalog-table').bootstrapTable('destroy').bootstrapTable({
+    detailView: true,
+    detailFormatter: detailFormatter,
+    cardView: isMobileView(),
+    pagination: true,
+    pageList: [5, 10, 25, 50, 100],
+    pageSize: 5,
+    sidePagination: 'client',
+    showFooter: !isMobileView(),      // ✅ footer only in table mode
+    footerFormatter: sumFooter,       // ✅ required for table view footer
+    pageNumber: page,
+    onPostBody: function () {
+      const data = $('#catalog-table').bootstrapTable('getData');
+      const totals = sumFooter(data);
+  
+      if (isMobileView()) {
+        const html = `
+          <div style="border-top: 1px solid #ccc; padding-top: 10px;">
+            <strong>Total Original Cost:</strong> ${totals.original_cost}<br>
+            <strong>Total Current Value:</strong> ${totals.current_value}<br>
+            <strong>Total Images:</strong> ${totals.image}
+          </div>
+        `;
+        $('#custom-footer').html(html);  // You need <div id="custom-footer"></div> in HTML
+      } else {
+        $('#custom-footer').empty();     // Clear if switching back to table view
+        $('#catalog-table').bootstrapTable('updateFooter', totals);
       }
+    }
   });
-
+  
   // Handle Add Item form submission
   $('#add-item-form').on('submit', function(event) {
       event.preventDefault();
@@ -159,7 +181,7 @@ $(document).ready(function () {
 
 // Description formatter
 function descFormatter(index, row) {
-  var desc = row.description.substr(0, 60);
+  var desc = row.description.substr(0, 120);
   return desc;
 }
 
@@ -170,16 +192,51 @@ function imageFormatter(index, row) {
     
     // Get the current page's sender (autographs or collectibles)
     const sender = window.location.pathname.includes('autographs') ? 'autographs' : 'collectibles';
-
+    const type = getItemType(); // Get the item type from the page name
+    const editUrl = '<a href="update-item.html?id=' + row.id + '&itemType=' + type + " class='btn btn-sm btn-primary mt-2'>Edit</a>";
+  
     if (row.image) {
         // Include both page number and sender in the URL
         var imguri = '<a href="imageview.html?index=' + row.id + '&image=' + row.image + '&pg=' + currentPage + '&sender=' + sender + '">'
-                   + '<img height=128 width=128 src="images/thumbs/' + row.image + '_thumb.jpg"></a>';
+        + '<img height=128 width=128 src="images/thumbs/' + row.image + '_thumb.jpg"></a>' + '<a href="update-item.html?id=' + row.id + '&itemType=' + type + '" class="btn btn-sm btn-primary mt-2">Edit</a>';
         return imguri;
     } else {
-        return '<img height=128 src="images/100.png">';
+      return '<img height=128 src="images/100.png">'+ '<a href="update-item.html?id=' + row.id + '&itemType=' + type + '" class="btn btn-sm btn-primary mt-2">Edit</a>';
     }
 }
+
+
+function imageFooterFormatter(data) {
+  let count = 0;
+
+  data.forEach(row => {
+    if (row.image) {
+      const filename = row.image.split('/').pop().toLowerCase();
+      if (filename !== '100.png') {
+        count++;
+      }
+    }
+  });
+
+  return `${count} images`;
+}
+
+     // Case-insensitive alphanumeric sort with numeric prefix handling
+     function alphanumericCaseInsensitiveSort(a, b) {
+      const regex = /^(\d+)(.*)/i;
+      const matchA = a.match(regex);
+      const matchB = b.match(regex);
+
+      if (matchA && matchB) {
+          const numA = parseInt(matchA[1], 10);
+          const numB = parseInt(matchB[1], 10);
+          if (numA !== numB) return numA - numB;
+          return matchA[2].toLowerCase().localeCompare(matchB[2].toLowerCase());
+      }
+
+      return a.toLowerCase().localeCompare(b.toLowerCase());
+  }
+
 
 function getItemType() {
   const page = window.location.pathname.split('/').pop(); // Get the filename
