@@ -87,6 +87,25 @@ function currentValueFooter(data) {
   return currencyFormatter(totalCurrentValue);
 }
 
+function isValidDate(d) {
+  return d instanceof Date && !isNaN(d);
+}
+
+function dateSorter(a, b, order) {
+  const dateA = isValidDate(new Date(a)) ? new Date(a) : null;
+  const dateB = isValidDate(new Date(b)) ? new Date(b) : null;
+
+  // Both dates are invalid
+  if (!dateA && !dateB) return 0;
+
+  // Only one date is invalid
+  if (!dateA) return order === 'asc' ? 1 : -1;
+  if (!dateB) return order === 'asc' ? -1 : 1;
+
+  // Both dates are valid
+  return dateA - dateB;
+}
+
 $(document).ready(function () {
   // Initialize the table with options
         // Function to get query parameters from the URL
