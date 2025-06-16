@@ -1952,5 +1952,20 @@
     "current_value": "30",
     "image": "CarlBang-HothRebelSoldier",
     "acquired": "04/27/2025"
+  },
+  {
+    "id": "123",
+    "name/brand": "Shatner and Stewart",
+    "franchise": "Star Trek Movies",
+    "description": "William Shatner and Patrick Stewart as Captain Kirk and Captian Picard in Generations.",
+    "size/model#": "8X10",
+    "source": "SWAU",
+    "special": "No",
+    "is_verified": "Yes - SWAU",
+    "serialnumber": "",
+    "original_cost": "240",
+    "current_value": "450",
+    "image": "KirkAndPicard-Shatner-Stewart",
+    "acquired": "06/15/2025"
   }
 ]
