@@ -1,4 +1,4 @@
-<!-- autographs.html with custom filter inputs embedded in header cells -->
+<!-- autographs.html with dropdown filters for Franchise, Size, Source -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,8 +10,13 @@
   <link rel="stylesheet" href="css/styles.css">
   <style>
     #toolbar { margin: 10px 0; }
-    thead.bootstrap-table-filter-control > tr:nth-child(2) { display: none; }
+    thead th { vertical-align: top; }
     .column-filter { width: 100%; font-size: 0.9em; padding: 2px; margin-top: 4px; }
+    .bootstrap-table .fixed-table-container .table thead th {
+        vertical-align: top;
+        padding: 0;
+        margin: 0;
+    }
   </style>
 </head>
 <body>
@@ -60,14 +65,14 @@
           Title<br><input type="text" class="column-filter" data-column="name/brand" placeholder="Search title">
         </th>
         <th data-field="franchise" data-sortable="true">
-          Franchise<br><input type="text" class="column-filter" data-column="franchise" placeholder="Search franchise">
+          Franchise<br><select class="column-filter" data-column="franchise"><option value="">All</option></select>
         </th>
         <th data-field="description" data-formatter="descFormatter" data-sortable="true">Description</th>
         <th data-field="size/model#">
-          Size<br><input type="text" class="column-filter" data-column="size/model#" placeholder="Search size">
+          Size<br><select class="column-filter" data-column="size/model#"><option value="">All</option></select>
         </th>
         <th data-field="source" data-sortable="true">
-          Source<br><input type="text" class="column-filter" data-column="source" placeholder="Search source">
+          Source<br><select class="column-filter" data-column="source"><option value="">All</option></select>
         </th>
         <th data-field="serialnumber">Serial#</th>
         <th data-field="original_cost" data-formatter="currencyFormatter" data-sortable="true" data-footer-formatter="originalCostFooter">
@@ -137,8 +142,18 @@
       return Object.entries(filters).every(([key, val]) => {
         if (key === 'acquired') return customDateFilter(row[key], val);
         if (key === 'original_cost' || key === 'current_value') return customNumericFilter(row[key], val);
-        return String(row[key] || '').toLowerCase().includes(val.toLowerCase());
+        return val === '' || String(row[key] || '').toLowerCase() === val.toLowerCase();
       });
+    });
+  }
+
+  function populateDropdownFilter(column, selector) {
+    const uniqueValues = [...new Set(rawData.map(item => item[column]).filter(Boolean))];
+    uniqueValues.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+    const dropdown = $(`select.column-filter[data-column="${selector}"]`);
+    dropdown.empty().append('<option value="">All</option>');
+    uniqueValues.forEach(val => {
+      dropdown.append(`<option value="${val}">${val}</option>`);
     });
   }
 
@@ -146,9 +161,12 @@
     $.getJSON('data/autographs.json', function (jsonData) {
       rawData = jsonData;
       $('#catalog-table').bootstrapTable({ data: rawData });
+      populateDropdownFilter('franchise', 'franchise');
+      populateDropdownFilter('size/model#', 'size/model#');
+      populateDropdownFilter('source', 'source');
     });
 
-    $(document).on('input', '.column-filter', function () {
+    $(document).on('input change', '.column-filter', function () {
       const filtered = applyCustomFilters(rawData);
       $('#catalog-table').bootstrapTable('load', filtered);
     });
