@@ -1,4 +1,4 @@
-<!-- Updated autographs.html with manual data load and working custom filters -->
+<!-- autographs.html with custom filter inputs embedded in header cells -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,10 +10,8 @@
   <link rel="stylesheet" href="css/styles.css">
   <style>
     #toolbar { margin: 10px 0; }
-    .bootstrap-table .filter-control input,
-    .bootstrap-table .filter-control select {
-      width: 100%; padding: 4px; font-size: 0.9em;
-    }
+    thead.bootstrap-table-filter-control > tr:nth-child(2) { display: none; }
+    .column-filter { width: 100%; font-size: 0.9em; padding: 2px; margin-top: 4px; }
   </style>
 </head>
 <body>
@@ -39,7 +37,6 @@
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.18.3/bootstrap-table.min.js"></script>
-  <script src="https://unpkg.com/bootstrap-table@1.18.3/dist/extensions/filter-control/bootstrap-table-filter-control.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tableexport.jquery.plugin@1.29.0/tableExport.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tableexport.jquery.plugin@1.29.0/libs/jsPDF/jspdf.umd.min.js"></script>
   <script src="js/script.js"></script>
@@ -47,8 +44,6 @@
   <table id="catalog-table" class="table table-bordered"
     data-toggle="table"
     data-search="true"
-    data-filter-control="true"
-    data-filter-show-clear="true"
     data-pagination="true"
     data-show-footer="true"
     data-detail-view="false"
@@ -56,18 +51,34 @@
     data-row-style="rowStyle">
     <thead>
       <tr>
-        <th data-field="image" data-formatter="imageFormatter" data-width=130 data-footer-formatter="imageFooterFormatter"></th>
-        <th data-field="id" data-width=10 data-sortable="true">ID</th>
-        <th data-field="acquired" data-filter-control="input" data-sortable="true" data-sorter="dateSorter">Acquired</th>
-        <th data-field="name/brand" data-filter-control="input" data-sortable="true">Title</th>
-        <th data-field="franchise" data-filter-control="select" data-sortable="true">Franchise</th>
-        <th data-field="description" data-formatter="descFormatter" data-width=300 data-sortable="true">Description</th>
-        <th data-field="size/model#" data-filter-control="select">Size</th>
-        <th data-field="source" data-filter-control="select" data-sortable="true">Source</th>
-        <th data-field="serialnumber" data-width=100>Serial#</th>
-        <th data-field="original_cost" data-formatter="currencyFormatter" data-filter-control="input" data-sortable="true" data-footer-formatter="originalCostFooter">Original<br />Cost</th>
-        <th data-field="current_value" data-formatter="currencyFormatter" data-filter-control="input" data-sortable="true" data-footer-formatter="currentValueFooter">Current<br />Value</th>
-        <th data-field="is_verified" data-filter-control="select">Is Verified</th>
+        <th data-field="image" data-formatter="imageFormatter" data-footer-formatter="imageFooterFormatter"></th>
+        <th data-field="id" data-sortable="true">ID</th>
+        <th data-field="acquired" data-sortable="true" data-sorter="dateSorter">
+          Acquired<br><input type="text" class="column-filter" data-column="acquired" placeholder=">= 2023-01-01">
+        </th>
+        <th data-field="name/brand" data-sortable="true">
+          Title<br><input type="text" class="column-filter" data-column="name/brand" placeholder="Search title">
+        </th>
+        <th data-field="franchise" data-sortable="true">
+          Franchise<br><input type="text" class="column-filter" data-column="franchise" placeholder="Search franchise">
+        </th>
+        <th data-field="description" data-formatter="descFormatter" data-sortable="true">Description</th>
+        <th data-field="size/model#">
+          Size<br><input type="text" class="column-filter" data-column="size/model#" placeholder="Search size">
+        </th>
+        <th data-field="source" data-sortable="true">
+          Source<br><input type="text" class="column-filter" data-column="source" placeholder="Search source">
+        </th>
+        <th data-field="serialnumber">Serial#</th>
+        <th data-field="original_cost" data-formatter="currencyFormatter" data-sortable="true" data-footer-formatter="originalCostFooter">
+          Original Cost<br><input type="text" class="column-filter" data-column="original_cost" placeholder=">= 100">
+        </th>
+        <th data-field="current_value" data-formatter="currencyFormatter" data-sortable="true" data-footer-formatter="currentValueFooter">
+          Current Value<br><input type="text" class="column-filter" data-column="current_value" placeholder="<= 500">
+        </th>
+        <th data-field="is_verified">
+          Is Verified<br><input type="text" class="column-filter" data-column="is_verified" placeholder="yes">
+        </th>
       </tr>
     </thead>
   </table>
@@ -77,54 +88,70 @@
   <p>&copy; 2024 GeorgiaJedi. All rights reserved.</p>
 </footer>
 <script>
-  $(function () {
-    $.getJSON('data/autographs.json', function (jsonData) {
-      $('#catalog-table').bootstrapTable({
-        data: jsonData,
-        filterOptions: {
-          filterAlgorithm: {
-            acquired: customDateFilter,
-            original_cost: customNumericFilter,
-            current_value: customNumericFilter
-          }
-        }
-      });
+  let rawData = [];
+
+  function customNumericFilter(value, filter) {
+    if (!filter) return true;
+    const match = filter.match(/^(<=|>=|=|<|>)?\s*([\d.]+)$/);
+    if (!match) return true;
+    const [, operator = '=', numberStr] = match;
+    const number = parseFloat(numberStr);
+    const val = parseFloat(value);
+    switch (operator) {
+      case '<': return val < number;
+      case '<=': return val <= number;
+      case '=': return val === number;
+      case '>=': return val >= number;
+      case '>': return val > number;
+      default: return val === number;
+    }
+  }
+
+  function customDateFilter(value, filter) {
+    if (!filter || !value) return true;
+    const match = filter.match(/^(<=|>=|=|<|>)?\s*([\d/-]+)$/);
+    if (!match) return true;
+    const [, operator = '=', dateStr] = match;
+    const filterDate = new Date(dateStr);
+    const rowDate = new Date(value);
+    if (isNaN(filterDate) || isNaN(rowDate)) return true;
+    switch (operator) {
+      case '<': return rowDate < filterDate;
+      case '<=': return rowDate <= filterDate;
+      case '=': return rowDate.toDateString() === filterDate.toDateString();
+      case '>=': return rowDate >= filterDate;
+      case '>': return rowDate > filterDate;
+      default: return rowDate.toDateString() === filterDate.toDateString();
+    }
+  }
+
+  function applyCustomFilters(data) {
+    const filters = {};
+    $('.column-filter').each(function () {
+      const key = $(this).data('column');
+      const val = $(this).val();
+      if (val) filters[key] = val;
     });
 
-    function customNumericFilter(value, filter) {
-      if (!filter) return true;
-      const match = filter.match(/^(<=|>=|=|<|>)?\s*([\d.]+)$/);
-      if (!match) return true;
-      const [, operator = '=', numberStr] = match;
-      const number = parseFloat(numberStr);
-      const val = parseFloat(value);
-      switch (operator) {
-        case '<': return val < number;
-        case '<=': return val <= number;
-        case '=': return val === number;
-        case '>=': return val >= number;
-        case '>': return val > number;
-        default: return val === number;
-      }
-    }
+    return data.filter(row => {
+      return Object.entries(filters).every(([key, val]) => {
+        if (key === 'acquired') return customDateFilter(row[key], val);
+        if (key === 'original_cost' || key === 'current_value') return customNumericFilter(row[key], val);
+        return String(row[key] || '').toLowerCase().includes(val.toLowerCase());
+      });
+    });
+  }
 
-    function customDateFilter(value, filter) {
-      if (!filter || !value) return true;
-      const match = filter.match(/^(<=|>=|=|<|>)?\s*([\d/-]+)$/);
-      if (!match) return true;
-      const [, operator = '=', dateStr] = match;
-      const filterDate = new Date(dateStr);
-      const rowDate = new Date(value);
-      if (isNaN(filterDate) || isNaN(rowDate)) return true;
-      switch (operator) {
-        case '<': return rowDate < filterDate;
-        case '<=': return rowDate <= filterDate;
-        case '=': return rowDate.toDateString() === filterDate.toDateString();
-        case '>=': return rowDate >= filterDate;
-        case '>': return rowDate > filterDate;
-        default: return rowDate.toDateString() === filterDate.toDateString();
-      }
-    }
+  $(function () {
+    $.getJSON('data/autographs.json', function (jsonData) {
+      rawData = jsonData;
+      $('#catalog-table').bootstrapTable({ data: rawData });
+    });
+
+    $(document).on('input', '.column-filter', function () {
+      const filtered = applyCustomFilters(rawData);
+      $('#catalog-table').bootstrapTable('load', filtered);
+    });
   });
 </script>
 </body>
