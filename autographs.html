@@ -12,11 +12,6 @@
     #toolbar { margin: 10px 0; }
     thead th { vertical-align: top; }
     .column-filter { width: 100%; font-size: 0.9em; padding: 2px; margin-top: 4px; }
-    .bootstrap-table .fixed-table-container .table thead th {
-        vertical-align: top;
-        padding: 0;
-        margin: 0;
-    }
   </style>
 </head>
 <body>
@@ -131,21 +126,24 @@
   }
 
   function applyCustomFilters(data) {
-    const filters = {};
-    $('.column-filter').each(function () {
-      const key = $(this).data('column');
-      const val = $(this).val();
-      if (val) filters[key] = val;
-    });
+  const filters = {};
+  $('.column-filter').each(function () {
+    const key = $(this).data('column');
+    const val = $(this).val();
+    if (val) filters[key] = val;
+  });
 
-    return data.filter(row => {
-      return Object.entries(filters).every(([key, val]) => {
-        if (key === 'acquired') return customDateFilter(row[key], val);
-        if (key === 'original_cost' || key === 'current_value') return customNumericFilter(row[key], val);
-        return val === '' || String(row[key] || '').toLowerCase() === val.toLowerCase();
-      });
+  return data.filter(row => {
+    return Object.entries(filters).every(([key, val]) => {
+      if (key === 'acquired') return customDateFilter(row[key], val);
+      if (key === 'original_cost' || key === 'current_value') return customNumericFilter(row[key], val);
+      if (key === 'name/brand' || key === 'is_verified') {
+        return String(row[key] || '').toLowerCase().includes(val.toLowerCase());
+      }
+      return val === '' || String(row[key] || '').toLowerCase() === val.toLowerCase();
     });
-  }
+  });
+}
 
   function populateDropdownFilter(column, selector) {
     const uniqueValues = [...new Set(rawData.map(item => item[column]).filter(Boolean))];
