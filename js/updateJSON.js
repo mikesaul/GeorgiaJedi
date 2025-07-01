@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     const itemType = getQueryParameter('itemType');
-    const itemId = getQueryParameter('ID');
+    const itemId = getQueryParameter('id');
 
     if (itemId && itemType) {
         // Update Item logic
