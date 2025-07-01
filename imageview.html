@@ -58,10 +58,10 @@
     return;
   }
 
-  fetch("images.json")
+  fetch("data/images.json")
     .then(response => response.json())
     .then(imageGroups => {
-      const group = sender || "root";
+      const group = imageGroups.hasOwnProperty(sender) ? sender : "root";
       const groupImages = imageGroups[group] || [];
 
       const baseName = imageName.replace(/\.[^/.]+$/, '');
