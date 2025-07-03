@@ -1967,5 +1967,50 @@
     "current_value": "650",
     "image": "KirkAndPicard_ShatnerStewart",
     "acquired": "06/15/2025"
+  },
+  {
+    "id": "124",
+    "name/brand": "Lorne Peterson",
+    "franchise": "Star Wars",
+    "description": "Lorne Peterson on set with the Sandcrawler model for Star Wars: A New Hope.",
+    "size/model#": "8X10",
+    "source": "SWAU",
+    "special": "No",
+    "is_verified": "Yes - SWAU",
+    "serialnumber": "",
+    "original_cost": "14.00",
+    "current_value": "25.00",
+    "image": "LornePeterson_Sandcrawler",
+    "acquired": "06/22/2025"
+  },
+  {
+    "id": "125",
+    "name/brand": "Giancarlo Esposito",
+    "franchise": "Star Wars",
+    "description": "Giancarlo Esposito as Moff Gideon in Star WarsL The Mandalorian. Includes character name.",
+    "size/model#": "8X10",
+    "source": "SWAU",
+    "special": "No",
+    "is_verified": "Yes - SWAU",
+    "serialnumber": "",
+    "original_cost": "32.00",
+    "current_value": "90.00",
+    "image": "GiancarloEsposito-MoffGideon",
+    "acquired": "06/22/2025"
+  },
+  {
+    "id": "126",
+    "name/brand": "Ewan McGregor",
+    "franchise": "Star Wars",
+    "description": "Ewan McGregor as Obi-Wan Kenobi in Ep III: Revenge of the Sith.",
+    "size/model#": "8X10",
+    "source": "SWAU",
+    "special": "No",
+    "is_verified": "Yes - SWAU",
+    "serialnumber": "",
+    "original_cost": "144.00",
+    "current_value": "350.00",
+    "image": "EwanMcGregor-ObiWanKenobi",
+    "acquired": "06/22/2025"
   }
 ]
