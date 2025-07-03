@@ -45,6 +45,7 @@
     data-toggle="table"
     data-search="true"
     data-pagination="true"
+    data-pagination-v-align="both"
     data-show-footer="true"
     data-detail-view="false"
     data-detail-formatter="detailFormatter"
@@ -54,30 +55,30 @@
         <th data-field="image" data-formatter="imageFormatter" data-footer-formatter="imageFooterFormatter"></th>
         <th data-field="id" data-sortable="true">ID</th>
         <th data-field="acquired" data-sortable="true" data-sorter="dateSorter">
-          Acquired<br><input type="text" class="column-filter" data-column="acquired" placeholder=">= 2023-01-01">
+          Acquired<br><div class="filter-control"><input type="text" class="column-filter" data-column="acquired" placeholder=">= 2023-01-01"></div>
         </th>
         <th data-field="name/brand" data-sortable="true">
-          Title<br><input type="text" class="column-filter" data-column="name/brand" placeholder="Search title">
+          Title<br><div class="filter-control"><input type="text" class="column-filter" data-column="name/brand" placeholder="Search title"></div>
         </th>
         <th data-field="franchise" data-sortable="true">
-          Franchise<br><select class="column-filter" data-column="franchise"><option value="">All</option></select>
+          Franchise<br><div class="filter-control"><select class="column-filter" data-column="franchise"><option value="">All</option></select>
         </th>
         <th data-field="description" data-formatter="descFormatter" data-sortable="true">Description</th>
         <th data-field="size/model#">
-          Size<br><select class="column-filter" data-column="size/model#"><option value="">All</option></select>
+          Size<br><div class="filter-control"><select class="column-filter" data-column="size/model#"><option value="">All</option></select></div>
         </th>
         <th data-field="source" data-sortable="true">
-          Source<br><select class="column-filter" data-column="source"><option value="">All</option></select>
+          Source<br><div class="filter-control"><select class="column-filter" data-column="source"><option value="">All</option></select></div>
         </th>
         <th data-field="serialnumber">Serial#</th>
         <th data-field="original_cost" data-formatter="currencyFormatter" data-sortable="true" data-footer-formatter="originalCostFooter">
-          Original Cost<br><input type="text" class="column-filter" data-column="original_cost" placeholder=">= 100">
+          Original Cost<br><div class="filter-control"><input type="text" class="column-filter" data-column="original_cost" placeholder=">= 100"></div>
         </th>
         <th data-field="current_value" data-formatter="currencyFormatter" data-sortable="true" data-footer-formatter="currentValueFooter">
-          Current Value<br><input type="text" class="column-filter" data-column="current_value" placeholder="<= 500">
+          Current Value<br><div class="filter-control"><input type="text" class="column-filter" data-column="current_value" placeholder="<= 500"></div>
         </th>
         <th data-field="is_verified">
-          Is Verified<br><input type="text" class="column-filter" data-column="is_verified" placeholder="yes">
+          Is Verified<br><div class="filter-control"><input type="text" class="column-filter" data-column="is_verified" placeholder="yes"></div>
         </th>
       </tr>
     </thead>
