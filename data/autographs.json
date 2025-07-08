@@ -288,8 +288,6 @@
   },
   {
     "id": "19",
-    "acquired": "",
-    "type": "autograph",
     "name/brand": "Bounty Hunters - Multi-signed",
     "franchise": "Star Wars",
     "description": "B/W Bounty Huntes on Star Destroyer - Jeremy Bulloch, Alan Harris, Cathy Munroe, Chris Parsons",
@@ -298,9 +296,10 @@
     "special": "No",
     "is_verified": "Yes - Official Pix",
     "serialnumber": "",
-    "original_cost": "",
-    "current_value": "",
-    "image": ""
+    "original_cost": "250",
+    "current_value": "600",
+    "image": "BountyHuntersMulti1",
+    "acquired": ""
   },
   {
     "id": "20",
