@@ -15,7 +15,7 @@ function detailFormatter(index, row) {
   // Left side - Image
   html.push('<div class="card-left" style="flex: 1; text-align: center;">');
   if (row.image) {
-    html.push('<img src="images/thumbs/' + row.image + '_thumb.jpg" style="width: 150px; height: 150px; border-radius: 5px;" alt="Item Image">');
+    html.push('<img src="images/' + row.image + '.jpg" style="width: 500px; border-radius: 5px;" alt="Item Image">');
   } else {
       html.push('<img src="images/100.png" style="width: 150px; height: 150px; border-radius: 5px;" alt="No Image">');
   }
