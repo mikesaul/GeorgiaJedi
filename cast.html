@@ -10,83 +10,128 @@
         #toolbar {
             margin: 0;
         }
+        .bootstrap-table .filter-control input,
+        .bootstrap-table .filter-control select {
+            height: 30px;
+            font-size: 0.9rem;
+            padding: 2px;
+        }
     </style>
 </head>
 <body>
     <div class="container mt-5">
         <h2 class="text-center">Star Wars Characters</h2>
+
         <div id="toolbar" class="select">
             <select class="form-control">
                 <option value="basic">Export Basic</option>
                 <option value="all">Export All</option>
                 <option value="selected">Export Selected</option>
             </select>
+            <button id="exportButton" class="btn btn-primary mt-2">Export Selected</button>
         </div>
+
         <table id="characterTable"
-               data-toggle="table"
-               data-url="data/castandcharacters.json"
-               data-show-export="true"
-               data-pagination="true"
-               data-toolbar="#toolbar"
-               data-export-types="['json', 'xml', 'csv', 'txt', 'sql', 'excel', 'pdf']">
+            data-toggle="table"
+            data-show-export="true"
+            data-pagination="true"
+            data-click-to-select="true"
+            data-toolbar="#toolbar"
+            data-filter-control="true"
+            data-filter-show-clear="true"
+            data-export-types="['json', 'xml', 'csv', 'txt', 'sql', 'excel', 'pdf']">
             <thead>
                 <tr>
                     <th data-field="state" checkbox></th>
                     <th data-field="id" data-sortable="true">ID</th>
-                    <th data-field="name" data-sortable="true">Name</th>
-                    <th data-field="professions" data-sortable="true">Professions</th>
-                    <th data-field="known_for" data-sortable="true">Known For</th>
-                    <th data-field="bio" data-sortable="true">Biography</th>
+                    <th data-field="name" data-sortable="true" data-filter-control="select">Name</th>
+                    <th data-field="professions"
+                        data-sortable="true"
+                        data-filter-control="select"
+                        data-filter-control-placeholder="Filter by Profession"
+                        data-filter-custom-search="true">
+                        Professions
+                    </th>
+                    <th data-field="known_for" data-sortable="true" data-filter-control="input">Known For</th>
+                    <th data-field="bio" data-sortable="true" data-filter-control="input">Biography</th>
                 </tr>
             </thead>
         </table>
     </div>
 
+    <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.18.3/bootstrap-table.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.18.3/bootstrap-table.min.js"></script> 
     <script src="https://cdn.jsdelivr.net/npm/tableexport.jquery.plugin@1.29.0/tableExport.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tableexport.jquery.plugin@1.29.0/libs/jsPDF/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.18.3/extensions/export/bootstrap-table-export.min.js"></script>
-    
-    <script>
-        $(function() {
-            var $table = $('#characterTable');
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.18.3/extensions/filter-control/bootstrap-table-filter-control.min.js"></script>
 
-            $('#toolbar').find('select').change(function () {
-                var selectedValue = $(this).val();
-                $table.bootstrapTable('destroy').bootstrapTable({
-                    exportDataType: selectedValue,
-                    exportTypes: ['json', 'xml', 'csv', 'txt', 'sql', 'excel', 'pdf'],
-                    columns: [
-                        {
-                            field: 'state',
-                            checkbox: true,
-                            visible: selectedValue === 'selected'
-                        },
-                        {
-                            field: 'id',
-                            title: 'ID',
-                        },
-                        {
-                            field: 'name',
-                            title: 'Name',
-                        },
-                        {
-                            field: 'professions',
-                            title: 'Professions',
-                        },
-                        {
-                            field: 'known_for',
-                            title: 'Known For',
-                        },
-                        {
-                            field: 'bio',
-                            title: 'Biography',
-                        }
-                    ]
+    <script>
+        $(function () {
+            const $table = $('#characterTable');
+            let allData = [];
+            let selectedProfession = '';
+
+            $.getJSON('data/castandcharacters.json', function (data) {
+                // Normalize professions field
+                data.forEach(row => {
+                    if (Array.isArray(row.professions)) {
+                        row.professions = row.professions.join(', ');
+                    }
                 });
-            }).trigger('change');
+
+                allData = data;
+
+                const uniqueProfessions = [...new Set(
+                    data.flatMap(row =>
+                        row.professions?.split(',').map(p => p.trim()) || []
+                    )
+                )].sort();
+
+                function renderTable(filteredData = data) {
+                    $table.bootstrapTable('destroy').bootstrapTable({
+                        data: filteredData,
+                        pagination: true,
+                        showExport: true,
+                        clickToSelect: true,
+                        toolbar: '#toolbar',
+                        exportDataType: 'basic',
+                        exportTypes: ['json', 'xml', 'csv', 'txt', 'sql', 'excel', 'pdf'],
+                        filterControl: true,
+                        filterShowClear: true
+                    });
+
+                    setTimeout(() => {
+                        const $headerFilterCell = $('thead th[data-field="professions"] .filter-control');
+                        $headerFilterCell.empty();
+
+                        const $select = $('<select class="form-control"><option value="">-- Filter by Profession --</option></select>');
+                        uniqueProfessions.forEach(prof => {
+                            $select.append(`<option value="${prof}">${prof}</option>`);
+                        });
+
+                        $select.val(selectedProfession); // restore previous selection if any
+                        $headerFilterCell.append($select);
+
+                        $select.on('change', function () {
+                            selectedProfession = $(this).val();
+
+                            const filtered = selectedProfession
+                                ? allData.filter(row =>
+                                    row.professions &&
+                                    row.professions.split(',').map(p => p.trim()).includes(selectedProfession)
+                                )
+                                : allData;
+
+                            renderTable(filtered);
+                        });
+                    }, 100);
+                }
+
+                renderTable(); // Initial load
+            });
         });
     </script>
 </body>
