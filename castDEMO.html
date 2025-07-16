@@ -29,7 +29,8 @@
                data-show-export="true"
                data-pagination="true"
                data-click-to-select="true"
-               data-toolbar="#toolbar">
+               data-toolbar="#toolbar"
+               data-export-types="['json', 'xml', 'csv', 'txt', 'sql', 'excel', 'pdf']">
             <thead>
                 <tr>
                     <th data-field="state" checkbox></th> <!-- Checkbox column -->
@@ -48,6 +49,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.18.3/bootstrap-table.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tableexport.jquery.plugin@1.29.0/tableExport.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tableexport.jquery.plugin@1.29.0/libs/jsPDF/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.18.3/extensions/export/bootstrap-table-export.min.js"></script>
     
     <script>
         $(function() {
@@ -57,6 +59,40 @@
             $table.bootstrapTable();
 
             // Export selected rows functionality
+            $('#toolbar').find('select').change(function () {
+                var selectedValue = $(this).val();
+                $table.bootstrapTable('destroy').bootstrapTable({
+                    exportDataType: selectedValue,
+                    exportTypes: ['json', 'xml', 'csv', 'txt', 'sql', 'excel', 'pdf'],
+                    columns: [
+                        {
+                            field: 'state',
+                            checkbox: true,
+                            visible: selectedValue === 'selected'
+                        },
+                        {
+                            field: 'id',
+                            title: 'ID',
+                        },
+                        {
+                            field: 'name/brand',
+                            title: 'Name',
+                        },
+                        {
+                            field: 'franchise',
+                            title: 'Franchise',
+                        },
+                        {
+                            field: 'source',
+                            title: 'Source',
+                        },
+                        {
+                            field: 'description',
+                            title: 'Biography',
+                        }
+                    ]
+                });
+            }).trigger('change');
             $('#exportButton').on('click', function () {
                 var selectedRows = $table.bootstrapTable('getSelections');
                 if (selectedRows.length > 0) {
