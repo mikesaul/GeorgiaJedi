@@ -111,35 +111,43 @@
 
         // Wait for table to fully render then inject dropdown
         setTimeout(() => {
-          const $headerFilterCell = $('thead th[data-field="professions"] .filter-control');
-          $headerFilterCell.empty();
+  const $headerFilterCell = $('thead th[data-field="professions"] .filter-control');
+  $headerFilterCell.empty();
 
-          const uniqueProfessions = [...new Set(
-            allData.flatMap(row =>
-              row.professions?.split(',').map(p => p.trim()) || []
-            )
-          )].sort();
+  const uniqueProfessions = [...new Set(
+    allData.flatMap(row =>
+      row.professions?.split(',').map(p => p.trim()) || []
+    )
+  )].sort();
 
-          const $select = $('<select class="form-control"><option value="">-- Filter by Profession --</option></select>');
-          uniqueProfessions.forEach(prof => {
-            $select.append(`<option value="${prof}">${prof}</option>`);
-          });
+  const $select = $('<select class="form-control"></select>');
+  $select.append('<option value="">Show All</option>');
+  uniqueProfessions.forEach(prof => {
+    $select.append(`<option value="${prof}">${prof}</option>`);
+  });
 
-          $select.val(selectedProfession);
-          $headerFilterCell.append($select);
+  $select.val(selectedProfession); // Preserve current selection
+  $headerFilterCell.append($select);
 
-          $select.on('change', function () {
-            selectedProfession = $(this).val();
-            const filtered = selectedProfession
-              ? allData.filter(row =>
-                  row.professions &&
-                  row.professions.split(',').map(p => p.trim()).includes(selectedProfession)
-                )
-              : allData;
+  $select.on('change', function () {
+    selectedProfession = $(this).val();
 
-            $table.bootstrapTable('load', filtered);
-          });
-        }, 200); // slight delay to ensure header is rendered
+    const filtered = selectedProfession
+      ? allData.filter(row =>
+          row.professions &&
+          row.professions.split(',').map(p => p.trim()).includes(selectedProfession)
+        )
+      : allData;
+
+    $table.bootstrapTable('load', filtered);
+
+    // Re-apply dropdown selection after reload
+    setTimeout(() => {
+      $select.val(selectedProfession);
+    }, 100);
+  });
+}, 200);
+
       });
     });
   </script>
