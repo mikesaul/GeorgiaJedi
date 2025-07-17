@@ -10,6 +10,7 @@
   <style>
     #toolbar { margin: 10px 0; }
     #loading { font-size: 1.25rem; font-weight: 500; }
+    .column-filter { width: 100%; font-size: 0.9em; padding: 2px; margin-top: 4px; }
   </style>
 </head>
 <body>
@@ -58,10 +59,19 @@
       <tr>
         <th data-field="state" checkbox></th>
         <th data-field="id" data-sortable="true">ID</th>
-        <th data-field="name" data-sortable="true">Name</th>
+        <th data-field="name" data-sortable="true">
+          Name
+          <div class="filter-control"><input type="text" class="column-filter" data-column="name" placeholder="Search name"></div>
+        </th>
         <th data-field="professions" data-sortable="true">Professions</th>
-        <th data-field="known_for" data-sortable="true">Known For</th>
-        <th data-field="bio" data-sortable="true">Biography</th>
+        <th data-field="known_for" data-sortable="true">
+          Known For
+          <div class="filter-control"><input type="text" class="column-filter" data-column="known_for" placeholder="Search known for"></div>
+        </th>
+        <th data-field="bio" data-sortable="true">
+          Biography
+          <div class="filter-control"><input type="text" class="column-filter" data-column="bio" placeholder="Search bio"></div>
+        </th>
       </tr>
     </thead>
   </table>
@@ -92,6 +102,7 @@
     if (e.data && Array.isArray(e.data)) {
       allData = e.data;
 
+      // Populate profession dropdown with counts
       const professionCounts = {};
       allData.forEach(row => {
         row.professions.split(',').map(p => p.trim()).forEach(p => {
@@ -117,21 +128,49 @@
         exportDataType: 'basic',
         exportTypes: ['json', 'xml', 'csv', 'txt', 'sql', 'excel', 'pdf']
       });
-      $table.bootstrapTable('load', allData);
+
+      // Prevent sorting when clicking in column filter inputs
+      $table.on('click', 'th', function (event) {
+        if ($(event.target).closest('.column-filter').length) {
+          event.stopPropagation();
+        }
+      });
+
+      // Set up input filters
+      $('.column-filter').on('input', function () {
+        const filters = {};
+        $('.column-filter').each(function () {
+          const key = $(this).data('column');
+          const val = $(this).val();
+          if (val) filters[key] = val.toLowerCase();
+        });
+
+        const filtered = allData.filter(row => {
+          return Object.entries(filters).every(([key, val]) =>
+            (row[key] || '').toLowerCase().includes(val)
+          );
+        });
+
+        $table.bootstrapTable('load', filtered);
+      });
     } else {
       $loading.text('Failed to load characters.');
       console.error('Worker returned no data.');
     }
   };
 
+  // Handle dropdown filtering
   $professionFilter.on('change', function () {
     const selected = $(this).val();
-    const profession = selected.replace(/ \\(\\d+\\)$/, '');
+    const profession = selected.replace(/\s\(\d+\)$/, ''); // remove count
     const filtered = profession
       ? allData.filter(row => row.professions.split(',').map(p => p.trim()).includes(profession))
       : allData;
 
     $table.bootstrapTable('load', filtered);
+
+    // Also trigger any column filters after profession change
+    $('.column-filter').trigger('input');
   });
 </script>
 </body>
