@@ -3949,17 +3949,10 @@
   },
   {
     "id": 893,
-    "name": "Droid 3PO",
+    "name": "3PO",
     "professions": [ "Character" ],
     "known_for": "Star Wars: Episode IV - A New Hope (1977)",
     "bio": "Droid 3PO is a protocol droid serving various owners throughout the galaxy."
-  },
-  {
-    "id": 894,
-    "name": "Droid R2-D2",
-    "professions": [ "Character" ],
-    "known_for": "Star Wars: Episode IV - A New Hope (1977)",
-    "bio": "R2-D2 is an astromech droid known for his bravery and resourcefulness."
   },
   {
     "id": 895,
@@ -4061,147 +4054,70 @@
   },
   {
     "id": 930,
-    "name": "Droid R7-A7",
+    "name": "R7-A7",
     "professions": [ "Character" ],
     "known_for": "Star Wars: The Clone Wars (2008)",
     "bio": "R7-A7 is a Jedi astromech droid that serves Ahsoka Tano."
   },
   {
-    "id": 931,
-    "name": "Droid R4-P17",
-    "professions": [ "Character" ],
-    "known_for": "Star Wars: Episode III - Revenge of the Sith (2005)",
-    "bio": "R4-P17 is an astromech droid who serves Obi-Wan Kenobi."
-  },
-  {
     "id": 932,
-    "name": "Droid R2-Q5",
+    "name": "R2-Q5",
     "professions": [ "Character" ],
     "known_for": "Star Wars: Episode IV - A New Hope (1977)",
     "bio": "R2-Q5 is an Imperial astromech droid."
   },
   {
-    "id": 933,
-    "name": "Droid R5-D4",
-    "professions": [ "Character" ],
-    "known_for": "Star Wars: Episode IV - A New Hope (1977)",
-    "bio": "R5-D4 is a red astromech droid briefly owned by Luke Skywalker."
-  },
-  {
-    "id": 934,
-    "name": "Droid 8D8",
-    "professions": [ "Character" ],
-    "known_for": "Star Wars: Episode VI - Return of the Jedi (1983)",
-    "bio": "8D8 is a droid who works in Jabba's palace."
-  },
-  {
     "id": 935,
-    "name": "Droid C1-10P (Chopper)",
+    "name": "C1-10P (Chopper)",
     "professions": [ "Character" ],
     "known_for": "Star Wars Rebels (2014)",
     "bio": "Chopper is a grumpy astromech droid who helps the Ghost crew."
   },
   {
     "id": 936,
-    "name": "Droid C2-N2",
+    "name": "C2-N2",
     "professions": [ "Character" ],
     "known_for": "Star Wars: Episode II - Attack of the Clones (2002)",
     "bio": "C2-N2 is a protocol droid who serves at the Jedi Temple."
   },
   {
-    "id": 937,
-    "name": "Droid 4-LOM",
-    "professions": [ "Character" ],
-    "known_for": "Star Wars: Episode V - The Empire Strikes Back (1980)",
-    "bio": "4-LOM is a protocol droid turned bounty hunter."
-  },
-  {
-    "id": 938,
-    "name": "Droid IG-88",
-    "professions": [ "Character" ],
-    "known_for": "Star Wars: Episode V - The Empire Strikes Back (1980)",
-    "bio": "IG-88 is a droid bounty hunter."
-  },
-  {
-    "id": 939,
-    "name": "Droid B1 Battle Droid",
-    "professions": [ "Character" ],
-    "known_for": "Star Wars: Episode I - The Phantom Menace (1999)",
-    "bio": "B1 Battle Droids are standard infantry droids used by the Trade Federation."
-  },
-  {
-    "id": 940,
-    "name": "Droid Super Battle Droid",
-    "professions": [ "Character" ],
-    "known_for": "Star Wars: Episode II - Attack of the Clones (2002)",
-    "bio": "Super Battle Droids are heavily armed battle droids."
-  },
-  {
-    "id": 941,
-    "name": "Droid Droideka",
-    "professions": [ "Character" ],
-    "known_for": "Star Wars: Episode I - The Phantom Menace (1999)",
-    "bio": "Droidekas, or destroyer droids, are heavily armed droids used in battle."
-  },
-  {
-    "id": 942,
-    "name": "Droid B2 Super Battle Droid",
-    "professions": [ "Character" ],
-    "known_for": "Star Wars: Episode II - Attack of the Clones (2002)",
-    "bio": "B2 Super Battle Droids are upgraded battle droids with enhanced weaponry."
-  },
-  {
     "id": 943,
-    "name": "Droid OOM-9",
+    "name": "OOM-9",
     "professions": [ "Character" ],
     "known_for": "Star Wars: Episode I - The Phantom Menace (1999)",
     "bio": "OOM-9 is a commander droid during the Battle of Naboo."
   },
   {
     "id": 944,
-    "name": "Droid 0-0-0",
+    "name": "0-0-0",
     "professions": [ "Character" ],
     "known_for": "Star Wars: The High Republic (2021)",
     "bio": "0-0-0 is a droid known for his personality and sarcasm."
   },
   {
-    "id": 945,
-    "name": "Droid K-2SO",
-    "professions": [ "Character" ],
-    "known_for": "Rogue One: A Star Wars Story (2016)",
-    "bio": "K-2SO is a reprogrammed Imperial droid who assists the Rebels."
-  },
-  {
-    "id": 946,
-    "name": "Droid L3-37",
-    "professions": [ "Character" ],
-    "known_for": "Solo: A Star Wars Story (2018)",
-    "bio": "L3-37 is a self-aware droid who advocates for droid rights."
-  },
-  {
     "id": 947,
-    "name": "Droid R3-S6",
+    "name": "R3-S6",
     "professions": [ "Character" ],
     "known_for": "Star Wars: The Clone Wars (2008)",
     "bio": "R3-S6 is a Jedi astromech droid serving Anakin Skywalker."
   },
   {
     "id": 948,
-    "name": "Droid R5-A2",
+    "name": "R5-A2",
     "professions": [ "Character" ],
     "known_for": "Star Wars: Episode IV - A New Hope (1977)",
     "bio": "R5-A2 is an astromech droid seen at the Lars homestead."
   },
   {
     "id": 949,
-    "name": "Droid Gonk",
+    "name": "Gonk",
     "professions": [ "Character" ],
     "known_for": "Star Wars: Episode IV - A New Hope (1977)",
     "bio": "Gonk droids are power droids known for their rectangular shape."
   },
   {
     "id": 950,
-    "name": "Droid MSE-6",
+    "name": "MSE-6",
     "professions": [ "Character" ],
     "known_for": "Star Wars: Episode IV - A New Hope (1977)",
     "bio": "MSE-6 droids are mouse droids used for maintenance in Imperial facilities."
@@ -4396,29 +4312,22 @@
     "bio": "Wookiees are strong, furry beings known for their loyalty and bravery."
   },
   {
-    "id": 992,
-    "name": "Droid BB-8",
-    "professions": [ "Character" ],
-    "known_for": "Star Wars: The Force Awakens (2015)",
-    "bio": "BB-8 is a spherical astromech droid who assists the Resistance."
-  },
-  {
     "id": 997,
-    "name": "Droid R6-J2",
+    "name": "R6-J2",
     "professions": [ "Character" ],
     "known_for": "Star Wars: The High Republic (2021)",
     "bio": "R6-J2 is an astromech droid assisting the Jedi."
   },
   {
     "id": 999,
-    "name": "Droid 2-1B",
+    "name": "2-1B",
     "professions": [ "Character" ],
     "known_for": "Star Wars: Episode V - The Empire Strikes Back (1980)",
     "bio": "2-1B is a medical droid that treats injured Rebels."
   },
   {
     "id": 1000,
-    "name": "Droid R8-B7",
+    "name": "R8-B7",
     "professions": [ "Character" ],
     "known_for": "Star Wars: The Clone Wars (2008)",
     "bio": "R8-B7 is an astromech droid that assists Jedi during the Clone Wars."
