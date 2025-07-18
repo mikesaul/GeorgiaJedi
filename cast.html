@@ -11,6 +11,17 @@
     #toolbar { margin: 10px 0; }
     #loading { font-size: 1.25rem; font-weight: 500; }
     .column-filter { width: 100%; font-size: 0.9em; padding: 2px; margin-top: 4px; }
+    .dropdown-menu label {
+      display: block;
+      margin: 0;
+      cursor: pointer;
+    }
+    .selected-tags span.badge {
+      margin-right: 5px;
+    }
+    th.sortable { position: relative; }
+    th.sortable .column-filter { pointer-events: auto; position: relative; z-index: 1; }
+    th.sortable .th-inner { pointer-events: none; }
   </style>
 </head>
 <body>
@@ -37,12 +48,21 @@
 <main class="container my-5">
   <div id="loading" class="text-center my-5">Loading characters...</div>
 
-  <div id="toolbar" class="select" style="display: none;">
-    <label for="professionFilter">Filter by Profession:</label>
-    <select id="professionFilter" class="form-control w-auto d-inline-block ml-2">
-      <option value="">Show All</option>
-    </select>
+  <div id="toolbar" class="d-flex align-items-center" style="display: none;">
+    <div class="btn-group mr-3">
+      <button id="professionDropdownBtn" class="btn btn-outline-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Filter Professions
+      </button>
+      <div class="dropdown-menu p-2" id="professionDropdown" style="max-height: 300px; overflow-y: auto;"></div>
+    </div>
+    <div class="form-check mr-3">
+      <input type="checkbox" class="form-check-input" id="excludeCheckbox">
+      <label class="form-check-label" for="excludeCheckbox">Exclude selected</label>
+    </div>
+    <button id="clearAll" class="btn btn-sm btn-outline-danger ml-auto">Clear All</button>
   </div>
+
+  <div class="my-2 selected-tags" id="selectedTags"></div>
 
   <table id="characterTable"
          class="table table-bordered"
@@ -53,24 +73,23 @@
          data-click-to-select="true"
          data-toolbar="#toolbar"
          data-page-size="10"
-         data-show-footer="false"
          data-export-types="['json', 'xml', 'csv', 'txt', 'sql', 'excel', 'pdf']">
     <thead>
       <tr>
         <th data-field="state" checkbox></th>
         <th data-field="id" data-sortable="true">ID</th>
-        <th data-field="name" data-sortable="true">
+        <th data-field="name" data-sortable="true" class="sortable">
           Name
-          <div class="filter-control"><input type="text" class="column-filter" data-column="name" placeholder="Search name"></div>
+          <div><input type="text" class="column-filter" data-column="name" placeholder="Search name"></div>
         </th>
         <th data-field="professions" data-sortable="true">Professions</th>
-        <th data-field="known_for" data-sortable="true">
+        <th data-field="known_for" data-sortable="true" class="sortable">
           Known For
-          <div class="filter-control"><input type="text" class="column-filter" data-column="known_for" placeholder="Search known for"></div>
+          <div><input type="text" class="column-filter" data-column="known_for" placeholder="Search known for"></div>
         </th>
-        <th data-field="bio" data-sortable="true">
+        <th data-field="bio" data-sortable="true" class="sortable">
           Biography
-          <div class="filter-control"><input type="text" class="column-filter" data-column="bio" placeholder="Search bio"></div>
+          <div><input type="text" class="column-filter" data-column="bio" placeholder="Search bio"></div>
         </th>
       </tr>
     </thead>
@@ -81,7 +100,6 @@
   <p>&copy; 2024 GeorgiaJedi. All rights reserved.</p>
 </footer>
 
-<!-- Scripts -->
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.18.3/bootstrap-table.min.js"></script>
@@ -92,33 +110,80 @@
   const $table = $('#characterTable');
   const $loading = $('#loading');
   const $toolbar = $('#toolbar');
-  const $professionFilter = $('#professionFilter');
+  const $dropdown = $('#professionDropdown');
+  const $excludeCheckbox = $('#excludeCheckbox');
+  const $selectedTags = $('#selectedTags');
   let allData = [];
 
   const worker = new Worker('js/castWorker.js');
   worker.postMessage('load');
 
+  function renderTags(selected) {
+    $selectedTags.empty();
+    selected.forEach(val => {
+      const badge = $(`<span class="badge badge-secondary">${val} <span class="ml-1" style="cursor:pointer;">&times;</span></span>`);
+      badge.find('span').on('click', () => {
+        $dropdown.find(`input[value="${val}"]`).prop('checked', false);
+        applyFilters();
+      });
+      $selectedTags.append(badge);
+    });
+  }
+
+  function applyFilters() {
+    const selected = $dropdown.find('input:checked').map(function () {
+      return $(this).val();
+    }).get();
+
+    const exclude = $excludeCheckbox.is(':checked');
+
+    renderTags(selected);
+
+    const inputFilters = {};
+    $('.column-filter').each(function () {
+      const col = $(this).data('column');
+      const val = $(this).val().toLowerCase();
+      if (val) inputFilters[col] = val;
+    });
+
+    const filtered = allData.filter(row => {
+      const profs = row.professions.split(',').map(p => p.trim());
+      const matchesProfession = selected.length === 0 || (
+        exclude
+          ? !selected.some(sel => profs.includes(sel))
+          : selected.some(sel => profs.includes(sel))
+      );
+
+      const matchesInputs = Object.entries(inputFilters).every(([key, val]) =>
+        (row[key] || '').toLowerCase().includes(val)
+      );
+
+      return matchesProfession && matchesInputs;
+    });
+
+    $table.bootstrapTable('load', filtered);
+  }
+
   worker.onmessage = function (e) {
-    if (e.data && Array.isArray(e.data)) {
+    if (Array.isArray(e.data)) {
       allData = e.data;
 
-      // Populate profession dropdown with counts
-      const professionCounts = {};
+      const profCounts = {};
       allData.forEach(row => {
         row.professions.split(',').map(p => p.trim()).forEach(p => {
-          professionCounts[p] = (professionCounts[p] || 0) + 1;
+          profCounts[p] = (profCounts[p] || 0) + 1;
         });
       });
 
-      Object.entries(professionCounts)
-        .sort((a, b) => a[0].localeCompare(b[0]))
-        .forEach(([prof, count]) => {
-          $professionFilter.append(`<option value="${prof}">${prof} (${count})</option>`);
-        });
+      Object.entries(profCounts).sort().forEach(([prof, count]) => {
+        const label = $(`<label><input type="checkbox" value="${prof}"> ${prof} (${count})</label>`);
+        $dropdown.append(label);
+      });
 
       $loading.hide();
       $toolbar.show();
       $table.show();
+
       $table.bootstrapTable({
         data: allData,
         pagination: true,
@@ -129,48 +194,32 @@
         exportTypes: ['json', 'xml', 'csv', 'txt', 'sql', 'excel', 'pdf']
       });
 
-      // Prevent sorting when clicking in column filter inputs
-      $table.on('click', 'th', function (event) {
-        if ($(event.target).closest('.column-filter').length) {
-          event.stopPropagation();
-        }
+      // Setup event handlers
+      $dropdown.on('change', 'input[type="checkbox"]', applyFilters);
+      $excludeCheckbox.on('change', applyFilters);
+      $('#clearAll').on('click', function () {
+        $dropdown.find('input').prop('checked', false);
+        $excludeCheckbox.prop('checked', false);
+        $('.column-filter').val('');
+        applyFilters();
       });
+      $('.column-filter').on('input', applyFilters);
 
-      // Set up input filters
-      $('.column-filter').on('input', function () {
-        const filters = {};
-        $('.column-filter').each(function () {
-          const key = $(this).data('column');
-          const val = $(this).val();
-          if (val) filters[key] = val.toLowerCase();
-        });
-
-        const filtered = allData.filter(row => {
-          return Object.entries(filters).every(([key, val]) =>
-            (row[key] || '').toLowerCase().includes(val)
-          );
-        });
-
-        $table.bootstrapTable('load', filtered);
-      });
+      $table.bootstrapTable('load', allData);
     } else {
       $loading.text('Failed to load characters.');
-      console.error('Worker returned no data.');
     }
   };
 
-  // Handle dropdown filtering
-  $professionFilter.on('change', function () {
-    const selected = $(this).val();
-    const profession = selected.replace(/\s\(\d+\)$/, ''); // remove count
-    const filtered = profession
-      ? allData.filter(row => row.professions.split(',').map(p => p.trim()).includes(profession))
-      : allData;
-
-    $table.bootstrapTable('load', filtered);
-
-    // Also trigger any column filters after profession change
-    $('.column-filter').trigger('input');
+  // Prevent sorting when clicking filter controls or dropdowns
+  $table.on('click', 'th', function (event) {
+    const target = event.target;
+    if (
+      $(target).is('input, label, select, textarea, button') ||
+      $(target).closest('.dropdown-menu, .column-filter').length
+    ) {
+      event.stopPropagation();
+    }
   });
 </script>
 </body>
