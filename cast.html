@@ -61,7 +61,6 @@
     </div>
     <button id="clearAll" class="btn btn-sm btn-outline-danger ml-auto mb-2">Clear All</button>
 
-    <!-- Export Mode Toggle -->
     <div class="btn-group ml-3 mb-2">
       <button id="exportModeBtn" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         Export Mode: Visible
@@ -72,10 +71,10 @@
       </div>
     </div>
 
-    <!-- Export Button (Bootstrap Table auto generates dropdown) -->
-    <div class="btn-group ml-3 mb-2">
+<!--     <div class="btn-group ml-3 mb-2">
       <button class="btn btn-outline-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Export</button>
     </div>
+ -->
   </div>
 
   <div class="my-2 selected-tags" id="selectedTags"></div>
@@ -132,7 +131,9 @@
   const $excludeCheckbox = $('#excludeCheckbox');
   const $selectedTags = $('#selectedTags');
   let allData = [];
-  let exportMode = 'page'; // default to visible/current page
+  let exportMode = 'page';
+  let originalPageSize = 10;
+  let isFilteredPageSizeActive = false;
 
   const worker = new Worker('js/castWorker.js');
   worker.postMessage('load');
@@ -155,7 +156,6 @@
     }).get();
 
     const exclude = $excludeCheckbox.is(':checked');
-
     renderTags(selected);
 
     const inputFilters = {};
@@ -181,16 +181,22 @@
     });
 
     $table.bootstrapTable('load', filtered);
+
+    if (exportMode === 'filtered') {
+      originalPageSize = $table.bootstrapTable('getOptions').pageSize;
+      isFilteredPageSizeActive = true;
+      $table.bootstrapTable('refreshOptions', { pageSize: filtered.length });
+    }
   }
 
   function initTable() {
     $table.bootstrapTable('destroy').bootstrapTable({
       data: allData,
       pagination: true,
-      pageSize: 10,
+      pageSize: originalPageSize,
       clickToSelect: true,
       showExport: true,
-      exportDataType: exportMode,  // 'page' or 'filtered'
+      exportDataType: exportMode,
       exportTypes: ['json', 'xml', 'csv', 'txt', 'sql', 'excel', 'pdf'],
       exportOptions: {
         fileName: 'StarWarsCharacters',
@@ -198,20 +204,47 @@
       },
       toolbar: '#toolbar'
     });
-
-    // Fix export filtered to export all filtered rows, not just current page
-    $table.off('export').on('export', function (e, type, { exportDataType }) {
-      if (exportDataType === 'filtered') {
-        const currentPageSize = $table.bootstrapTable('getOptions').pageSize;
-        const totalFiltered = $table.bootstrapTable('getData').length;
-        $table.bootstrapTable('refreshOptions', { pageSize: totalFiltered });
-
-        setTimeout(() => {
-          $table.bootstrapTable('refreshOptions', { pageSize: currentPageSize });
-        }, 100);
-      }
-    });
   }
+
+  $('#toolbar').on('click', '.export-mode', function (e) {
+    e.preventDefault();
+    exportMode = $(this).data('mode');
+    $('#exportModeBtn').text('Export Mode: ' + (exportMode === 'filtered' ? 'Filtered Data' : 'Visible'));
+    $('.export-mode').removeClass('active');
+    $(this).addClass('active');
+
+    if (exportMode !== 'filtered' && isFilteredPageSizeActive) {
+      $table.bootstrapTable('refreshOptions', { pageSize: originalPageSize });
+      isFilteredPageSizeActive = false;
+    }
+
+    initTable();
+    applyFilters();
+  });
+
+  
+
+  $(document).on('click', '.dropdown-menu a[data-type]', function (e) {
+    const type = $(this).data('type');
+
+    if (exportMode === 'filtered') {
+      setTimeout(() => {
+        $table.bootstrapTable('export', {
+          type: type,
+          escape: false
+        });
+
+        if (isFilteredPageSizeActive) {
+          setTimeout(() => {
+            $table.bootstrapTable('refreshOptions', { pageSize: originalPageSize });
+            isFilteredPageSizeActive = false;
+          }, 100);
+        }
+      }, 100);
+
+      e.preventDefault();
+    }
+  });
 
   worker.onmessage = function (e) {
     if (Array.isArray(e.data)) {
@@ -235,7 +268,6 @@
 
       initTable();
 
-      // Setup event handlers
       $dropdown.on('change', 'input[type="checkbox"]', applyFilters);
       $excludeCheckbox.on('change', applyFilters);
       $('#clearAll').on('click', function () {
@@ -246,25 +278,8 @@
       });
       $('.column-filter').on('input', applyFilters);
 
-      // Export mode toggle handler
-      $('#toolbar').on('click', '.export-mode', function (e) {
-        e.preventDefault();
-        exportMode = $(this).data('mode');
-        $('#exportModeBtn').text('Export Mode: ' + (exportMode === 'filtered' ? 'Filtered Data' : 'Visible'));
-        $('.export-mode').removeClass('active');
-        $(this).addClass('active');
-
-        // Re-init the table to update exportDataType
-        initTable();
-
-        // Reapply filters to keep table data consistent after reinit
-        applyFilters();
-      });
-
-      // Prevent sorting when clicking filter inputs or dropdowns but allow sorting elsewhere
       $table.on('click', 'th', function (event) {
         const $target = $(event.target);
-
         if (
           $target.closest('.column-filter').length > 0 ||
           $target.is('input, select, textarea, button, label') ||
@@ -274,9 +289,7 @@
         }
       });
 
-      // Initial apply filters to load the table data filtered (none) after first load
       applyFilters();
-
     } else {
       $loading.text('Failed to load characters.');
     }
