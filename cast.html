@@ -48,18 +48,34 @@
 <main class="container my-5">
   <div id="loading" class="text-center my-5">Loading characters...</div>
 
-  <div id="toolbar" class="d-flex align-items-center" style="display: none;">
-    <div class="btn-group mr-3">
+  <div id="toolbar" class="d-flex align-items-center flex-wrap" style="display: none;">
+    <div class="btn-group mr-3 mb-2">
       <button id="professionDropdownBtn" class="btn btn-outline-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         Filter Professions
       </button>
       <div class="dropdown-menu p-2" id="professionDropdown" style="max-height: 300px; overflow-y: auto;"></div>
     </div>
-    <div class="form-check mr-3">
+    <div class="form-check mr-3 mb-2">
       <input type="checkbox" class="form-check-input" id="excludeCheckbox">
       <label class="form-check-label" for="excludeCheckbox">Exclude selected</label>
     </div>
-    <button id="clearAll" class="btn btn-sm btn-outline-danger ml-auto">Clear All</button>
+    <button id="clearAll" class="btn btn-sm btn-outline-danger ml-auto mb-2">Clear All</button>
+
+    <!-- Export Mode Toggle -->
+    <div class="btn-group ml-3 mb-2">
+      <button id="exportModeBtn" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Export Mode: Visible
+      </button>
+      <div class="dropdown-menu">
+        <a class="dropdown-item export-mode active" href="#" data-mode="page">Visible Data</a>
+        <a class="dropdown-item export-mode" href="#" data-mode="filtered">Filtered Data</a>
+      </div>
+    </div>
+
+    <!-- Export Button (Bootstrap Table auto generates dropdown) -->
+    <div class="btn-group ml-3 mb-2">
+      <button class="btn btn-outline-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Export</button>
+    </div>
   </div>
 
   <div class="my-2 selected-tags" id="selectedTags"></div>
@@ -73,7 +89,9 @@
          data-click-to-select="true"
          data-toolbar="#toolbar"
          data-page-size="10"
-         data-export-types="['json', 'xml', 'csv', 'txt', 'sql', 'excel', 'pdf']">
+         data-show-export="true"
+         data-export-types="['json', 'xml', 'csv', 'txt', 'sql', 'excel', 'pdf']"
+         data-export-options='{"fileName": "StarWarsCharacters", "ignoreColumn": ["state"]}'>
     <thead>
       <tr>
         <th data-field="state" checkbox></th>
@@ -114,6 +132,7 @@
   const $excludeCheckbox = $('#excludeCheckbox');
   const $selectedTags = $('#selectedTags');
   let allData = [];
+  let exportMode = 'page'; // default to visible/current page
 
   const worker = new Worker('js/castWorker.js');
   worker.postMessage('load');
@@ -164,6 +183,36 @@
     $table.bootstrapTable('load', filtered);
   }
 
+  function initTable() {
+    $table.bootstrapTable('destroy').bootstrapTable({
+      data: allData,
+      pagination: true,
+      pageSize: 10,
+      clickToSelect: true,
+      showExport: true,
+      exportDataType: exportMode,  // 'page' or 'filtered'
+      exportTypes: ['json', 'xml', 'csv', 'txt', 'sql', 'excel', 'pdf'],
+      exportOptions: {
+        fileName: 'StarWarsCharacters',
+        ignoreColumn: ['state']
+      },
+      toolbar: '#toolbar'
+    });
+
+    // Fix export filtered to export all filtered rows, not just current page
+    $table.off('export').on('export', function (e, type, { exportDataType }) {
+      if (exportDataType === 'filtered') {
+        const currentPageSize = $table.bootstrapTable('getOptions').pageSize;
+        const totalFiltered = $table.bootstrapTable('getData').length;
+        $table.bootstrapTable('refreshOptions', { pageSize: totalFiltered });
+
+        setTimeout(() => {
+          $table.bootstrapTable('refreshOptions', { pageSize: currentPageSize });
+        }, 100);
+      }
+    });
+  }
+
   worker.onmessage = function (e) {
     if (Array.isArray(e.data)) {
       allData = e.data;
@@ -184,15 +233,7 @@
       $toolbar.show();
       $table.show();
 
-      $table.bootstrapTable({
-        data: allData,
-        pagination: true,
-        pageSize: 10,
-        clickToSelect: true,
-        showExport: true,
-        exportDataType: 'basic',
-        exportTypes: ['json', 'xml', 'csv', 'txt', 'sql', 'excel', 'pdf']
-      });
+      initTable();
 
       // Setup event handlers
       $dropdown.on('change', 'input[type="checkbox"]', applyFilters);
@@ -205,22 +246,41 @@
       });
       $('.column-filter').on('input', applyFilters);
 
-      $table.bootstrapTable('load', allData);
+      // Export mode toggle handler
+      $('#toolbar').on('click', '.export-mode', function (e) {
+        e.preventDefault();
+        exportMode = $(this).data('mode');
+        $('#exportModeBtn').text('Export Mode: ' + (exportMode === 'filtered' ? 'Filtered Data' : 'Visible'));
+        $('.export-mode').removeClass('active');
+        $(this).addClass('active');
+
+        // Re-init the table to update exportDataType
+        initTable();
+
+        // Reapply filters to keep table data consistent after reinit
+        applyFilters();
+      });
+
+      // Prevent sorting when clicking filter inputs or dropdowns but allow sorting elsewhere
+      $table.on('click', 'th', function (event) {
+        const $target = $(event.target);
+
+        if (
+          $target.closest('.column-filter').length > 0 ||
+          $target.is('input, select, textarea, button, label') ||
+          $target.parents('.dropdown-menu').length > 0
+        ) {
+          event.stopPropagation();
+        }
+      });
+
+      // Initial apply filters to load the table data filtered (none) after first load
+      applyFilters();
+
     } else {
       $loading.text('Failed to load characters.');
     }
   };
-
-  // Prevent sorting when clicking filter controls or dropdowns
-  $table.on('click', 'th', function (event) {
-    const target = event.target;
-    if (
-      $(target).is('input, label, select, textarea, button') ||
-      $(target).closest('.dropdown-menu, .column-filter').length
-    ) {
-      event.stopPropagation();
-    }
-  });
 </script>
 </body>
 </html>
