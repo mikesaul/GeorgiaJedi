@@ -28,7 +28,7 @@
     "is_verified": "Yes - Official Pix",
     "serialnumber": "",
     "original_cost": "",
-    "current_value": "",
+    "current_value": "65",
     "image": ""
   },
   {
@@ -48,8 +48,6 @@
   },
   {
     "id": "4",
-    "acquired": "",
-    "type": "autograph",
     "name/brand": "Amy Allen",
     "franchise": "Star Wars",
     "description": "Ayla Secura",
@@ -59,8 +57,9 @@
     "is_verified": "Yes - CVI",
     "serialnumber": "",
     "original_cost": "",
-    "current_value": "",
-    "image": "OPIX_AmyAllen_AylaSecura"
+    "current_value": "40.00",
+    "image": "OPIX_AmyAllen_AylaSecura",
+    "acquired": ""
   },
   {
     "id": "5",
@@ -96,8 +95,6 @@
   },
   {
     "id": "7",
-    "acquired": "",
-    "type": "autograph",
     "name/brand": "Ashley Eckstein",
     "franchise": "Star Wars",
     "description": "Ahsoka Tano",
@@ -107,13 +104,12 @@
     "is_verified": "Yes - OPIX Volunteer",
     "serialnumber": "",
     "original_cost": "",
-    "current_value": "",
-    "image": ""
+    "current_value": "120",
+    "image": "",
+    "acquired": ""
   },
   {
     "id": "8",
-    "acquired": "07/27/2015",
-    "type": "autograph",
     "name/brand": "Ashley Eckstein",
     "franchise": "Star Wars",
     "description": "Ahsoka Tano",
@@ -123,13 +119,12 @@
     "is_verified": "Yes - Official Pix",
     "serialnumber": "",
     "original_cost": "29.99",
-    "current_value": "",
-    "image": ""
+    "current_value": "85",
+    "image": "",
+    "acquired": "07/27/2015"
   },
   {
     "id": "9",
-    "acquired": "",
-    "type": "autograph",
     "name/brand": "Ben Burtt",
     "franchise": "Star Wars",
     "description": "At sound equipment",
@@ -139,13 +134,12 @@
     "is_verified": "Yes - OPIX Volunteer",
     "serialnumber": "",
     "original_cost": "0",
-    "current_value": "",
-    "image": "OPIX_BenBurtt"
+    "current_value": "245",
+    "image": "OPIX_BenBurtt",
+    "acquired": ""
   },
   {
     "id": "10",
-    "acquired": "11/16/2013",
-    "type": "autograph",
     "name/brand": "Ben Burtt",
     "franchise": "Star Wars",
     "description": "Imperial Officer",
@@ -155,8 +149,9 @@
     "is_verified": "Yes - Official Pix",
     "serialnumber": "",
     "original_cost": "19.99",
-    "current_value": "",
-    "image": ""
+    "current_value": "120",
+    "image": "",
+    "acquired": "11/16/2013"
   },
   {
     "id": "11",
@@ -186,8 +181,8 @@
     "special": "No",
     "is_verified": "Yes - Bonnie Piesse",
     "serialnumber": "",
-    "original_cost": "",
-    "current_value": "",
+    "original_cost": "25.00",
+    "current_value": "45.00",
     "image": "BonniePiesse_BittersweetEP"
   },
   {
@@ -202,8 +197,8 @@
     "special": "No",
     "is_verified": "Yes - Bonnie Piesse",
     "serialnumber": "",
-    "original_cost": "",
-    "current_value": "",
+    "original_cost": "0",
+    "current_value": "35.00",
     "image": "BonniePiesse_Headshot"
   },
   {
@@ -218,14 +213,12 @@
     "special": "No",
     "is_verified": "Yes - Bonnie Piesse",
     "serialnumber": "",
-    "original_cost": "",
-    "current_value": "",
+    "original_cost": "0",
+    "current_value": "35.00",
     "image": "BonniePiesse_BittersweetEP"
   },
   {
     "id": "15",
-    "acquired": "",
-    "type": "autograph",
     "name/brand": "Bonnie Piesse",
     "franchise": "Star Wars",
     "description": "Personal thank you note for IndieGoGo support",
@@ -234,9 +227,10 @@
     "special": "Yes",
     "is_verified": "Yes - Bonnie Piesse",
     "serialnumber": "",
-    "original_cost": "",
-    "current_value": "",
-    "image": ""
+    "original_cost": "0",
+    "current_value": "45.00",
+    "image": "BonniePiesse_BittersweetEP",
+    "acquired": ""
   },
   {
     "id": "16",
@@ -251,7 +245,7 @@
     "is_verified": "Yes - CVI",
     "serialnumber": "",
     "original_cost": "",
-    "current_value": "",
+    "current_value": "45.00",
     "image": "OPIX_BonniePiesse"
   },
   {
@@ -267,7 +261,7 @@
     "is_verified": "Yes - CVI",
     "serialnumber": "",
     "original_cost": "",
-    "current_value": "",
+    "current_value": "65.00",
     "image": "Beru_C3PO"
   },
   {
@@ -283,7 +277,7 @@
     "is_verified": "No",
     "serialnumber": "",
     "original_cost": "",
-    "current_value": "",
+    "current_value": "45.00",
     "image": "OPIX_Beru_BonniePiess"
   },
   {
@@ -1550,8 +1544,6 @@
   },
   {
     "id": "98",
-    "acquired": "02/21/2017",
-    "type": "autograph",
     "name/brand": "Terry Farrell",
     "franchise": "ST:DS9",
     "description": "Jadzia Dax",
@@ -1561,8 +1553,9 @@
     "is_verified": "No",
     "serialnumber": "AA32625",
     "original_cost": "19.99",
-    "current_value": "",
-    "image": "OPIX_JadziaDax_TerryFerrel"
+    "current_value": "100",
+    "image": "OPIX_JadziaDax_TerryFerrel",
+    "acquired": "02/21/2017"
   },
   {
     "id": "99",
