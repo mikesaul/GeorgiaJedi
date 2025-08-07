@@ -33,6 +33,8 @@
   },
   {
     "id": "3",
+    "acquired": "",
+    "type": "",
     "name/brand": "Alec Guinness",
     "franchise": "Star Wars",
     "description": "Obi-Wan Kenobi promotional postcard",
@@ -43,11 +45,12 @@
     "serialnumber": "",
     "original_cost": "220.00",
     "current_value": "850",
-    "image": "AlecGuinness_Postcard",
-    "acquired": ""
+    "image": "AlecGuinness_Postcard"
   },
   {
     "id": "4",
+    "acquired": "",
+    "type": "",
     "name/brand": "Amy Allen",
     "franchise": "Star Wars",
     "description": "Ayla Secura",
@@ -58,8 +61,7 @@
     "serialnumber": "",
     "original_cost": "",
     "current_value": "40.00",
-    "image": "OPIX_AmyAllen_AylaSecura",
-    "acquired": ""
+    "image": "OPIX_AmyAllen_AylaSecura"
   },
   {
     "id": "5",
@@ -95,6 +97,8 @@
   },
   {
     "id": "7",
+    "acquired": "",
+    "type": "",
     "name/brand": "Ashley Eckstein",
     "franchise": "Star Wars",
     "description": "Ahsoka Tano",
@@ -105,11 +109,12 @@
     "serialnumber": "",
     "original_cost": "",
     "current_value": "120",
-    "image": "",
-    "acquired": ""
+    "image": ""
   },
   {
     "id": "8",
+    "acquired": "07/27/2015",
+    "type": "",
     "name/brand": "Ashley Eckstein",
     "franchise": "Star Wars",
     "description": "Ahsoka Tano",
@@ -120,11 +125,12 @@
     "serialnumber": "",
     "original_cost": "29.99",
     "current_value": "85",
-    "image": "",
-    "acquired": "07/27/2015"
+    "image": ""
   },
   {
     "id": "9",
+    "acquired": "",
+    "type": "",
     "name/brand": "Ben Burtt",
     "franchise": "Star Wars",
     "description": "At sound equipment",
@@ -135,11 +141,12 @@
     "serialnumber": "",
     "original_cost": "0",
     "current_value": "245",
-    "image": "OPIX_BenBurtt",
-    "acquired": ""
+    "image": "OPIX_BenBurtt"
   },
   {
     "id": "10",
+    "acquired": "11/16/2013",
+    "type": "",
     "name/brand": "Ben Burtt",
     "franchise": "Star Wars",
     "description": "Imperial Officer",
@@ -150,11 +157,12 @@
     "serialnumber": "",
     "original_cost": "19.99",
     "current_value": "120",
-    "image": "",
-    "acquired": "11/16/2013"
+    "image": ""
   },
   {
     "id": "11",
+    "acquired": "",
+    "type": "",
     "name/brand": "Billy Dee Williams",
     "franchise": "Star Wars",
     "description": "Lando with Han - ROTJ",
@@ -165,8 +173,7 @@
     "serialnumber": "",
     "original_cost": "",
     "current_value": "225.00",
-    "image": "BilleDeeWilliams_Autograph",
-    "acquired": ""
+    "image": "BilleDeeWilliams_Autograph"
   },
   {
     "id": "12",
@@ -218,6 +225,8 @@
   },
   {
     "id": "15",
+    "acquired": "",
+    "type": "",
     "name/brand": "Bonnie Piesse",
     "franchise": "Star Wars",
     "description": "Personal thank you note for IndieGoGo support",
@@ -228,8 +237,7 @@
     "serialnumber": "",
     "original_cost": "0",
     "current_value": "45.00",
-    "image": "BonniePiesse_BittersweetEP",
-    "acquired": ""
+    "image": "BonniePiesse_BittersweetEP"
   },
   {
     "id": "16",
@@ -633,6 +641,8 @@
   },
   {
     "id": "41",
+    "acquired": "",
+    "type": "",
     "name/brand": "George Lucas",
     "franchise": "Star Wars, etc",
     "description": "Force of Inspiration",
@@ -643,8 +653,7 @@
     "serialnumber": "",
     "original_cost": "",
     "current_value": "",
-    "image": "",
-    "acquired": ""
+    "image": ""
   },
   {
     "id": "42",
@@ -1084,7 +1093,7 @@
     "type": "autograph",
     "name/brand": "Mike Edmonds",
     "franchise": "Star Wars",
-    "description": "Ugnaught ",
+    "description": "Ugnaught\u00a0",
     "size/model#": "8X10",
     "source": "Official Pix",
     "special": "No",
@@ -1544,6 +1553,8 @@
   },
   {
     "id": "98",
+    "acquired": "02/21/2017",
+    "type": "",
     "name/brand": "Terry Farrell",
     "franchise": "ST:DS9",
     "description": "Jadzia Dax",
@@ -1554,8 +1565,7 @@
     "serialnumber": "AA32625",
     "original_cost": "19.99",
     "current_value": "100",
-    "image": "OPIX_JadziaDax_TerryFerrel",
-    "acquired": "02/21/2017"
+    "image": "OPIX_JadziaDax_TerryFerrel"
   },
   {
     "id": "99",
@@ -1623,6 +1633,8 @@
   },
   {
     "id": "103",
+    "acquired": "",
+    "type": "",
     "name/brand": "William Shatner",
     "franchise": "Star Trek - TOS",
     "description": "Captain Kirk",
@@ -1633,8 +1645,7 @@
     "serialnumber": "",
     "original_cost": "",
     "current_value": "350",
-    "image": "OPIX_Shatner_TOS",
-    "acquired": ""
+    "image": "OPIX_Shatner_TOS"
   },
   {
     "id": "104",
@@ -1782,6 +1793,8 @@
   },
   {
     "id": "113",
+    "acquired": "05/25/2025",
+    "type": "",
     "name/brand": "Book of Boba Fett Multi Poster",
     "franchise": "Star Wars",
     "description": "Book of Boba Fett Mini Poster with multiple autographs.",
@@ -1792,11 +1805,12 @@
     "serialnumber": "A85370",
     "original_cost": "318",
     "current_value": "850",
-    "image": "BookofBobaFett-Multi",
-    "acquired": "05/25/2025"
+    "image": "BookofBobaFett-Multi"
   },
   {
     "id": "114",
+    "acquired": "",
+    "type": "",
     "name/brand": "Paul Hirsch and Richard Chew",
     "franchise": "Star Wars",
     "description": "Paul Hirsch and Richard Chew at the Oscars with their awards.",
@@ -1807,11 +1821,12 @@
     "serialnumber": "",
     "original_cost": "114.00",
     "current_value": "200.00",
-    "image": "PaulHirschAndRichardChew-Oscars",
-    "acquired": ""
+    "image": "PaulHirschAndRichardChew-Oscars"
   },
   {
     "id": "115",
+    "acquired": "05/25/2025",
+    "type": "",
     "name/brand": "Paul Hirsch and Richard Chew credits",
     "franchise": "Star Wars",
     "description": "Paul Hirsch and Richard Chew signed image of the Film Editor credits screen.",
@@ -1822,11 +1837,12 @@
     "serialnumber": "",
     "original_cost": "126.00",
     "current_value": "150.00",
-    "image": "PaulHirschAndRichardChew-Credits",
-    "acquired": "05/25/2025"
+    "image": "PaulHirschAndRichardChew-Credits"
   },
   {
     "id": "116",
+    "acquired": "05/25/2025",
+    "type": "",
     "name/brand": "Oscar Isaac - Poe Dameron",
     "franchise": "Star Wars",
     "description": "Poe Dameron (Oscar Isaac) in the cockpit of his X-Wing in The Force Awakens.",
@@ -1837,11 +1853,12 @@
     "serialnumber": "",
     "original_cost": "116.00",
     "current_value": "250.00",
-    "image": "OscarIsaac-PoeDameron",
-    "acquired": "05/25/2025"
+    "image": "OscarIsaac-PoeDameron"
   },
   {
     "id": "117",
+    "acquired": "05/25/2025",
+    "type": "",
     "name/brand": "Byron Werner",
     "franchise": "Star Wars",
     "description": "Byron Werner, visual effects, sitting in sandspeeder for A New Hope.",
@@ -1852,11 +1869,12 @@
     "serialnumber": "",
     "original_cost": "12",
     "current_value": "25",
-    "image": "ByronWerner-SandSpeeder",
-    "acquired": "05/25/2025"
+    "image": "ByronWerner-SandSpeeder"
   },
   {
     "id": "118",
+    "acquired": "05/25/2025",
+    "type": "",
     "name/brand": "Leeanna Walsman",
     "franchise": "Star Wars",
     "description": "Leeanna Walsman as Zem Wessel in Episode !!: The Attack of the Clones. Includes the quote, \"It was just a job.\"",
@@ -1867,11 +1885,12 @@
     "serialnumber": "",
     "original_cost": "45",
     "current_value": "125",
-    "image": "LeeannaWalsman-ZamWesell",
-    "acquired": "05/25/2025"
+    "image": "LeeannaWalsman-ZamWesell"
   },
   {
     "id": "119",
+    "acquired": "05/25/2025",
+    "type": "",
     "name/brand": "Jamie Shourt",
     "franchise": "Star Wars",
     "description": "Jamie Shourt, visual effects artist, with model of the Tantive IV for A New Hope.",
@@ -1882,11 +1901,12 @@
     "serialnumber": "",
     "original_cost": "2",
     "current_value": "20",
-    "image": "JamieShourt-VisualEffects-TantiveIV",
-    "acquired": "05/25/2025"
+    "image": "JamieShourt-VisualEffects-TantiveIV"
   },
   {
     "id": "119",
+    "acquired": "05/25/2025",
+    "type": "",
     "name/brand": "Kenneth Colley",
     "franchise": "Star Wars",
     "description": "Kenneth Colley as Admiral Piett on the bridge in Return of the Jedi.",
@@ -1897,11 +1917,12 @@
     "serialnumber": "",
     "original_cost": "126",
     "current_value": "300",
-    "image": "KennethColley-AdmiralPiett-ROTJ",
-    "acquired": "05/25/2025"
+    "image": "KennethColley-AdmiralPiett-ROTJ"
   },
   {
     "id": "120",
+    "acquired": "05/25/2025",
+    "type": "",
     "name/brand": "Ashley Eckstein and Katee Sackhoff",
     "franchise": "Star Wars",
     "description": "Ashley Eckstein as Ahsoka Tano & Katee Sackhoff as Bo-Katan in Star Wars: The Clone Wars.",
@@ -1912,11 +1933,12 @@
     "serialnumber": "",
     "original_cost": "200",
     "current_value": "350",
-    "image": "AshleyEckstein-Katee Sackhoff-CloneWars",
-    "acquired": "05/25/2025"
+    "image": "AshleyEckstein-Katee Sackhoff-CloneWars"
   },
   {
     "id": "121",
+    "acquired": "05/18/2025",
+    "type": "",
     "name/brand": "Mon Calamari crew",
     "franchise": "Star Wars",
     "description": "Star Wars: Return of the Jedi Mon Calamari Photo Cast Signed by Gerald Home, Sean Crawford, Simon Williamson, Tim Dry, & Tim Rose with Character Names.",
@@ -1927,11 +1949,12 @@
     "serialnumber": "",
     "original_cost": "205",
     "current_value": "350",
-    "image": "ROTJ-MonCalamari-Multi",
-    "acquired": "05/18/2025"
+    "image": "ROTJ-MonCalamari-Multi"
   },
   {
     "id": "122",
+    "acquired": "04/27/2025",
+    "type": "",
     "name/brand": "Carl Bang",
     "franchise": "Star Wars",
     "description": "Carl Bang as Hoth Rebel Soldier in Star Wars: The Empire Strikes Back",
@@ -1942,11 +1965,12 @@
     "serialnumber": "",
     "original_cost": "20",
     "current_value": "30",
-    "image": "CarlBang-HothRebelSoldier",
-    "acquired": "04/27/2025"
+    "image": "CarlBang-HothRebelSoldier"
   },
   {
     "id": "123",
+    "acquired": "06/15/2025",
+    "type": "",
     "name/brand": "Shatner and Stewart",
     "franchise": "Star Trek Movies",
     "description": "William Shatner and Patrick Stewart as Captain Kirk and Captian Picard in Generations.",
@@ -1957,11 +1981,12 @@
     "serialnumber": "S00251",
     "original_cost": "240",
     "current_value": "650",
-    "image": "KirkAndPicard_ShatnerStewart",
-    "acquired": "06/15/2025"
+    "image": "KirkAndPicard_ShatnerStewart"
   },
   {
     "id": "124",
+    "acquired": "06/22/2025",
+    "type": "",
     "name/brand": "Lorne Peterson",
     "franchise": "Star Wars",
     "description": "Lorne Peterson on set with the Sandcrawler model for Star Wars: A New Hope.",
@@ -1972,11 +1997,12 @@
     "serialnumber": "",
     "original_cost": "14.00",
     "current_value": "25.00",
-    "image": "LornePeterson_Sandcrawler",
-    "acquired": "06/22/2025"
+    "image": "LornePeterson_Sandcrawler"
   },
   {
     "id": "125",
+    "acquired": "06/22/2025",
+    "type": "",
     "name/brand": "Giancarlo Esposito",
     "franchise": "Star Wars",
     "description": "Giancarlo Esposito as Moff Gideon in Star WarsL The Mandalorian. Includes character name.",
@@ -1987,11 +2013,12 @@
     "serialnumber": "",
     "original_cost": "32.00",
     "current_value": "90.00",
-    "image": "GiancarloEsposito_MoffGideon",
-    "acquired": "06/22/2025"
+    "image": "GiancarloEsposito_MoffGideon"
   },
   {
     "id": "126",
+    "acquired": "06/22/2025",
+    "type": "",
     "name/brand": "Ewan McGregor",
     "franchise": "Star Wars",
     "description": "Ewan McGregor as Obi-Wan Kenobi in Ep III: Revenge of the Sith.",
@@ -2002,7 +2029,6 @@
     "serialnumber": "",
     "original_cost": "144.00",
     "current_value": "350.00",
-    "image": "EwanMcGregor_ObiWanKenobi",
-    "acquired": "06/22/2025"
+    "image": "EwanMcGregor_ObiWanKenobi"
   }
 ]
