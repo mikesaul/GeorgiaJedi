@@ -1,5 +1,5 @@
 /gallery-website
-�
+
 +-- add-item.html            form to insert new items into json (trial)
 +-- autographs.html          Autographs gallery page
 +-- cast.html                Detailed list of cast and/or characters
@@ -15,12 +15,12 @@
 +-- saveThumbnail.asp
 +-- update-item.html         form to update items in json (trial)
 +-- js
-�   +-- script.js
-�   +-- updateJSON.js
+    +-- script.js
+    +-- updateJSON.js
 +-- css
     +-- fonts
         +-- SF Distant Galaxy AltOutline.ttf
-�  +-- styles.css
+    +-- styles.css
 +-- data
     +-- autographs.json
     +-- catalog.json

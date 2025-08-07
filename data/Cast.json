@@ -38,7 +38,7 @@
     "id": 6,
     "name": "Frank Oz",
     "professions": [ "Actor", "Additional Crew", "Director" ],
-    "known_for": "The Muppet Show (1976�1981)",
+    "known_for": "The Muppet Show (1976/1981)",
     "bio": "Frank Oz is famous for his puppetry, voicing Yoda in Star Wars, and his work with The Muppets."
   },
   {
@@ -256,7 +256,7 @@
     "name": "Natalie Portman",
     "professions": [ "Actress", "Producer", "Director" ],
     "known_for": "Black Swan (2010)",
-    "bio": "Natalie Portman is known for her role as Padm� Amidala in the Star Wars prequel trilogy."
+    "bio": "Natalie Portman is known for her role as Padme Amidala in the Star Wars prequel trilogy."
   },
   {
     "id": 38,
@@ -375,7 +375,7 @@
     "name": "Keira Knightley",
     "professions": [ "Actress", "Producer" ],
     "known_for": "Pirates of the Caribbean: The Curse of the Black Pearl (2003)",
-    "bio": "Keira Knightley played Padm� Amidala's decoy, Sab�, in Star Wars: Episode I - The Phantom Menace."
+    "bio": "Keira Knightley played Padme Amidala's decoy, Sabe, in Star Wars: Episode I - The Phantom Menace."
   },
   {
     "id": 55,
@@ -395,7 +395,7 @@
     "id": 57,
     "name": "Dave Filoni",
     "professions": [ "Director", "Producer", "Writer" ],
-    "known_for": "Star Wars: The Clone Wars (2008�2020)",
+    "known_for": "Star Wars: The Clone Wars (2008/2020)",
     "bio": "Dave Filoni is known for his work as a director and executive producer on several animated and live-action Star Wars series."
   },
   {
@@ -1072,10 +1072,10 @@
   },
   {
     "id": 164,
-    "name": "Timoth�e Chalamet",
+    "name": "Timothie Chalamet",
     "professions": [ "Actor" ],
     "known_for": "Call Me by Your Name (2017)",
-    "bio": "Timoth�e Chalamet has expressed interest in joining the Star Wars franchise."
+    "bio": "Timothie Chalamet has expressed interest in joining the Star Wars franchise."
   },
   {
     "id": 165,
@@ -1163,10 +1163,10 @@
   },
   {
     "id": 178,
-    "name": "Chlo� Grace Moretz",
+    "name": "Chloe Grace Moretz",
     "professions": [ "Actress" ],
     "known_for": "Kick-Ass (2010)",
-    "bio": "Chlo� Grace Moretz has expressed interest in joining the Star Wars universe."
+    "bio": "Chloe Grace Moretz has expressed interest in joining the Star Wars universe."
   },
   {
     "id": 179,
@@ -1758,10 +1758,10 @@
   },
   {
     "id": 330,
-    "name": "Chirrut �mwe",
+    "name": "Chirrut Îmwe",
     "professions": [ "Character" ],
     "known_for": "Rogue One: A Star Wars Story (2016)",
-    "bio": "Chirrut �mwe is a blind warrior with a strong connection to the Force in Rogue One."
+    "bio": "Chirrut Îmwe is a blind warrior with a strong connection to the Force in Rogue One."
   },
   {
     "id": 331,
@@ -1856,10 +1856,10 @@
   },
   {
     "id": 349,
-    "name": "Padm� Amidala",
+    "name": "Padme Amidala",
     "professions": [ "Character" ],
     "known_for": "Star Wars: Episode I - The Phantom Menace (1999)",
-    "bio": "Padm� Amidala is a senator and Anakin Skywalker's love interest."
+    "bio": "Padme Amidala is a senator and Anakin Skywalker's love interest."
   },
   {
     "id": 350,
@@ -2024,10 +2024,10 @@
   },
   {
     "id": 374,
-    "name": "Chirrut �mwe (Rogue One)",
+    "name": "Chirrut Îmwe (Rogue One)",
     "professions": [ "Character" ],
     "known_for": "Rogue One: A Star Wars Story (2016)",
-    "bio": "Chirrut �mwe is a blind warrior with a deep connection to the Force in Rogue One."
+    "bio": "Chirrut Îmwe is a blind warrior with a deep connection to the Force in Rogue One."
   },
   {
     "id": 375,
@@ -2174,7 +2174,7 @@
     "name": "Sabe",
     "professions": [ "Character" ],
     "known_for": "Star Wars: The Phantom Menace (1999)",
-    "bio": "Sabe is a handmaiden and decoy for Padm� Amidala."
+    "bio": "Sabe is a handmaiden and decoy for Padme Amidala."
   },
   {
     "id": 397,
@@ -2472,10 +2472,10 @@
   },
   {
     "id": 445,
-    "name": "Padm� Amidala (Queen)",
+    "name": "Padme Amidala (Queen)",
     "professions": [ "Character" ],
     "known_for": "Star Wars: Episode I - The Phantom Menace (1999)",
-    "bio": "Padm� Amidala is a strong leader in the Galactic Senate."
+    "bio": "Padme Amidala is a strong leader in the Galactic Senate."
   },
   {
     "id": 446,
@@ -2853,7 +2853,7 @@
     "name": "Baze Malbus",
     "professions": [ "Character" ],
     "known_for": "Rogue One: A Star Wars Story (2016)",
-    "bio": "Baze Malbus is a warrior and close friend of Chirrut �mwe."
+    "bio": "Baze Malbus is a warrior and close friend of Chirrut Îmwe."
   },
   {
     "id": 588,
@@ -2969,10 +2969,10 @@
   },
   {
     "id": 657,
-    "name": "Padm� Amidala (Senator)",
+    "name": "Padme Amidala (Senator)",
     "professions": [ "Character" ],
     "known_for": "Star Wars: Episode III - Revenge of the Sith (2005)",
-    "bio": "Padm� Amidala is a senator and Anakin Skywalker's wife."
+    "bio": "Padme Amidala is a senator and Anakin Skywalker's wife."
   },
   {
     "id": 658,
