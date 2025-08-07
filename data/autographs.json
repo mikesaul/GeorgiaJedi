@@ -155,8 +155,6 @@
   },
   {
     "id": "11",
-    "acquired": "",
-    "type": "autograph",
     "name/brand": "Billy Dee Williams",
     "franchise": "Star Wars",
     "description": "Lando with Han - ROTJ",
@@ -166,8 +164,9 @@
     "is_verified": "Yes",
     "serialnumber": "",
     "original_cost": "",
-    "current_value": "",
-    "image": "BilleDeeWilliams_Autograph"
+    "current_value": "225.00",
+    "image": "BilleDeeWilliams_Autograph",
+    "acquired": ""
   },
   {
     "id": "12",
@@ -282,6 +281,8 @@
   },
   {
     "id": "19",
+    "acquired": "",
+    "type": "autographs",
     "name/brand": "Bounty Hunters - Multi-signed",
     "franchise": "Star Wars",
     "description": "B/W Bounty Huntes on Star Destroyer - Jeremy Bulloch, Alan Harris, Cathy Munroe, Chris Parsons",
@@ -290,10 +291,9 @@
     "special": "No",
     "is_verified": "Yes - Official Pix",
     "serialnumber": "",
-    "original_cost": "250",
-    "current_value": "600",
-    "image": "BountyHuntersMulti1",
-    "acquired": ""
+    "original_cost": "250.00",
+    "current_value": "750.00",
+    "image": "BountyHuntersMulti1"
   },
   {
     "id": "20",
