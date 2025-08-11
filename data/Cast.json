@@ -10,7 +10,7 @@
     "id": 2,
     "name": "Harrison Ford",
     "professions": [ "Actor", "Writer", "Producer" ],
-    "known_for": "Raiders of the Lost Ark (1981)",
+    "known_for": "Star Wars EpIV - EpVII (1977/2015)",
     "bio": "Harrison Ford is famous for his roles as Han Solo in Star Wars and Indiana Jones. He also starred in films like The Fugitive and Witness."
   },
   {
@@ -171,8 +171,8 @@
     "id": 25,
     "name": "Warwick Davis",
     "professions": [ "Actor", "Writer", "Producer" ],
-    "known_for": "Willow (1988)",
-    "bio": "Warwick Davis played Wicket the Ewok in Star Wars: Return of the Jedi and has since become a prominent actor in fantasy films."
+    "known_for": "Star Wars: Episode VI - Return of the Jedi (1983)",
+    "bio": "Warwick Davis played Wicket the Ewok in Star Wars: Return of the Jedi and has since become a prominent actor in fantasy films. He also starred in Willow (1988)."
   },
   {
     "id": 26,
