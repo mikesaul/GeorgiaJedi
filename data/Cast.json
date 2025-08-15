@@ -38,8 +38,8 @@
     "id": 6,
     "name": "Frank Oz",
     "professions": [ "Actor", "Additional Crew", "Director" ],
-    "known_for": "The Muppet Show (1976/1981)",
-    "bio": "Frank Oz is famous for his puppetry, voicing Yoda in Star Wars, and his work with The Muppets."
+    "known_for": "Star Wars: Episode V - The Empire Strikes Back (1980)",
+    "bio": "Frank Oz is famous for his puppetry, voicing Yoda in Star Wars, and his work with The Muppets movies and The Muppet Show (1976/1981)."
   },
   {
     "id": 7,
@@ -59,8 +59,8 @@
     "id": 9,
     "name": "Kenny Baker",
     "professions": [ "Actor", "Additional Crew", "Soundtrack" ],
-    "known_for": "Time Bandits (1981)",
-    "bio": "Kenny Baker is widely recognized for playing R2-D2 in the Star Wars franchise."
+    "known_for": "Star Wars",
+    "bio": "Kenny Baker is widely recognized for playing R2-D2 in the Star Wars franchise, in addition to Time Bandits (1981) and other features."
   },
   {
     "id": 10,
@@ -108,7 +108,7 @@
     "id": 16,
     "name": "Julian Glover",
     "professions": [ "Actor", "Soundtrack" ],
-    "known_for": "Indiana Jones and the Last Crusade (1989)",
+    "known_for": "Star Wars, Indiana Jones and the Last Crusade (1989)",
     "bio": "Julian Glover is known for his roles in Star Wars as General Veers and in Indiana Jones as Walter Donovan."
   },
   {
@@ -192,8 +192,8 @@
     "id": 28,
     "name": "Michael Carter",
     "professions": [ "Actor", "Writer" ],
-    "known_for": "An American Werewolf in London (1981)",
-    "bio": "Michael Carter is known for playing Bib Fortuna in Star Wars: Return of the Jedi."
+    "known_for": "Star Wars: Episode VI - Return of the Jedi (1983)",
+    "bio": "Michael Carter is known for playing Bib Fortuna in Star Wars: Return of the Jedi, as well as An American Werewolf in London (1981)."
   },
   {
     "id": 29,
@@ -220,7 +220,7 @@
     "id": 32,
     "name": "Dermot Crowley",
     "professions": [ "Actor", "Producer" ],
-    "known_for": "Luther: The Fallen Sun (2023)",
+    "known_for": "Star Wars: Episode VI - Return of the Jedi (1983)",
     "bio": "Dermot Crowley played General Madine in Star Wars: Return of the Jedi."
   },
   {
@@ -234,28 +234,28 @@
     "id": 34,
     "name": "Larry Ward",
     "professions": [ "Actor", "Writer", "Additional Crew" ],
-    "known_for": "Macabre (1969)",
+    "known_for": "Star Wars, Macabre (1969)",
     "bio": "Larry Ward is the voice of Jabba the Hutt in Star Wars."
   },
   {
     "id": 35,
     "name": "Liam Neeson",
     "professions": [ "Actor", "Producer", "Soundtrack" ],
-    "known_for": "Kinsey (2004)",
+    "known_for": "Star Wars: Episode I - The Phantom Menace",
     "bio": "Liam Neeson played Qui-Gon Jinn in Star Wars: Episode I - The Phantom Menace."
   },
   {
     "id": 36,
     "name": "Ewan McGregor",
     "professions": [ "Actor", "Producer", "Writer" ],
-    "known_for": "Moulin Rouge! (2001)",
+    "known_for": "Star Wars Prequels, Moulin Rouge! (2001)",
     "bio": "Ewan McGregor is widely known for portraying Obi-Wan Kenobi in the Star Wars prequels."
   },
   {
     "id": 37,
     "name": "Natalie Portman",
     "professions": [ "Actress", "Producer", "Director" ],
-    "known_for": "Black Swan (2010)",
+    "known_for": "Star Wars Prequels, Black Swan (2010)",
     "bio": "Natalie Portman is known for her role as Padme Amidala in the Star Wars prequel trilogy."
   },
   {
@@ -297,14 +297,14 @@
     "id": 43,
     "name": "Terence Stamp",
     "professions": [ "Actor", "Director", "Writer" ],
-    "known_for": "The Limey (1999)",
+    "known_for": "Star Wars: Episode I - The Phantom Menace",
     "bio": "Terence Stamp played Chancellor Valorum in Star Wars: Episode I - The Phantom Menace."
   },
   {
     "id": 44,
     "name": "Brian Blessed",
     "professions": [ "Actor", "Director", "Art Department" ],
-    "known_for": "Flash Gordon (1980)",
+    "known_for": "Star Wars: Episode I - The Phantom Menace, Flash Gordon (1980)",
     "bio": "Brian Blessed voiced Boss Nass in Star Wars: Episode I - The Phantom Menace."
   },
   {
@@ -325,7 +325,7 @@
     "id": 47,
     "name": "Samuel L. Jackson",
     "professions": [ "Actor", "Producer", "Soundtrack" ],
-    "known_for": "Pulp Fiction (1994)",
+    "known_for": "Star Wars prequels, Pulp Fiction (1994)",
     "bio": "Samuel L. Jackson is known for his role as Mace Windu in the Star Wars prequel trilogy."
   },
   {
@@ -339,7 +339,7 @@
     "id": 49,
     "name": "Christopher Lee",
     "professions": [ "Actor", "Soundtrack", "Director" ],
-    "known_for": "The Lord of the Rings: The Fellowship of the Ring (2001)",
+    "known_for": "Star Wars prequels, The Lord of the Rings: The Fellowship of the Ring (2001)",
     "bio": "Christopher Lee portrayed Count Dooku in the Star Wars prequel trilogy and is known for his iconic roles in horror films and The Lord of the Rings."
   },
   {
