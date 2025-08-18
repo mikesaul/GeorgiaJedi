@@ -2046,5 +2046,21 @@
     "original_cost": "30",
     "current_value": "50",
     "image": "KevinSmith_Cameo_ROS"
+  },
+  {
+    "id": "128",
+    "acquired": "08/18/2025",
+    "type": "autographs",
+    "name/brand": "Ian McDiarmid",
+    "franchise": "Star Wars",
+    "description": "Ian McDiarmid as Emperor Palpatine in Star Wars Episode III: Revenge of the Sith (Beckett).",
+    "size/model#": "8X10",
+    "source": "SWAU",
+    "special": "No",
+    "is_verified": "Yes - SWAU",
+    "serialnumber": "",
+    "original_cost": "120",
+    "current_value": "240",
+    "image": "IanMcDiarmid_EmperorPalpatine_ROTS"
   }
 ]
