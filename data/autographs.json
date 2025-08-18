@@ -1093,7 +1093,7 @@
     "type": "autograph",
     "name/brand": "Mike Edmonds",
     "franchise": "Star Wars",
-    "description": "Ugnaught\u00a0",
+    "description": "Ugnaught ",
     "size/model#": "8X10",
     "source": "Official Pix",
     "special": "No",
@@ -2030,5 +2030,21 @@
     "original_cost": "144.00",
     "current_value": "350.00",
     "image": "EwanMcGregor_ObiWanKenobi"
+  },
+  {
+    "id": "127",
+    "acquired": "08/18/2025",
+    "type": "autographs",
+    "name/brand": "Kevin Smith",
+    "franchise": "Star Wars",
+    "description": "Kevin Smith Cameoing as Inhabitant of Kijimi in Star Wars: The Rise of Skywalker.",
+    "size/model#": "8X10",
+    "source": "SWAU",
+    "special": "No",
+    "is_verified": "Yes - SWAU",
+    "serialnumber": "",
+    "original_cost": "30",
+    "current_value": "50",
+    "image": "KevinSmith_Cameo_ROS"
   }
 ]
