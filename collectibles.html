@@ -1,23 +1,24 @@
-<!-- collectibles.html with dropdown filters for Franchise, Size, Source -->
+<!-- collectibles.html (final, with filter row injected by script.js) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Catalog - Star Wars Memorabilia Gallery</title>
+  <title>Catalog - Star Wars Collectibles Gallery</title>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.18.3/bootstrap-table.min.css">
   <link rel="stylesheet" href="css/styles.css">
   <style>
     #toolbar { margin: 10px 0; }
     .bootstrap-table .fixed-table-container .table thead th { vertical-align: top; }
-    .column-filter { width: 100%; font-size: 0.9em; padding: 2px; margin-top: 4px; }
+    .filter-row td { padding: 2px; }
+    .column-filter { width: 100%; font-size: 0.9em; padding: 2px; }
   </style>
 </head>
 <body>
 <header class="d-flex align-items-center justify-content-center py-4">
   <img src="images/GeorgiaJedi-logo-256.jpg" alt="GeorgiaJedi Logo" class="logo mr-3">
-  <h1 class="mx-auto">Star Wars Autograph Catalog</h1>
+  <h1 class="mx-auto">Star Wars Collectibles Catalog</h1>
 </header>
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
   <a class="navbar-brand" href="#">GeorgiaJedi</a>
@@ -48,40 +49,26 @@
     data-pagination="true"
     data-pagination-v-align="both"
     data-show-footer="true"
-    data-detail-view="false"
+    data-detail-view="true"
+    data-detail-view-by-click="true"
     data-detail-formatter="detailFormatter"
     data-row-style="rowStyle">
     <thead>
       <tr>
         <th data-field="image" data-formatter="imageFormatter" data-footer-formatter="imageFooterFormatter"></th>
         <th data-field="id" data-sortable="true">ID</th>
-        <th data-field="acquired" data-sortable="true" data-sorter="dateSorter">
-          Acquired<br><input type="text" class="column-filter" data-column="acquired" placeholder=">= 2023-01-01">
-        </th>
-        <th data-field="name/brand" data-sortable="true">
-          Title<br><input type="text" class="column-filter" data-column="name/brand" placeholder="Search title">
-        </th>
-        <th data-field="franchise" data-sortable="true">
-          Franchise<br><select class="column-filter" data-column="franchise"><option value="">All</option></select>
-        </th>
+        <th data-field="acquired" data-sortable="true" data-sorter="dateSorter">Acquired</th>
+        <th data-field="name/brand" data-sortable="true">Title</th>
+        <th data-field="franchise" data-sortable="true">Franchise</th>
         <th data-field="description" data-formatter="descFormatter" data-sortable="true">Description</th>
-        <th data-field="size/model#">
-          Size<br><select class="column-filter" data-column="size/model#"><option value="">All</option></select>
-        </th>
-        <th data-field="source" data-sortable="true">
-          Source<br><select class="column-filter" data-column="source"><option value="">All</option></select>
-        </th>
+        <th data-field="size/model#">Model</th>
+        <th data-field="source" data-sortable="true">Source</th>
         <th data-field="serialnumber">Serial#</th>
-        <th data-field="original_cost" data-formatter="currencyFormatter" data-sortable="true" data-footer-formatter="originalCostFooter">
-          Original Cost<br><input type="text" class="column-filter" data-column="original_cost" placeholder=">= 100">
-        </th>
-        <th data-field="current_value" data-formatter="currencyFormatter" data-sortable="true" data-footer-formatter="currentValueFooter">
-          Current Value<br><input type="text" class="column-filter" data-column="current_value" placeholder="<= 500">
-        </th>
-        <th data-field="is_verified">
-          Is Verified<br><input type="text" class="column-filter" data-column="is_verified" placeholder="yes">
-        </th>
+        <th data-field="original_cost" data-formatter="currencyFormatter" data-sortable="true" data-footer-formatter="originalCostFooter">Original Cost</th>
+        <th data-field="current_value" data-formatter="currencyFormatter" data-sortable="true" data-footer-formatter="currentValueFooter">Current Value</th>
+        <th data-field="is_verified">Is Verified</th>
       </tr>
+      <!-- Filter row will be injected dynamically by script.js -->
     </thead>
   </table>
   <div id="custom-footer" style="margin-top: 10px;"></div>
@@ -89,88 +76,5 @@
 <footer class="text-center py-4">
   <p>&copy; 2024 GeorgiaJedi. All rights reserved.</p>
 </footer>
-<script>
-  let rawData = [];
-
-  function customNumericFilter(value, filter) {
-    if (!filter) return true;
-    const match = filter.match(/^(<=|>=|=|<|>)?\s*([\d.]+)$/);
-    if (!match) return true;
-    const [, operator = '=', numberStr] = match;
-    const number = parseFloat(numberStr);
-    const val = parseFloat(value);
-    switch (operator) {
-      case '<': return val < number;
-      case '<=': return val <= number;
-      case '=': return val === number;
-      case '>=': return val >= number;
-      case '>': return val > number;
-      default: return val === number;
-    }
-  }
-
-  function customDateFilter(value, filter) {
-    if (!filter || !value) return true;
-    const match = filter.match(/^(<=|>=|=|<|>)?\s*([\d/-]+)$/);
-    if (!match) return true;
-    const [, operator = '=', dateStr] = match;
-    const filterDate = new Date(dateStr);
-    const rowDate = new Date(value);
-    if (isNaN(filterDate) || isNaN(rowDate)) return true;
-    switch (operator) {
-      case '<': return rowDate < filterDate;
-      case '<=': return rowDate <= filterDate;
-      case '=': return rowDate.toDateString() === filterDate.toDateString();
-      case '>=': return rowDate >= filterDate;
-      case '>': return rowDate > filterDate;
-      default: return rowDate.toDateString() === filterDate.toDateString();
-    }
-  }
-
-  function applyCustomFilters(data) {
-  const filters = {};
-  $('.column-filter').each(function () {
-    const key = $(this).data('column');
-    const val = $(this).val();
-    if (val) filters[key] = val;
-  });
-
-  return data.filter(row => {
-    return Object.entries(filters).every(([key, val]) => {
-      if (key === 'acquired') return customDateFilter(row[key], val);
-      if (key === 'original_cost' || key === 'current_value') return customNumericFilter(row[key], val);
-      if (key === 'name/brand' || key === 'is_verified') {
-        return String(row[key] || '').toLowerCase().includes(val.toLowerCase());
-      }
-      return val === '' || String(row[key] || '').toLowerCase() === val.toLowerCase();
-    });
-  });
-}
-
-  function populateDropdownFilter(column, selector) {
-    const uniqueValues = [...new Set(rawData.map(item => item[column]).filter(Boolean))];
-    uniqueValues.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
-    const dropdown = $(`select.column-filter[data-column="${selector}"]`);
-    dropdown.empty().append('<option value="">All</option>');
-    uniqueValues.forEach(val => {
-      dropdown.append(`<option value="${val}">${val}</option>`);
-    });
-  }
-
-  $(function () {
-    $.getJSON('data/collectibles.json', function (jsonData) {
-      rawData = jsonData;
-      $('#catalog-table').bootstrapTable({ data: rawData });
-      populateDropdownFilter('franchise', 'franchise');
-      populateDropdownFilter('size/model#', 'size/model#');
-      populateDropdownFilter('source', 'source');
-    });
-
-    $(document).on('input change', '.column-filter', function () {
-      const filtered = applyCustomFilters(rawData);
-      $('#catalog-table').bootstrapTable('load', filtered);
-    });
-  });
-</script>
 </body>
 </html>

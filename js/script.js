@@ -1,279 +1,284 @@
- 
-// Determine folder based on HTML filename
-const pageName = window.location.pathname.split("/").pop().split(".")[0];  // gets 'autographs', etc.
-const thumbPathPrefix = `images/${pageName}/thumbs/`;
-const fullPathPrefix = `images/${pageName}/`;  // for future use if needed
-// alert("pageName: " + pageName + ", thumbPathPrefix: " + thumbPathPrefix + ", fullPathPrefix: " + fullPathPrefix);
+// script.js (final with numeric filter patch)
 
-// Define detailFormatter function globally
+let rawData = [];
+
+// ================= Utility & Formatters =================
 function detailFormatter(index, row) {
-  var html = [];
-
-  // Start card container
+  const html = [];
   html.push('<div class="card" style="display: flex; border: 1px solid #ddd; padding: 10px;">');
 
-  // Left side - Image
+  // Left: image
   html.push('<div class="card-left" style="flex: 1; text-align: center;">');
   if (row.image) {
     html.push('<img src="images/' + row.image + '.jpg" style="width: 500px; border-radius: 5px;" alt="Item Image">');
   } else {
-      html.push('<img src="images/100.png" style="width: 150px; height: 150px; border-radius: 5px;" alt="No Image">');
+    html.push('<img src="images/100.png" style="width: 150px; height: 150px; border-radius: 5px;" alt="No Image">');
   }
-  html.push('</div>');  // End left side
+  html.push('</div>');
 
-  // Right side - Details
+  // Right: details
   html.push('<div class="card-right" style="flex: 2; padding-left: 20px;">');
+  if (row.title) html.push('<h3 style="margin-top: 0;">' + row.title + '</h3>');
+  if (row.franchise) html.push('<p><b>Franchise:</b> ' + row.franchise + '</p>');
+  if (row.description) html.push('<p><b>Description:</b> ' + row.description + '</p>');
+  if (row.size) html.push('<p><b>Size:</b> ' + row.size + '</p>');
+  if (row.source) html.push('<p><b>Source:</b> ' + row.source + '</p>');
+  if (row.serialnumber) html.push('<p><b>Serial Number:</b> ' + row.serialnumber + '</p>');
+  if (row.original_cost) html.push('<p><b>Original Cost:</b> $' + row.original_cost + '</p>');
+  if (row.current_value) html.push('<p><b>Current Value:</b> $' + row.current_value + '</p>');
+  html.push('</div>');
 
-  // Add title, franchise, description, size, source, serialnumber, original cost, current value
-  if (row.title) {
-      html.push('<h3 style="margin-top: 0;">' + row.title + '</h3>');
-  }
-  if (row.franchise) {
-      html.push('<p><b>Franchise:</b> ' + row.franchise + '</p>');
-  }
-  if (row.description) {
-      html.push('<p><b>Description:</b> ' + row.description + '</p>');
-  }
-  if (row.size) {
-      html.push('<p><b>Size:</b> ' + row.size + '</p>');
-  }
-  if (row.source) {
-      html.push('<p><b>Source:</b> ' + row.source + '</p>');
-  }
-  if (row.serialnumber) {
-      html.push('<p><b>Serial Number:</b> ' + row.serialnumber + '</p>');
-  }
-  if (row.original_cost) {
-      html.push('<p><b>Original Cost:</b> $' + row.original_cost + '</p>');
-  }
-  if (row.current_value) {
-      html.push('<p><b>Current Value:</b> $' + row.current_value + '</p>');
-  }
-
-  html.push('</div>');  // End right side
-  html.push('</div>');  // End card container
-
+  html.push('</div>');
   return html.join('');
 }
 
-// Formatter function for currency
 function currencyFormatter(value) {
-  // Format as US currency
-  if (!value) {
-    return '';  // Return an empty string if no value
-  }
-
-  return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-  }).format(value);
+  if (value === undefined || value === null || value === '') return '';
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(value));
 }
 
-// Footer formatter for original_cost column
 function originalCostFooter(data) {
-  let totalOriginalCost = 0;
-  data.forEach(function (row) {
-      totalOriginalCost += parseFloat(row.original_cost) || 0;
-  });
-  return currencyFormatter(totalOriginalCost);
+  let total = 0;
+  data.forEach(r => total += parseFloat(r.original_cost) || 0);
+  return currencyFormatter(total);
 }
 
-// Footer formatter for current_value column
 function currentValueFooter(data) {
-  let totalCurrentValue = 0;
-  data.forEach(function (row) {
-      totalCurrentValue += parseFloat(row.current_value) || 0;
-  });
-  return currencyFormatter(totalCurrentValue);
+  let total = 0;
+  data.forEach(r => total += parseFloat(r.current_value) || 0);
+  return currencyFormatter(total);
 }
-
-function isValidDate(d) {
-  return d instanceof Date && !isNaN(d);
-}
-
-function dateSorter(a, b, order) {
-  const dateA = isValidDate(new Date(a)) ? new Date(a) : null;
-  const dateB = isValidDate(new Date(b)) ? new Date(b) : null;
-
-  // Both dates are invalid
-  if (!dateA && !dateB) return 0;
-
-  // Only one date is invalid
-  if (!dateA) return order === 'asc' ? 1 : -1;
-  if (!dateB) return order === 'asc' ? -1 : 1;
-
-  // Both dates are valid
-  return dateA - dateB;
-}
-
-$(document).ready(function () {
-  // Initialize the table with options
-        // Function to get query parameters from the URL
-        function getQueryParam(param) {
-        const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get(param);
-    }
-
-    // Get the 'pg' parameter from the URL (if present)
-    const page = getQueryParam('pg') ? parseInt(getQueryParam('pg')) : 1;
-
-    function isMobileView() {
-      return window.innerWidth < 1200;
-  }
-  
-  $('#catalog-table').bootstrapTable('destroy').bootstrapTable({
-    detailView: true,
-    detailFormatter: detailFormatter,
-    cardView: isMobileView(),
-    pagination: true,
-    pageList: [5, 10, 25, 50, 100],
-    pageSize: 5,
-    sidePagination: 'client',
-    showFooter: !isMobileView(),      // ✅ footer only in table mode
-    footerFormatter: sumFooter,       // ✅ required for table view footer
-    pageNumber: page,
-    onPostBody: function () {
-      const data = $('#catalog-table').bootstrapTable('getData');
-      const totals = sumFooter(data);
-  
-      if (isMobileView()) {
-        const html = `
-          <div style="border-top: 1px solid #ccc; padding-top: 10px;">
-            <strong>Total Original Cost:</strong> ${totals.original_cost}<br>
-            <strong>Total Current Value:</strong> ${totals.current_value}<br>
-            <strong>Total Images:</strong> ${totals.image}
-          </div>
-        `;
-        $('#custom-footer').html(html);  // You need <div id="custom-footer"></div> in HTML
-      } else {
-        $('#custom-footer').empty();     // Clear if switching back to table view
-        $('#catalog-table').bootstrapTable('updateFooter', totals);
-      }
-    }
-  });
-  
-  // Handle Add Item form submission
-  $('#add-item-form').on('submit', function(event) {
-      event.preventDefault();
-
-      // Gather form data
-      let newItem = {
-          id: $('#id').val(),
-          image: $('#image').val(),
-          title: $('#title').val(),
-          franchise: $('#franchise').val(),
-          description: $('#description').val(),
-          size: $('#size').val(),
-          source: $('#source').val(),
-          personalized: $('#personalized').val(),
-          serialnumber: $('#serialnumber').val(),
-          original_cost: $('#original_cost').val(),
-          current_value: $('#current_value').val(),
-          is_verified: $('#is_verified').val()
-      };
-
-      // Load the existing data from catalog.json and update it
-      $.getJSON('data/catalog.json', function(data) {
-          data.push(newItem);
-          saveToFile(data);
-      });
-  });
-
-  function saveToFile(data) {
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'catalog.json';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-  }
-
-  // Function to get query parameters from the URL
-  function getQueryParam(param) {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get(param);
-  }
-
-});
-
-// Description formatter
-function descFormatter(index, row) {
-  var desc = row.description.substr(0, 120);
-  return desc;
-}
-
-// Image formatter for displaying thumbnails
-function imageFormatter(index, row) {
-    // Get the current page number from the Bootstrap Table
-    const currentPage = $('#catalog-table').bootstrapTable('getOptions').pageNumber;
-    
-    // Get the current page's sender (autographs or collectibles)
-    const sender = window.location.pathname.includes('autographs') ? 'autographs' : 'collectibles';
-    const type = getItemType(); // Get the item type from the page name
-    const editUrl = '<a href="update-item.html?id=' + row.id + '&itemType=' + type + " class='btn btn-sm btn-primary mt-2'>Edit</a>";
-  
-    if (row.image) {
-        // Include both page number and sender in the URL
-        var imguri = '<a href="imageview.html?index=' + row.id + '&image=' + row.image + '&pg=' + currentPage + '&sender=' + sender + '">'
-        + '<img height=128 width=128 src="images/thumbs/' + row.image + '_thumb.jpg"></a>' + '<a href="update-item.html?id=' + row.id + '&itemType=' + type + '" class="btn btn-sm btn-primary mt-2">Edit</a>';
-        return imguri;
-    } else {
-      return '<img height=128 src="images/100.png">'+ '<a href="update-item.html?id=' + row.id + '&itemType=' + type + '" class="btn btn-sm btn-primary mt-2">Edit</a>';
-    }
-}
-
 
 function imageFooterFormatter(data) {
   let count = 0;
-
   data.forEach(row => {
     if (row.image) {
-      const filename = row.image.split('/').pop().toLowerCase();
-      if (filename !== '100.png') {
-        count++;
-      }
+      const filename = String(row.image).split('/').pop().toLowerCase();
+      if (filename !== '100.png') count++;
     }
   });
-
   return `${count} images`;
 }
 
-     // Case-insensitive alphanumeric sort with numeric prefix handling
-     function alphanumericCaseInsensitiveSort(a, b) {
-      const regex = /^(\d+)(.*)/i;
-      const matchA = a.match(regex);
-      const matchB = b.match(regex);
+function isValidDate(d) { return d instanceof Date && !isNaN(d); }
 
-      if (matchA && matchB) {
-          const numA = parseInt(matchA[1], 10);
-          const numB = parseInt(matchB[1], 10);
-          if (numA !== numB) return numA - numB;
-          return matchA[2].toLowerCase().localeCompare(matchB[2].toLowerCase());
-      }
+function dateSorter(a, b, order) {
+  const A = new Date(a); const B = new Date(b);
+  const aOk = isValidDate(A), bOk = isValidDate(B);
+  if (!aOk && !bOk) return 0;
+  if (!aOk) return order === 'asc' ? 1 : -1;
+  if (!bOk) return order === 'asc' ? -1 : 1;
+  return A - B;
+}
 
-      return a.toLowerCase().localeCompare(b.toLowerCase());
-  }
-
+function descFormatter(index, row) {
+  return row.description ? String(row.description).substr(0, 120) : '';
+}
 
 function getItemType() {
-  const page = window.location.pathname.split('/').pop(); // Get the filename
-  return page.split('.').shift(); // Remove the extension and return the base name
-}
-// Edit column formatter
-function editFormatter(value, row) {
-  const type = getItemType(); // Get the item type from the page name
-  return `<a href="update-item.html?ID=${row.id}&itemType=${type}" class="btn btn-sm btn-primary">Edit</a>`;
+  const page = window.location.pathname.split('/').pop();
+  return page.split('.').shift();
 }
 
-// Row styling function for alternating background colors
+function imageFormatter(value, row, index) {
+  const options = $('#catalog-table').bootstrapTable('getOptions') || {};
+  const currentPage = options.pageNumber || 1;
+  const sender = window.location.pathname.includes('autographs') ? 'autographs' : 'collectibles';
+  const type = getItemType();
+  if (row.image) {
+    return `<a href="imageview.html?index=${row.id}&image=${row.image}&pg=${currentPage}&sender=${sender}">
+              <img height=128 width=128 src="images/thumbs/${row.image}_thumb.jpg" alt="thumb">
+            </a>
+            <a href="update-item.html?id=${row.id}&itemType=${type}" class="btn btn-sm btn-primary mt-2">Edit</a>`;
+  }
+  return `<img height=128 src="images/100.png" alt="no image">
+          <a href="update-item.html?id=${row.id}&itemType=${type}" class="btn btn-sm btn-primary mt-2">Edit</a>`;
+}
+
 function rowStyle(row, index) {
-  var classes = ['bg-blue', 'bg-green', 'bg-orange', 'bg-yellow', 'bg-red'];
+  return { classes: index % 2 === 0 ? 'bg-ltgray' : 'bg-ltblue' };
+}
 
-  if (index % 2 === 0) {
-    return { classes: "bg-ltgray" };
-  } else {
-    return { classes: "bg-ltblue" };
+function alphanumericCaseInsensitiveSort(a, b) {
+  const regex = /^(\\d+)(.*)/i;
+  const A = String(a ?? '');
+  const B = String(b ?? '');
+  const mA = A.match(regex), mB = B.match(regex);
+  if (mA && mB) {
+    const nA = parseInt(mA[1], 10), nB = parseInt(mB[1], 10);
+    if (nA !== nB) return nA - nB;
+    return mA[2].toLowerCase().localeCompare(mB[2].toLowerCase());
+  }
+  return A.toLowerCase().localeCompare(B.toLowerCase());
+}
+
+// ================= Filtering =================
+function customNumericFilter(value, filter) {
+  if (!filter) return true;
+  const match = String(filter).match(/^(<=|>=|=|<|>)?\s*([\d.]+)$/);
+  if (!match) return true;
+  const [, operator = '=', numberStr] = match;
+  const number = parseFloat(numberStr);
+
+  // Normalize value: remove $ , GBP etc
+  const numericVal = parseFloat(String(value).replace(/[^0-9.-]+/g, ''));
+  if (isNaN(numericVal)) return false;
+
+  switch (operator) {
+    case '<': return numericVal < number;
+    case '<=': return numericVal <= number;
+    case '=': return numericVal === number;
+    case '>=': return numericVal >= number;
+    case '>': return numericVal > number;
+    default: return numericVal === number;
   }
 }
+
+function customDateFilter(value, filter) {
+  if (!filter || !value) return true;
+  const match = String(filter).match(/^(<=|>=|=|<|>)?\\s*([\\d/-]+)$/);
+  if (!match) return true;
+  const [, operator = '=', dateStr] = match;
+  const filterDate = new Date(dateStr);
+  const rowDate = new Date(value);
+  if (isNaN(filterDate) || isNaN(rowDate)) return true;
+  switch (operator) {
+    case '<': return rowDate < filterDate;
+    case '<=': return rowDate <= filterDate;
+    case '=': return rowDate.toDateString() === filterDate.toDateString();
+    case '>=': return rowDate >= filterDate;
+    case '>': return rowDate > filterDate;
+    default: return rowDate.toDateString() === filterDate.toDateString();
+  }
+}
+
+function applyCustomFilters(data) {
+  const filters = {};
+  $('.column-filter').each(function () {
+    const key = $(this).data('column');
+    const val = $(this).val();
+    if (val) filters[key] = val;
+  });
+  return data.filter(row => {
+    return Object.entries(filters).every(([key, val]) => {
+      if (key === 'acquired') return customDateFilter(row[key], val);
+      if (key === 'original_cost' || key === 'current_value') return customNumericFilter(row[key], val);
+      if (key === 'name/brand' || key === 'is_verified') {
+        return String(row[key] || '').toLowerCase().includes(String(val).toLowerCase());
+      }
+      return val === '' || String(row[key] || '').toLowerCase() === String(val).toLowerCase();
+    });
+  });
+}
+
+function populateDropdownFilter(column, selector) {
+  const uniqueValues = [...new Set(rawData.map(item => item[column]).filter(Boolean))];
+  uniqueValues.sort((a, b) => String(a).localeCompare(String(b), undefined, { sensitivity: 'base' }));
+  const $dropdown = $(`select.column-filter[data-column="${selector}"]`);
+  $dropdown.empty().append('<option value="">All</option>');
+  uniqueValues.forEach(val => $dropdown.append(`<option value="${val}">${val}</option>`));
+}
+
+function injectFilterRow() {
+  const $thead = $('#catalog-table thead');
+  const $filterRow = $('<tr class="filter-row"></tr>');
+
+  $thead.find('th').each(function () {
+    const field = $(this).data('field');
+    const $cell = $('<td></td>');
+
+    if (field === 'acquired') {
+      $cell.append('<input type="text" class="column-filter form-control form-control-sm" data-column="acquired" placeholder=">= 2023-01-01">');
+    } else if (field === 'name/brand') {
+      $cell.append('<input type="text" class="column-filter form-control form-control-sm" data-column="name/brand" placeholder="Search title">');
+    } else if (field === 'franchise' || field === 'size/model#' || field === 'source') {
+      $cell.append(`<select class="column-filter form-control form-control-sm" data-column="${field}"><option value="">All</option></select>`);
+    } else if (field === 'original_cost') {
+      $cell.append('<input type="text" class="column-filter form-control form-control-sm" data-column="original_cost" placeholder=">= 100">');
+    } else if (field === 'current_value') {
+      $cell.append('<input type="text" class="column-filter form-control form-control-sm" data-column="current_value" placeholder="<= 500">');
+    } else if (field === 'is_verified') {
+      $cell.append('<input type="text" class="column-filter form-control form-control-sm" data-column="is_verified" placeholder="yes">');
+    }
+    $filterRow.append($cell);
+  });
+
+  $thead.append($filterRow);
+}
+
+// Compute totals for mobile footer
+function computeTotals(data) {
+  let images = 0, orig = 0, curr = 0;
+  data.forEach(r => {
+    if (r.image) {
+      const filename = String(r.image).split('/').pop().toLowerCase();
+      if (filename !== '100.png') images++;
+    }
+    orig += parseFloat(r.original_cost) || 0;
+    curr += parseFloat(r.current_value) || 0;
+  });
+  return { images, orig, curr };
+}
+
+function isMobileView() { return window.innerWidth < 1200; }
+
+// ================= Init =================
+$(function () {
+  $.getJSON('data/' + getItemType() + '.json', function (jsonData) {
+    rawData = jsonData;
+
+    $('#catalog-table').bootstrapTable('destroy').bootstrapTable({
+      data: rawData,
+      detailView: true,
+      detailViewByClick: true,
+      detailFormatter: detailFormatter,
+      cardView: isMobileView(),
+      pagination: true,
+      pageList: [5, 10, 25, 50, 100],
+      pageSize: 5,
+      sidePagination: 'client',
+      showFooter: !isMobileView(),
+      onPostBody: function () {
+        const data = $('#catalog-table').bootstrapTable('getData');
+        if (isMobileView()) {
+          const totals = computeTotals(data);
+          $('#custom-footer').html(`
+            <div style="border-top: 1px solid #ccc; padding-top: 10px;">
+              <strong>Total Original Cost:</strong> ${currencyFormatter(totals.orig)}<br>
+              <strong>Total Current Value:</strong> ${currencyFormatter(totals.curr)}<br>
+              <strong>Total Images:</strong> ${totals.images}
+            </div>`);
+        } else {
+          $('#custom-footer').empty();
+        }
+      }
+    });
+
+    // Inject filter row and populate dropdowns
+    injectFilterRow();
+    populateDropdownFilter('franchise', 'franchise');
+    populateDropdownFilter('size/model#', 'size/model#');
+    populateDropdownFilter('source', 'source');
+  });
+
+  // React to filter changes
+  $(document).on('input change', '.column-filter', function () {
+    const filtered = applyCustomFilters(rawData);
+    $('#catalog-table').bootstrapTable('load', filtered);
+  });
+
+  // Re-render on resize to switch card/table mode
+  $(window).on('resize', function () {
+    const options = $('#catalog-table').bootstrapTable('getOptions');
+    const shouldCard = isMobileView();
+    if (options.cardView !== shouldCard) {
+      const data = $('#catalog-table').bootstrapTable('getData');
+      $('#catalog-table').bootstrapTable('destroy').bootstrapTable({
+        ...options,
+        data,
+        cardView: shouldCard,
+        showFooter: !shouldCard
+      });
+    }
+  });
+});
