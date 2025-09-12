@@ -402,7 +402,7 @@
 	{
 		"id": "26",
 		"acquired": "",
-		"type": "Autograph",
+		"type": "autographs",
 		"name/brand": "",
 		"franchise": "",
 		"description": "Dave Prowse - Darth Vader (ESB)",
@@ -418,7 +418,7 @@
 	{
 		"id": "27",
 		"acquired": "",
-		"type": "Autograph",
+		"type": "autographs",
 		"name/brand": "Celebration III",
 		"franchise": "",
 		"description": "Dave Prowse - Darth Vader (ROTJ)",
@@ -434,7 +434,7 @@
 	{
 		"id": "28",
 		"acquired": "",
-		"type": "Autograph",
+		"type": "autographs",
 		"name/brand": "Dave Prowse",
 		"franchise": "",
 		"description": "Dave Prowse/James Earl Jones 11X14",
@@ -450,7 +450,7 @@
 	{
 		"id": "29",
 		"acquired": "",
-		"type": "Autograph",
+		"type": "autographs",
 		"name/brand": "Dave Prowse",
 		"franchise": "",
 		"description": "Dave Prowse/Jeremy Bulloch 11X14",
@@ -466,7 +466,7 @@
 	{
 		"id": "30",
 		"acquired": "11/20/2012",
-		"type": "Autograph",
+		"type": "autographs",
 		"name/brand": "CVI",
 		"franchise": "",
 		"description": "Mark Hamill",
@@ -482,7 +482,7 @@
 	{
 		"id": "31",
 		"acquired": "",
-		"type": "Autograph",
+		"type": "autographs",
 		"name/brand": "Rancho ObiWan",
 		"franchise": "",
 		"description": "Signed letter from Steve Sansweet - World Record Night",

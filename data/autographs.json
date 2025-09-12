@@ -2,7 +2,7 @@
   {
     "id": "1",
     "acquired": "02/21/2017",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Aaron Douglas",
     "franchise": "Battlestar Galactica",
     "description": "Galen Tyrol",
@@ -18,7 +18,7 @@
   {
     "id": "2",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Al Lampert",
     "franchise": "Star Wars",
     "description": "Daine Jir",
@@ -34,23 +34,23 @@
   {
     "id": "3",
     "acquired": "",
-    "type": "",
+    "type": "autographs",
     "name/brand": "Alec Guinness",
     "franchise": "Star Wars",
-    "description": "Obi-Wan Kenobi promotional postcard",
+    "description": "Obi-Wan Kenobi promotional postcard (Original cost was 220.00 GBP).",
     "size/model#": "5X7",
     "source": "",
     "special": "No",
     "is_verified": "No",
     "serialnumber": "",
-    "original_cost": "220.00",
+    "original_cost": "297.49",
     "current_value": "850",
     "image": "AlecGuinness_Postcard"
   },
   {
     "id": "4",
     "acquired": "",
-    "type": "",
+    "type": "autographs",
     "name/brand": "Amy Allen",
     "franchise": "Star Wars",
     "description": "Ayla Secura",
@@ -66,7 +66,7 @@
   {
     "id": "5",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Annette Jones",
     "franchise": "Star Wars",
     "description": "Mosep",
@@ -82,7 +82,7 @@
   {
     "id": "6",
     "acquired": "07/31/2015",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Anthony Forrest",
     "franchise": "Star Wars",
     "description": "Fixer with Luke",
@@ -178,7 +178,7 @@
   {
     "id": "12",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Bonnie Piesse",
     "franchise": "Star Wars",
     "description": "Signed CVI Performance ticket",
@@ -194,7 +194,7 @@
   {
     "id": "13",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Bonnie Piesse",
     "franchise": "Star Wars",
     "description": "EP Promo shot",
@@ -210,7 +210,7 @@
   {
     "id": "14",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Bonnie Piesse",
     "franchise": "Star Wars",
     "description": "Signed EP Disc jacket",
@@ -242,7 +242,7 @@
   {
     "id": "16",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Bonnie Piesse",
     "franchise": "Star Wars",
     "description": "Beru and Owen on Tatooine",
@@ -258,7 +258,7 @@
   {
     "id": "17",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Bonnie Piesse",
     "franchise": "Star Wars",
     "description": "Beru and C3-P0",
@@ -274,7 +274,7 @@
   {
     "id": "18",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Bonnie Piesse",
     "franchise": "Star Wars",
     "description": "Beru",
@@ -306,7 +306,7 @@
   {
     "id": "20",
     "acquired": "07/17/2015",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Bruce Boxleitner",
     "franchise": "TRON",
     "description": "",
@@ -322,7 +322,7 @@
   {
     "id": "21",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Carrie Fisher",
     "franchise": "Star Wars",
     "description": "Slave Leia Full-length",
@@ -338,7 +338,7 @@
   {
     "id": "22",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Carrie Fisher",
     "franchise": "Star Wars",
     "description": "Slave Leia - recline",
@@ -354,7 +354,7 @@
   {
     "id": "23",
     "acquired": "06/11/2015",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Christopher Lee",
     "franchise": "Star Wars, LOTR",
     "description": "Sauruman - LOTR",
@@ -370,7 +370,7 @@
   {
     "id": "24",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Christopher Malcolm",
     "franchise": "Star Wars",
     "description": "Rogue 2",
@@ -386,7 +386,7 @@
   {
     "id": "25",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Clive Revill",
     "franchise": "Star Wars",
     "description": "Holographic Emperor",
@@ -402,7 +402,7 @@
   {
     "id": "26",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Colin Hunt",
     "franchise": "Star Wars",
     "description": "Prune Face",
@@ -418,7 +418,7 @@
   {
     "id": "27",
     "acquired": "07/27/2015",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Corey Dee Williams",
     "franchise": "Star Wars",
     "description": "Klaatu - ROTJ",
@@ -434,7 +434,7 @@
   {
     "id": "28",
     "acquired": "07/27/2015",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Dan Perri",
     "franchise": "Star Wars",
     "description": "Title crawl designer",
@@ -450,7 +450,7 @@
   {
     "id": "29",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Daniel Logan",
     "franchise": "Star Wars",
     "description": "Young Boba Fett on Geonosis",
@@ -466,7 +466,7 @@
   {
     "id": "30",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Dave Prowse",
     "franchise": "Star Wars",
     "description": "Vader - Death Star Landing Bay",
@@ -482,7 +482,7 @@
   {
     "id": "31",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Dave Prowse",
     "franchise": "Star Wars",
     "description": "Celebration III Talking Action Figure",
@@ -498,7 +498,7 @@
   {
     "id": "32",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Dave Prowse",
     "franchise": "Star Wars",
     "description": "Celebation III 3-day badge",
@@ -514,7 +514,7 @@
   {
     "id": "33",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Dave Prowse",
     "franchise": "Star Wars",
     "description": "Vader - Kneeling by Meditation Chamber",
@@ -530,7 +530,7 @@
   {
     "id": "34",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Dave Prowse",
     "franchise": "Star Wars",
     "description": "Cloud City hall with Boba and Lando",
@@ -546,7 +546,7 @@
   {
     "id": "35",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Dave Prowse",
     "franchise": "Star Wars",
     "description": "Behind the scenes with Mark Hamill (B/W)",
@@ -562,7 +562,7 @@
   {
     "id": "36",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Dee Baker",
     "franchise": "Star Wars",
     "description": "Rex - Clone Wars",
@@ -578,7 +578,7 @@
   {
     "id": "37",
     "acquired": "07/17/2015",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Dicky Beer",
     "franchise": "Star Wars",
     "description": "Barada promo shot",
@@ -594,7 +594,7 @@
   {
     "id": "38",
     "acquired": "06/11/2015",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Felicia Day",
     "franchise": "Supernatural",
     "description": "",
@@ -610,7 +610,7 @@
   {
     "id": "39",
     "acquired": "11/16/2013",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Femi Taylor",
     "franchise": "Star Wars",
     "description": "Oola",
@@ -626,7 +626,7 @@
   {
     "id": "40",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Garrick Hagon",
     "franchise": "Star Wars",
     "description": "Biggs",
@@ -658,7 +658,7 @@
   {
     "id": "42",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "George Lucas",
     "franchise": "Star Wars, etc",
     "description": "Force of Inspiration",
@@ -674,7 +674,7 @@
   {
     "id": "43",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "George Lucas",
     "franchise": "Star Wars, Etc",
     "description": "Artifacts",
@@ -690,7 +690,7 @@
   {
     "id": "44",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Gina Torres",
     "franchise": "Firefly",
     "description": "",
@@ -706,7 +706,7 @@
   {
     "id": "45",
     "acquired": "04/19/2016",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Harrison Ford",
     "franchise": "Star Wars",
     "description": "Magazine",
@@ -722,7 +722,7 @@
   {
     "id": "46",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Hayden Christensen",
     "franchise": "Star Wars",
     "description": "Signature card, no photo",
@@ -738,7 +738,7 @@
   {
     "id": "47",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Hayden Christensen",
     "franchise": "Star Wars",
     "description": "EpII Anakin Skywalker promo shot",
@@ -754,7 +754,7 @@
   {
     "id": "48",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Ian McDiarmid",
     "franchise": "Star Wars",
     "description": "Darth Sidious promo shot",
@@ -770,7 +770,7 @@
   {
     "id": "49",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Jake Lloyd",
     "franchise": "Star Wars",
     "description": "Young Anakin with Qui-Gon",
@@ -786,7 +786,7 @@
   {
     "id": "50",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": " ",
     "franchise": "Star Wars",
     "description": "Young Anakin promo shot",
@@ -802,7 +802,7 @@
   {
     "id": "51",
     "acquired": "09/19/2013",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "John Hostetter",
     "franchise": "Star Wars",
     "description": "General Madine - Rebel briefing room",
@@ -818,7 +818,7 @@
   {
     "id": "52",
     "acquired": "09/19/2013",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "John Hostetter",
     "franchise": "Star Wars",
     "description": "General Madine",
@@ -834,7 +834,7 @@
   {
     "id": "53",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "John Morton",
     "franchise": "Star Wars",
     "description": "Dak",
@@ -850,7 +850,7 @@
   {
     "id": "54",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "John Morton",
     "franchise": "Star Wars",
     "description": "Dak",
@@ -866,7 +866,7 @@
   {
     "id": "55",
     "acquired": "11/20/2013",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "John Morton",
     "franchise": "Star Wars",
     "description": "Bespin Boba Fett with Vader and Lando",
@@ -882,7 +882,7 @@
   {
     "id": "56",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "John Travolta",
     "franchise": "Face-Off",
     "description": "",
@@ -898,7 +898,7 @@
   {
     "id": "57",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Katie Purvis",
     "franchise": "Star Wars",
     "description": "Ewok",
@@ -914,7 +914,7 @@
   {
     "id": "58",
     "acquired": "09/19/2013",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Katie Sackhoff",
     "franchise": "Battlestar Galactica",
     "description": "Starbuck",
@@ -930,7 +930,7 @@
   {
     "id": "59",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Kenny Baker",
     "franchise": "Star Wars",
     "description": "R2-D2 on Dagobah",
@@ -946,7 +946,7 @@
   {
     "id": "60",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Kenny Baker",
     "franchise": "Star Wars",
     "description": "ESB - Medical Frigate observation deck",
@@ -962,7 +962,7 @@
   {
     "id": "61",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Khan Bonfils",
     "franchise": "Star Wars",
     "description": "Saesee Tiin promo shot",
@@ -978,7 +978,7 @@
   {
     "id": "62",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Lance Henriksen",
     "franchise": "Aliens",
     "description": "Bishop, torn in half",
@@ -994,7 +994,7 @@
   {
     "id": "63",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Laura Vandervoort",
     "franchise": "Smallville",
     "description": "Supergirl",
@@ -1010,7 +1010,7 @@
   {
     "id": "64",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Lorne Peterson",
     "franchise": "Star Wars",
     "description": "With TIE Model",
@@ -1026,7 +1026,7 @@
   {
     "id": "65",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Margaret Towner",
     "franchise": "Star Wars",
     "description": "TPM - Jira",
@@ -1042,7 +1042,7 @@
   {
     "id": "66",
     "acquired": "09/09/2014",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Mark Hamill",
     "franchise": "Star Wars",
     "description": "Luke ROTJ",
@@ -1058,7 +1058,7 @@
   {
     "id": "67",
     "acquired": "08/07/2017",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Mark Hamill",
     "franchise": "Star Wars",
     "description": "Luke  TLJ",
@@ -1074,7 +1074,7 @@
   {
     "id": "68",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Michael Carter",
     "franchise": "Star Wars",
     "description": "Bib Fortuna with Bousch",
@@ -1090,7 +1090,7 @@
   {
     "id": "69",
     "acquired": "11/20/2013",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Mike Edmonds",
     "franchise": "Star Wars",
     "description": "Ugnaught ",
@@ -1106,7 +1106,7 @@
   {
     "id": "70",
     "acquired": "07/27/2015",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Multi - Carrie Fisher, Mark Hamill",
     "franchise": "Star Wars",
     "description": "Luke and Leia swinging from the sail barge - ROTJ",
@@ -1122,7 +1122,7 @@
   {
     "id": "71",
     "acquired": "07/27/2015",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Multi - Fisher, Hamill, Daniels, Baker",
     "franchise": "Star Wars",
     "description": "ESB - Medical Frigate observation deck",
@@ -1138,7 +1138,7 @@
   {
     "id": "72",
     "acquired": "06/18/2016",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Multi - Jabba's Palace Denizens",
     "franchise": "Star Wars",
     "description": "",
@@ -1154,7 +1154,7 @@
   {
     "id": "73",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Multi - Tim Rose, Mark Dodson",
     "franchise": "Star Wars",
     "description": "Salacious Crumb",
@@ -1170,7 +1170,7 @@
   {
     "id": "74",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Multiple - Troopers",
     "franchise": "Star Wars",
     "description": "Storm Troopers multi-signed",
@@ -1186,7 +1186,7 @@
   {
     "id": "75",
     "acquired": "06/12/2017",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Multi-signed: Koo Stark, Garrick Hagon, Anthony Forrest",
     "franchise": "Star Wars",
     "description": "Toche Station deleted scene`",
@@ -1202,7 +1202,7 @@
   {
     "id": "76",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Neil Kaplan",
     "franchise": "Star Wars",
     "description": "Star Wars Uprising - Governor Adelhard",
@@ -1218,7 +1218,7 @@
   {
     "id": "77",
     "acquired": "06/11/2015",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Nichelle Nichols",
     "franchise": "Star Trek - TOS",
     "description": "Lt. Uhura promo shot",
@@ -1234,7 +1234,7 @@
   {
     "id": "78",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Nick Maley",
     "franchise": "Star Wars",
     "description": "Display of masks",
@@ -1250,7 +1250,7 @@
   {
     "id": "79",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Nick Maley",
     "franchise": "Star Wars",
     "description": "With Yoda animatronics",
@@ -1266,7 +1266,7 @@
   {
     "id": "80",
     "acquired": "11/16/2013",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Paul Blake",
     "franchise": "Star Wars",
     "description": "Greedo - Cantina with Han",
@@ -1282,7 +1282,7 @@
   {
     "id": "81",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Paul Blake",
     "franchise": "Star Wars",
     "description": "Greedo behind the scenes",
@@ -1298,7 +1298,7 @@
   {
     "id": "82",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Peter Mayhew",
     "franchise": "Star Wars",
     "description": "Chewbacca Prequel",
@@ -1314,7 +1314,7 @@
   {
     "id": "83",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Phil Brown",
     "franchise": "Star Wars",
     "description": "Owen Lars       ",
@@ -1330,7 +1330,7 @@
   {
     "id": "84",
     "acquired": "07/08/2017",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Ray Park",
     "franchise": "GI Joe",
     "description": "Snake Eyes",
@@ -1346,7 +1346,7 @@
   {
     "id": "85",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Ray Park",
     "franchise": "X-Men",
     "description": "Toad",
@@ -1362,7 +1362,7 @@
   {
     "id": "86",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Ray Park",
     "franchise": "X-Men",
     "description": "",
@@ -1378,7 +1378,7 @@
   {
     "id": "87",
     "acquired": "07/17/2015",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Richard Dreyfus",
     "franchise": "Close Encounters",
     "description": "",
@@ -1394,7 +1394,7 @@
   {
     "id": "88",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Robert Patrick",
     "franchise": "Terminator",
     "description": "",
@@ -1410,7 +1410,7 @@
   {
     "id": "89",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Robert Watts",
     "franchise": "Star Wars",
     "description": "AT-ST Driver",
@@ -1426,7 +1426,7 @@
   {
     "id": "90",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Roger Christian",
     "franchise": "Star Wars",
     "description": "With Lucas",
@@ -1442,7 +1442,7 @@
   {
     "id": "91",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Sean Maher",
     "franchise": "Firefly",
     "description": "Cast photo",
@@ -1458,7 +1458,7 @@
   {
     "id": "92",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Stan Lee",
     "franchise": "Marvel",
     "description": "Studio Portrait",
@@ -1474,7 +1474,7 @@
   {
     "id": "93",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Steve Sansweet",
     "franchise": "Star Wars Collecting",
     "description": "1000 Collectibles from a Galaxy Far, Far Away",
@@ -1490,7 +1490,7 @@
   {
     "id": "94",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Steve Sansweet",
     "franchise": "Star Wars Collecting",
     "description": "The Treasures of Rancho Obi-Wan, Volume 1",
@@ -1506,7 +1506,7 @@
   {
     "id": "95",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Steve Sansweet",
     "franchise": "Star Wars Collecting",
     "description": "Star Wars - The Ultimate Action Figure Collection",
@@ -1522,7 +1522,7 @@
   {
     "id": "96",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Tasia Valenza",
     "franchise": "Star Wars",
     "description": "Shaak Ti - Clone Wars",
@@ -1538,7 +1538,7 @@
   {
     "id": "97",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Temura Morrison",
     "franchise": "Star Wars",
     "description": "Jango Fett on Geonosis",
@@ -1570,7 +1570,7 @@
   {
     "id": "99",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Tim Rose",
     "franchise": "Star Wars",
     "description": "Admiral Ackbar promo shot",
@@ -1586,7 +1586,7 @@
   {
     "id": "100",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Tim Rose",
     "franchise": "Star Wars",
     "description": "Admiral Ackbar on bridge",
@@ -1602,7 +1602,7 @@
   {
     "id": "101",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Triple-Fett multi-signed",
     "franchise": "Star Wars",
     "description": "Promo Photo - Jeremy Bulloch, Temura Morrison, Daniel Logan",
@@ -1618,7 +1618,7 @@
   {
     "id": "102",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Warwick Davis",
     "franchise": "Star Wars",
     "description": "Tatooine denizen",
@@ -1650,7 +1650,7 @@
   {
     "id": "104",
     "acquired": "",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "William Shatner/Joan Collins",
     "franchise": "Star Trek - TOS",
     "description": "City on the Edge of Forever",
@@ -1666,7 +1666,7 @@
   {
     "id": "105",
     "acquired": "06/30/2017",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Shannon McCrandle",
     "franchise": "Star Wars",
     "description": "Mara Jade",
@@ -1682,7 +1682,7 @@
   {
     "id": "106",
     "acquired": "06/30/2017",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Shannon McCrandle",
     "franchise": "Star Wars",
     "description": "Mara Jade",
@@ -1698,7 +1698,7 @@
   {
     "id": "107",
     "acquired": "05/27/2017",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Jonathan Rhys Davies",
     "franchise": "Portrait",
     "description": "",
@@ -1714,7 +1714,7 @@
   {
     "id": "108",
     "acquired": "06/20/2017",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Joel Edgerton",
     "franchise": "Star Wars",
     "description": "Uncle Owen - Prequels",
@@ -1730,7 +1730,7 @@
   {
     "id": "109",
     "acquired": "04/07/2017",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Celebration III Art Print",
     "franchise": "Star Wars",
     "description": "Tsuneo Sanda",
@@ -1746,7 +1746,7 @@
   {
     "id": "110",
     "acquired": "09/09/2014",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "`",
     "franchise": "Star Wars",
     "description": "Size Matters Not - Autographed book",
@@ -1762,7 +1762,7 @@
   {
     "id": "111",
     "acquired": "02/12/2015",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "Glover",
     "franchise": "",
     "description": "",
@@ -1778,7 +1778,7 @@
   {
     "id": "112",
     "acquired": "02/12/2015",
-    "type": "autograph",
+    "type": "autographs",
     "name/brand": "D'Abo",
     "franchise": "",
     "description": "",
