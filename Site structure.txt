@@ -3,18 +3,22 @@
 +-- add-item.html            form to insert new items into json (trial)
 +-- autographs.html          Autographs gallery page
 +-- cast.html                Detailed list of cast and/or characters
-+-- castDEMO.html            Detailed list of cast and/or characters (demo of features)
-+-- catalog.html             Original gallery page example - use for testbed
 +-- collectibles.html        Collectibles/Memorabilia gallery page
++-- dedupejson.html          Intended as a data management utility
++-- favicon.ico              GeorgiaJedi browser icon
 +-- fileuploadtest.html      page to generate thumbnail images
 +-- fileuploadtest1.html     page to generate thumbnail images (demo)
++-- imageview-original.html  ORIGINAL Page to view images for selected gallery items
 +-- imageview.html           Page to view images for selected gallery items (main image and supporting images)
 +-- imageview2.html          Page to view images for selected gallery items (main image and supporting images)
 +-- index.html               Home/Landing page
 +-- list-images.asp
++-- README                   Site info
 +-- saveThumbnail.asp
 +-- update-item.html         form to update items in json (trial)
++-- web.config               Site configuration
 +-- js
+    +-- castworker.js
     +-- script.js
     +-- updateJSON.js
 +-- css
@@ -23,11 +27,14 @@
     +-- styles.css
 +-- data
     +-- autographs.json
-    +-- catalog.json
+    +-- cast.json
     +-- CastAndCharacters.json
-    +-- GBPtoUSD_HistoricalRates.json
+    +-- catalog.json
     +-- collectibles.json
--- images
+    +-- GBPtoUSD_HistoricalRates.json
+    +-- images.json         this data file allows for access to the individual images/image groups
++-- docs                    this folder contains misc documents/reference sources
+-- images                   this folder contains all catalog images and thumbnails
     +-- GeorgiaJedi-logo-256.jpg
     +-- openartai-logoimage02.jpg
     +-- thumbs
