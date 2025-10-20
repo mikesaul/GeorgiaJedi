@@ -2,7 +2,7 @@
   {
     "id": 1,
     "name": "Mark Hamill",
-    "professions": [ "Actor", "Producer", "Director" ],
+    "professions": [ "Actor", "Producer", "Director", "Writer" ],
     "known_for": "Star Wars: Episode IV - A New Hope (1977)",
     "bio": "Mark Hamill is best known for his portrayal of Luke Skywalker in the original Star Wars trilogy and his extensive voice acting work, including as the Joker in Batman: The Animated Series."
   },
