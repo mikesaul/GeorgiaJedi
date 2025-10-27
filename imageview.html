@@ -47,84 +47,94 @@
     document.addEventListener('DOMContentLoaded', function () {
       const urlParams = new URLSearchParams(window.location.search);
       const imageName = urlParams.get("image");
-      const page = urlParams.get("pg");
       const sender = urlParams.get("sender"); // autographs or collectibles
+      const sParam = urlParams.get("s"); // compact base64 state param
       const backnav = document.getElementById("backnav");
       const div = document.getElementById("imageCarouselContainer");
 
-      if (page && sender && backnav) {
-        backnav.href = `${sender}.html?pg=${page}`;
+      // Build back link: prefer the compact state 's' if present, otherwise link to sender page
+      if (backnav) {
+        if (sender) {
+          if (sParam) {
+            // pass the compact base64 string through (it may already be URL-encoded, ensure encoding)
+            backnav.href = `${sender}.html?s=${encodeURIComponent(sParam)}`;
+          } else {
+            backnav.href = `${sender}.html`;
+          }
+        } else {
+          backnav.href = 'index.html';
+        }
       }
 
       function loadImages() {
-  if (!imageName) {
-    div.innerHTML = "<p>Error: Image not specified.</p>";
-    return;
-  }
+        if (!imageName) {
+          div.innerHTML = "<p>Error: Image not specified.</p>";
+          return;
+        }
 
-  fetch("data/images.json")
-    .then(response => response.json())
-    .then(imageGroups => {
-      const group = imageGroups.hasOwnProperty(sender) ? sender : "root";
-      const groupImages = imageGroups[group] || [];
+        fetch("data/images.json")
+          .then(response => response.json())
+          .then(imageGroups => {
+            const group = imageGroups.hasOwnProperty(sender) ? sender : "root";
+            const groupImages = imageGroups[group] || [];
 
-      const baseName = imageName.replace(/\.[^/.]+$/, '');
+            const baseName = imageName.replace(/\.[^/.]+$/, '');
 
-      const matchingImages = groupImages.filter(image => {
-        const fileName = image.split('/').pop().split('.')[0];
-        return fileName.startsWith(baseName);
-      });
+            const matchingImages = groupImages.filter(image => {
+              const fileName = image.split('/').pop().split('.')[0];
+              return fileName.startsWith(baseName);
+            });
 
-      matchingImages.sort((a, b) => {
-        if (!a.includes('-')) return -1;
-        if (!b.includes('-')) return 1;
-        return 0;
-      });
+            matchingImages.sort((a, b) => {
+              if (!a.includes('-')) return -1;
+              if (!b.includes('-')) return 1;
+              return 0;
+            });
 
-      if (matchingImages.length > 0) {
-        const carouselDiv = document.createElement("div");
-        carouselDiv.id = "imageCarousel";
-        carouselDiv.className = "carousel slide";
-        carouselDiv.setAttribute("data-ride", "carousel");
+            if (matchingImages.length > 0) {
+              const carouselDiv = document.createElement("div");
+              carouselDiv.id = "imageCarousel";
+              carouselDiv.className = "carousel slide";
+              carouselDiv.setAttribute("data-ride", "carousel");
 
-        const carouselInner = document.createElement("div");
-        carouselInner.className = "carousel-inner";
+              const carouselInner = document.createElement("div");
+              carouselInner.className = "carousel-inner";
 
-        matchingImages.forEach((image, index) => {
-          const item = document.createElement("div");
-          item.className = "carousel-item" + (index === 0 ? " active" : "");
+              matchingImages.forEach((image, index) => {
+                const item = document.createElement("div");
+                item.className = "carousel-item" + (index === 0 ? " active" : "");
 
-          const img = document.createElement("img");
-          img.src = image;
-          img.className = "d-block w-100";
-          img.alt = `Image ${index + 1}`;
+                const img = document.createElement("img");
+                img.src = image;
+                img.className = "d-block w-100";
+                img.alt = `Image ${index + 1}`;
 
-          item.appendChild(img);
-          carouselInner.appendChild(item);
-        });
+                item.appendChild(img);
+                carouselInner.appendChild(item);
+              });
 
-        carouselDiv.appendChild(carouselInner);
+              carouselDiv.appendChild(carouselInner);
 
-        carouselDiv.innerHTML += `
-          <a class="carousel-control-prev" href="#imageCarousel" role="button" data-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="sr-only">Previous</span>
-          </a>
-          <a class="carousel-control-next" href="#imageCarousel" role="button" data-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="sr-only">Next</span>
-          </a>`;
+              carouselDiv.innerHTML += `
+                <a class="carousel-control-prev" href="#imageCarousel" role="button" data-slide="prev">
+                  <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                  <span class="sr-only">Previous</span>
+                </a>
+                <a class="carousel-control-next" href="#imageCarousel" role="button" data-slide="next">
+                  <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                  <span class="sr-only">Next</span>
+                </a>`;
 
-        div.appendChild(carouselDiv);
-      } else {
-        div.innerHTML = "<p>No matching images found.</p>";
+              div.appendChild(carouselDiv);
+            } else {
+              div.innerHTML = "<p>No matching images found.</p>";
+            }
+          })
+          .catch(error => {
+            console.error("Error loading images:", error);
+            div.innerHTML = "<p>Error loading images.</p>";
+          });
       }
-    })
-    .catch(error => {
-      console.error("Error loading images:", error);
-      div.innerHTML = "<p>Error loading images.</p>";
-    });
-}
 
       loadImages();
     });

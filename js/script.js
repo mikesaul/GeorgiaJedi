@@ -1,4 +1,5 @@
-// script.js (final with numeric filter patch)
+// script.js (compact base64 state-preservation for image view; pg/index removed)
+// Sender detection now uses getItemType() for robust page name detection.
 
 let rawData = [];
 
@@ -80,13 +81,68 @@ function getItemType() {
   return page.split('.').shift();
 }
 
-function imageFormatter(value, row, index) {
+// ====== Compact base64 helpers (UTF-8 safe) ======
+function b64EncodeUnicode(str) {
+  // encodeURIComponent -> percent-encoded UTF-8, convert percent encodings to raw bytes, btoa() to base64
+  return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function (match, p1) {
+    return String.fromCharCode('0x' + p1);
+  }));
+}
+function b64DecodeUnicode(str) {
+  // atob -> binary string of raw bytes, convert each char code to %xx, decodeURIComponent to decode UTF-8
+  try {
+    return decodeURIComponent(Array.prototype.map.call(atob(str), function (c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+  } catch (e) {
+    // fallback: return atob result if decode fails
+    try { return atob(str); } catch (ex) { return null; }
+  }
+}
+
+// New: gather table state (page, pageSize, sort, search, custom filters)
+function getTableState() {
   const options = $('#catalog-table').bootstrapTable('getOptions') || {};
-  const currentPage = options.pageNumber || 1;
-  const sender = window.location.pathname.includes('autographs') ? 'autographs' : 'collectibles';
+  const state = {
+    pageNumber: options.pageNumber || 1,
+    pageSize: options.pageSize || options.pageSize || 5,
+    sortName: options.sortName || '',
+    sortOrder: options.sortOrder || '',
+    searchText: (options.searchText !== undefined) ? options.searchText : ''
+  };
+
+  const filters = {};
+  $('.column-filter').each(function () {
+    const key = $(this).data('column');
+    const val = $(this).val();
+    if (val !== undefined && val !== null && String(val) !== '') {
+      filters[key] = val;
+    }
+  });
+  state.filters = filters;
+  return state;
+}
+
+// Modified imageFormatter to include compact base64 state param 's' and drop pg/index
+// Sender detection now uses getItemType() to reliably return 'autographs' or 'collectibles' (etc)
+function imageFormatter(value, row, index) {
+  const sender = getItemType(); // more robust than substring-matching the pathname
   const type = getItemType();
+
+  let sParam = '';
+  try {
+    const state = getTableState();
+    const json = JSON.stringify(state);
+    const b64 = b64EncodeUnicode(json);
+    sParam = encodeURIComponent(b64); // safe for URL
+  } catch (ex) {
+    console.warn('Could not serialize table state:', ex);
+  }
+
+  const sQuery = sParam ? `&s=${sParam}` : '';
+
   if (row.image) {
-    return `<a href="imageview.html?index=${row.id}&image=${row.image}&pg=${currentPage}&sender=${sender}">
+    return `<a href="imageview.html?image=${row.image}&sender=${sender}${sQuery}">
               <img height=128 width=128 src="images/thumbs/${row.image}_thumb.jpg" alt="thumb">
             </a>
             <a href="update-item.html?id=${row.id}&itemType=${type}" class="btn btn-sm btn-primary mt-2">Edit</a>`;
@@ -259,6 +315,61 @@ $(function () {
     populateDropdownFilter('franchise', 'franchise');
     populateDropdownFilter('size/model#', 'size/model#');
     populateDropdownFilter('source', 'source');
+
+    // If a compact state 's' is provided in the URL, decode and apply it now
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const sRaw = urlParams.get('s');
+      if (sRaw) {
+        const decoded = b64DecodeUnicode(decodeURIComponent(sRaw));
+        if (decoded) {
+          const state = JSON.parse(decoded);
+
+          // Apply filters first (these operate on client-side data via the column-filter inputs)
+          if (state.filters) {
+            Object.entries(state.filters).forEach(([key, val]) => {
+              // set the filter input/select
+              const $el = $(`.column-filter[data-column="${key}"]`);
+              if ($el.length) {
+                $el.val(val);
+              }
+            });
+            // Trigger input change which will apply custom filtering
+            $('.column-filter').trigger('change');
+          }
+
+          // Apply search text (bootstrap-table option)
+          if (state.searchText) {
+            const $searchInput = $('.fixed-table-toolbar .search input');
+            if ($searchInput.length) $searchInput.val(state.searchText);
+            $('#catalog-table').bootstrapTable('refreshOptions', { searchText: state.searchText });
+          }
+
+          // Apply sorting and page size via refreshOptions
+          const refreshOpts = {};
+          if (state.sortName) refreshOpts.sortName = state.sortName;
+          if (state.sortOrder) refreshOpts.sortOrder = state.sortOrder;
+          if (state.pageSize) refreshOpts.pageSize = state.pageSize;
+          if (Object.keys(refreshOpts).length) {
+            $('#catalog-table').bootstrapTable('refreshOptions', refreshOpts);
+          }
+
+          // Ensure page selection happens after the table has rendered (small timeout)
+          setTimeout(() => {
+            const pg = parseInt(state.pageNumber || 1, 10);
+            if (pg && !isNaN(pg)) {
+              try {
+                $('#catalog-table').bootstrapTable('selectPage', pg);
+              } catch (ex) {
+                // fallback: do nothing
+              }
+            }
+          }, 150);
+        }
+      }
+    } catch (ex) {
+      console.warn('Error applying saved table state:', ex);
+    }
   });
 
   // React to filter changes
