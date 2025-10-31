@@ -145,10 +145,10 @@ function imageFormatter(value, row, index) {
     return `<a href="imageview.html?image=${row.image}&sender=${sender}${sQuery}">
               <img height=128 width=128 src="images/thumbs/${row.image}_thumb.jpg" alt="thumb">
             </a>
-            <a href="update-item.html?id=${row.id}&itemType=${type}" class="btn btn-sm btn-primary mt-2">Edit</a>`;
+            <a href="update-item.html?id=${row.id}&itemType=${type}" class="btn btn-sm btn-primary mt-2 admin-only">Edit</a>`;
   }
   return `<img height=128 src="images/100.png" alt="no image">
-          <a href="update-item.html?id=${row.id}&itemType=${type}" class="btn btn-sm btn-primary mt-2">Edit</a>`;
+          <a href="update-item.html?id=${row.id}&itemType=${type}" class="btn btn-sm btn-primary mt-2 admin-only">Edit</a>`;
 }
 
 function rowStyle(row, index) {
@@ -306,6 +306,9 @@ $(function () {
             </div>`);
         } else {
           $('#custom-footer').empty();
+        }
+        if (typeof updateAdminVisibility === 'function') {
+          updateAdminVisibility();
         }
       }
     });

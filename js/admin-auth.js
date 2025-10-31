@@ -1,55 +1,65 @@
-// --- admin-auth.js ---
-// Centralized admin token and visibility manager for GeorgiaJedi.net
+(function () {
+  const ADMIN_KEY = "isAdmin";
+  const ADMIN_TIMEOUT_KEY = "adminTimeout";
+  const ADMIN_PASSWORD = "ForceGranted";
+  const ADMIN_DURATION_MS = 60 * 60 * 1000; // 60 minutes
 
-(function() {
-    const ADMIN_KEY = "galactic_admin_token";
-    const VALID_TOKEN = "ForceGranted"; // expected token value
-  
-    // --- Step 1: Capture ?admin=ForceGranted in URL and persist it ---
-    const params = new URLSearchParams(window.location.search);
-    if (params.has("admin")) {
-      const token = params.get("admin");
-      localStorage.setItem(ADMIN_KEY, token);
-      history.replaceState(null, "", window.location.pathname); // clean URL
+  function isAdminMode() {
+    const flag = localStorage.getItem(ADMIN_KEY);
+    const timeout = localStorage.getItem(ADMIN_TIMEOUT_KEY);
+    if (!flag || !timeout) return false;
+    if (Date.now() > parseInt(timeout, 10)) {
+      // Expired
+      localStorage.removeItem(ADMIN_KEY);
+      localStorage.removeItem(ADMIN_TIMEOUT_KEY);
+      return false;
     }
-  
-    // --- Step 2: Check if user is admin ---
-    function isAdmin() {
-      return localStorage.getItem(ADMIN_KEY) === VALID_TOKEN;
-    }
-  
-    // --- Step 3: Show/hide admin-only elements ---
-    function updateAdminVisibility() {
-      const adminEls = document.querySelectorAll(".admin-only");
-      const logoutLink = document.getElementById("logoutAdmin");
-      const visible = isAdmin();
-  
-      adminEls.forEach(el => {
-        el.style.display = visible ? "" : "none";
-      });
-  
-      if (logoutLink) {
-        logoutLink.style.display = visible ? "" : "none";
-      }
-    }
-  
-    // --- Step 4: Bind logout handler ---
-    function setupLogoutHandler() {
-      const logoutLink = document.getElementById("logoutAdmin");
-      if (!logoutLink) return;
-  
-      logoutLink.addEventListener("click", e => {
-        e.preventDefault();
-        localStorage.removeItem(ADMIN_KEY);
-        updateAdminVisibility();
-        alert("Admin access removed.");
-      });
-    }
-  
-    // --- Step 5: Initialize once DOM is ready ---
-    document.addEventListener("DOMContentLoaded", () => {
-      updateAdminVisibility();
-      setupLogoutHandler();
+    return flag === "true";
+  }
+
+  function enableAdminMode() {
+    localStorage.setItem(ADMIN_KEY, "true");
+    localStorage.setItem(ADMIN_TIMEOUT_KEY, Date.now() + ADMIN_DURATION_MS);
+    alert("✅ Admin mode enabled for 60 minutes.");
+    updateAdminVisibility();
+  }
+
+  function disableAdminMode() {
+    localStorage.removeItem(ADMIN_KEY);
+    localStorage.removeItem(ADMIN_TIMEOUT_KEY);
+    alert("🚪 Admin mode disabled.");
+    updateAdminVisibility();
+  }
+
+  function updateAdminVisibility() {
+    const adminElements = document.querySelectorAll(".admin-only");
+    const adminMode = isAdminMode();
+
+    adminElements.forEach((el) => {
+      el.style.display = adminMode ? "" : "none";
     });
-  })();
-  
+
+    const adminToggle = document.getElementById("adminToggle");
+    const logoutLink = document.getElementById("logoutAdmin");
+
+    if (adminToggle) adminToggle.style.display = adminMode ? "none" : "";
+    if (logoutLink) logoutLink.style.display = adminMode ? "" : "none";
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("admin") === ADMIN_PASSWORD) {
+      enableAdminMode();
+      params.delete("admin");
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else {
+      updateAdminVisibility();
+    }
+
+    const logoutLink = document.getElementById("logoutAdmin");
+    if (logoutLink) logoutLink.addEventListener("click", disableAdminMode);
+  });
+
+  // 🔹 Make visibility updater available globally for dynamic tables
+  window.updateAdminVisibility = updateAdminVisibility;
+})();
