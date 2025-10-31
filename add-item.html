@@ -13,87 +13,73 @@
     <link rel="stylesheet" href="css/styles.css">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-    
+
+    <!-- Admin Auth -->
+    <script src="js/admin-auth.js"></script>
     <script>
-/*      // Case-insensitive alphanumeric sort with numeric prefix handling
-     function alphanumericCaseInsensitiveSort(a, b) {
-        const regex = /^(\d+)(.*)/i;
-        const matchA = a.match(regex);
-        const matchB = b.match(regex);
-
-        if (matchA && matchB) {
-            const numA = parseInt(matchA[1], 10);
-            const numB = parseInt(matchB[1], 10);
-            if (numA !== numB) return numA - numB;
-            return matchA[2].toLowerCase().localeCompare(matchB[2].toLowerCase());
+        // Redirect non-admin users
+        if (!window.isAdminMode()) {
+            alert("You are not authorized to make updates.");
+            window.location.href = "index.html";
         }
+    </script>
 
-        return a.toLowerCase().localeCompare(b.toLowerCase());
-    }
-
- */
-       $(document).ready(function() {
-            // Initialize the datepicker for the acquired field
+    <script>
+        $(document).ready(function() {
             $("#acquired").datepicker({ dateFormat: "mm/dd/yy" });
-
-            // Disable all form fields except the Item Type dropdown initially
             $('#dataForm :input').not('#itemType').prop('disabled', true);
 
-            // Enable form fields and load franchise data when Item Type is selected
             $('#itemType').on('change', function() {
                 const itemType = $(this).val();
                 
                 if (itemType) {
-                    // Enable all form fields when Item Type is selected
                     $('#dataForm :input').prop('disabled', false);
-
                     const jsonFileName = `data/${itemType}.json`;
                     $.getJSON(jsonFileName, function(data) {
-                        // Generate unique, sorted franchise list
+                        const alphanumericCaseInsensitiveSort = (a, b) => {
+                            const regex = /^(\d+)(.*)/i;
+                            const matchA = a.match(regex);
+                            const matchB = b.match(regex);
+                            if (matchA && matchB) {
+                                const numA = parseInt(matchA[1], 10);
+                                const numB = parseInt(matchB[1], 10);
+                                if (numA !== numB) return numA - numB;
+                                return matchA[2].toLowerCase().localeCompare(matchB[2].toLowerCase());
+                            }
+                            return a.toLowerCase().localeCompare(b.toLowerCase());
+                        };
+
+                        // Franchise list
                         const franchises = [...new Set(data.map(item => item.franchise).filter(Boolean))];
                         franchises.sort(alphanumericCaseInsensitiveSort);
-
-                        // Populate the franchise datalist
                         const franchiseDatalist = $('#franchiseList');
                         franchiseDatalist.empty();
-                        franchises.forEach(franchise => {
-                            franchiseDatalist.append(new Option(franchise));
-                        });
+                        franchises.forEach(f => franchiseDatalist.append(new Option(f)));
 
-                        
-                    // --- Source handling ---
-                    const sourceOptions = [...new Set(data.map(item => item.source).filter(Boolean))];
-                    sourceOptions.sort(alphanumericCaseInsensitiveSort);
-                    const sourceDatalist = $('#sourceList');
-                    sourceDatalist.empty();
-                    sourceOptions.forEach(option => {
-                        sourceDatalist.append(new Option(option));
-                    });
+                        // Source list
+                        const sources = [...new Set(data.map(item => item.source).filter(Boolean))];
+                        sources.sort(alphanumericCaseInsensitiveSort);
+                        const sourceDatalist = $('#sourceList');
+                        sourceDatalist.empty();
+                        sources.forEach(f => sourceDatalist.append(new Option(f)));
 
-                    // --- Size handling ---
-                    const sizeOptions = [...new Set(data.map(item => item["size/model#"]).filter(Boolean))];
-                    sizeOptions.sort(alphanumericCaseInsensitiveSort);
-                    const sizeDatalist = $('#sizeList');
-                    sizeDatalist.empty();
-                    sizeOptions.forEach(option => {
-                        sizeDatalist.append(new Option(option));
-                    });
+                        // Size list
+                        const sizes = [...new Set(data.map(item => item["size/model#"]).filter(Boolean))];
+                        sizes.sort(alphanumericCaseInsensitiveSort);
+                        const sizeDatalist = $('#sizeList');
+                        sizeDatalist.empty();
+                        sizes.forEach(f => sizeDatalist.append(new Option(f)));
 
-                // Generate unique, sorted is_verified list
-                const isVerifiedOptions = [...new Set(data.map(item => item.is_verified).filter(Boolean))];
-                isVerifiedOptions.sort();
-
-                // Populate the is_verified datalist
-                const isVerifiedDatalist = $('#isVerifiedList');
-                isVerifiedDatalist.empty();
-                isVerifiedOptions.forEach(option => {
-                    isVerifiedDatalist.append(new Option(option));
-                });
+                        // Is Verified list
+                        const isVerified = [...new Set(data.map(item => item.is_verified).filter(Boolean))];
+                        isVerified.sort();
+                        const isVerifiedDatalist = $('#isVerifiedList');
+                        isVerifiedDatalist.empty();
+                        isVerified.forEach(f => isVerifiedDatalist.append(new Option(f)));
                     }).fail(function() {
                         alert('Failed to load franchise data.');
                     });
                 } else {
-                    // Reset the form and disable all fields if no Item Type is selected
                     $('#dataForm')[0].reset();
                     $('#dataForm :input').not('#itemType').prop('disabled', true);
                     $('#franchiseList').empty();
@@ -103,32 +89,32 @@
     </script>
 </head>
 <body>
-    <header class="d-flex align-items-center justify-content-center py-4">
-        <img src="images/GeorgiaJedi-logo-256.jpg" alt="GeorgiaJedi Logo" class="logo mr-3">
-        <h1 class="mx-auto">Star Wars Autograph Catalog</h1>
-    </header>
+<header class="d-flex align-items-center justify-content-center py-4">
+    <img src="images/GeorgiaJedi-logo-256.jpg" alt="GeorgiaJedi Logo" class="logo mr-3">
+    <h1 class="mx-auto">Star Wars Autograph Catalog</h1>
+</header>
 
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="#">GeorgiaJedi</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav">
-                <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
-                <li class="nav-item"><a class="nav-link" href="autographs.html">Autographs</a></li>
-                <li class="nav-item"><a class="nav-link" href="collectibles.html">Collectibles</a></li>
-                <li class="nav-item"><a class="nav-link" href="cast.html">Cast/Crew/Characters</a></li>
-                <li class="nav-item"><a class="nav-link admin-only" href="add-item.html">Add Item</a></li>
-                <li class="nav-item"><a class="nav-link" href="fileuploadtest.html">Thumb Generator</a></li>
-                <li class="nav-item"><a class="nav-link" href="#" id="logoutAdmin" style="display:none;">Logout Admin</a></li>
-            </ul>
-        </div>
-    </nav>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#">GeorgiaJedi</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+            <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+            <li class="nav-item"><a class="nav-link" href="autographs.html">Autographs</a></li>
+            <li class="nav-item"><a class="nav-link" href="collectibles.html">Collectibles</a></li>
+            <li class="nav-item"><a class="nav-link" href="cast.html">Cast/Crew/Characters</a></li>
+            <li class="nav-item"><a class="nav-link admin-only" href="add-item.html">Add Item</a></li>
+            <li class="nav-item"><a class="nav-link" href="fileuploadtest.html">Thumb Generator</a></li>
+            <li class="nav-item"><a class="nav-link" href="#" id="logoutAdmin" style="display:none;">Logout Admin</a></li>
+        </ul>
+    </div>
+</nav>
 
-    <main class="container my-5">
-        <h2 class="mb-4 text-center">Add Memorabilia</h2>
-        <form id="dataForm" class="bg-light p-4 rounded shadow row" autocomplete="off">
+<main class="container my-5">
+    <h2 class="mb-4 text-center">Add Memorabilia</h2>
+    <form id="dataForm" class="bg-light p-4 rounded shadow row" autocomplete="off">
             <div class="form-group col-md-3">
                 <label for="itemType">Select Item Type:</label>
                 <select id="itemType" name="itemType" class="form-control" required>
@@ -224,13 +210,11 @@
             <div class="form-group col-md-12">
                 <button type="submit" class="btn btn-primary btn-block">Update Item</button>
             </div>
-        </form>
-    </main>
+    </form>
+</main>
 
-    <footer class="text-center py-4">
-        <p>&copy; 2024 GeorgiaJedi. All rights reserved.</p>
-    </footer>
-
-<script src="js/admin-auth.js"></script>
+<footer class="text-center py-4">
+    <p>&copy; 2024 GeorgiaJedi. All rights reserved.</p>
+</footer>
 </body>
 </html>

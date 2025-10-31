@@ -13,10 +13,20 @@
        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-table@1.18.3/dist/bootstrap-table.min.css">
       <link rel="stylesheet" href="css/styles.css">
-      <link rel="icon" href="/favicon.ico" type="image/x-icon">
-      <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-      
-    </head>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- Admin Auth -->
+    <script src="js/admin-auth.js"></script>
+    <script>
+        // Redirect non-admin users
+        if (!window.isAdminMode()) {
+            alert("You are not authorized to make updates.");
+            window.location.href = "index.html";
+        }
+    </script>
+
+  </head>
   <body>
     <header class="d-flex align-items-center justify-content-center py-4">
         <img src="images/GeorgiaJedi-logo-256.jpg" alt="GeorgiaJedi Logo" class="logo mr-3">
@@ -55,7 +65,102 @@
     <script src="https://unpkg.com/filepond-plugin-image-transform/dist/filepond-plugin-image-transform.js"></script>
 
     <!-- add the Image Crop plugin script -->
-    <script src="https://unpkg.com/filepond-plugin-image-crop/dist/filepond-plugin-image-crop.js"></script>
+    <scr<!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Update Item - Star Wars Memorabilia Gallery</title>
+          <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+          <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+          <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+          <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+          <script src="js/updateJSON.js"></script>
+          <script src="js/script.js"></script>
+          <link rel="stylesheet" href="css/styles.css">
+          <link rel="icon" href="/favicon.ico" type="image/x-icon">
+          <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+      
+          <!-- Admin Auth -->
+          <script src="js/admin-auth.js"></script>
+          <script>
+              // Redirect non-admin users
+              if (!window.isAdminMode()) {
+                  alert("You are not authorized to make updates.");
+                  window.location.href = "index.html";
+              }
+          </script>
+      
+          <script>
+              $(document).ready(function() {
+                  $("#acquired").datepicker({ dateFormat: "mm/dd/yy" });
+      
+                  function getQueryParam(name) {
+                      const urlParams = new URLSearchParams(window.location.search);
+                      return urlParams.get(name);
+                  }
+      
+                  const itemType = getQueryParam('itemType');
+                  if (itemType) {
+                      const jsonFileName = `data/${itemType}.json`;
+                      $.getJSON(jsonFileName, function(data) {
+                          const franchises = [...new Set(data.map(item => item.franchise).filter(Boolean))];
+                          franchises.sort();
+                          const franchiseDatalist = $('#franchiseList');
+                          franchiseDatalist.empty();
+                          franchises.forEach(f => franchiseDatalist.append(new Option(f)));
+      
+                          const isVerified = [...new Set(data.map(item => item.is_verified).filter(Boolean))];
+                          isVerified.sort();
+                          const isVerifiedDatalist = $('#isVerifiedList');
+                          isVerifiedDatalist.empty();
+                          isVerified.forEach(f => isVerifiedDatalist.append(new Option(f)));
+                      }).fail(function() {
+                          alert('Failed to load franchise data.');
+                      });
+                  } else {
+                      alert("itemType query parameter is missing.");
+                  }
+              });
+          </script>
+      </head>
+      <body>
+      <header class="d-flex align-items-center justify-content-center py-4">
+          <img src="images/GeorgiaJedi-logo-256.jpg" alt="GeorgiaJedi Logo" class="logo mr-3">
+          <h1 class="mx-auto">Star Wars Autograph Catalog</h1>
+      </header>
+      
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+          <a class="navbar-brand" href="#">GeorgiaJedi</a>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+              <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNav">
+              <ul class="navbar-nav">
+                  <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+                  <li class="nav-item"><a class="nav-link" href="autographs.html">Autographs</a></li>
+                  <li class="nav-item"><a class="nav-link" href="collectibles.html">Collectibles</a></li>
+                  <li class="nav-item"><a class="nav-link" href="cast.html">Cast/Crew/Characters</a></li>
+                  <li class="nav-item"><a class="nav-link admin-only" href="add-item.html">Add Item</a></li>
+                  <li class="nav-item"><a class="nav-link" href="fileuploadtest1.html">Thumb Generator</a></li>
+                  <li class="nav-item"><a class="nav-link" href="#" id="logoutAdmin" style="display:none;">Logout Admin</a></li>
+              </ul>
+          </div>
+      </nav>
+      
+      <main class="container my-5">
+          <h2>Update Memorabilia</h2>
+          <form id="dataForm" class="bg-light p-4 rounded shadow row" autocomplete="off">
+              <!-- Form fields here (unchanged) -->
+          </form>
+      </main>
+      
+      <footer class="text-center py-4">
+          <p>&copy; 2024 GeorgiaJedi. All rights reserved.</p>
+      </footer>
+      </body>
+      </html>
+      ipt src="https://unpkg.com/filepond-plugin-image-crop/dist/filepond-plugin-image-crop.js"></script>
 
 
     <script src="https://unpkg.com/filepond/dist/filepond.js"></script>

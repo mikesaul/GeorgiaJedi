@@ -62,4 +62,12 @@
 
   // 🔹 Make visibility updater available globally for dynamic tables
   window.updateAdminVisibility = updateAdminVisibility;
+
+  // 🔹 Make visibility updater available globally for dynamic tables
+  window.updateAdminVisibility = updateAdminVisibility;
+
+  // 🔹 Make isAdminMode globally accessible
+  window.isAdminMode = isAdminMode;
 })();
+
+
