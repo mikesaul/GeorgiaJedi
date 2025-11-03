@@ -18,7 +18,7 @@
     <script src="js/admin-auth.js"></script>
     <script>
         // Redirect non-admin users
-        if (!window.isAdminMode()) {
+        if (!window.isAdminMode || !window.isAdminMode()) {
             alert("You are not authorized to make updates.");
             window.location.href = "index.html";
         }
@@ -31,59 +31,63 @@
 
             $('#itemType').on('change', function() {
                 const itemType = $(this).val();
-                
-                if (itemType) {
-                    $('#dataForm :input').prop('disabled', false);
-                    const jsonFileName = `data/${itemType}.json`;
-                    $.getJSON(jsonFileName, function(data) {
-                        const alphanumericCaseInsensitiveSort = (a, b) => {
-                            const regex = /^(\d+)(.*)/i;
-                            const matchA = a.match(regex);
-                            const matchB = b.match(regex);
-                            if (matchA && matchB) {
-                                const numA = parseInt(matchA[1], 10);
-                                const numB = parseInt(matchB[1], 10);
-                                if (numA !== numB) return numA - numB;
-                                return matchA[2].toLowerCase().localeCompare(matchB[2].toLowerCase());
-                            }
-                            return a.toLowerCase().localeCompare(b.toLowerCase());
-                        };
 
-                        // Franchise list
-                        const franchises = [...new Set(data.map(item => item.franchise).filter(Boolean))];
-                        franchises.sort(alphanumericCaseInsensitiveSort);
-                        const franchiseDatalist = $('#franchiseList');
-                        franchiseDatalist.empty();
-                        franchises.forEach(f => franchiseDatalist.append(new Option(f)));
-
-                        // Source list
-                        const sources = [...new Set(data.map(item => item.source).filter(Boolean))];
-                        sources.sort(alphanumericCaseInsensitiveSort);
-                        const sourceDatalist = $('#sourceList');
-                        sourceDatalist.empty();
-                        sources.forEach(f => sourceDatalist.append(new Option(f)));
-
-                        // Size list
-                        const sizes = [...new Set(data.map(item => item["size/model#"]).filter(Boolean))];
-                        sizes.sort(alphanumericCaseInsensitiveSort);
-                        const sizeDatalist = $('#sizeList');
-                        sizeDatalist.empty();
-                        sizes.forEach(f => sizeDatalist.append(new Option(f)));
-
-                        // Is Verified list
-                        const isVerified = [...new Set(data.map(item => item.is_verified).filter(Boolean))];
-                        isVerified.sort();
-                        const isVerifiedDatalist = $('#isVerifiedList');
-                        isVerifiedDatalist.empty();
-                        isVerified.forEach(f => isVerifiedDatalist.append(new Option(f)));
-                    }).fail(function() {
-                        alert('Failed to load franchise data.');
-                    });
-                } else {
+                if (!itemType) {
+                    // No type selected — reset and disable form
                     $('#dataForm')[0].reset();
                     $('#dataForm :input').not('#itemType').prop('disabled', true);
-                    $('#franchiseList').empty();
+                    $('#franchiseList, #sourceList, #sizeList, #isVerifiedList').empty();
+                    return; // stop before JSON request
                 }
+
+                // Enable all inputs once type is selected
+                $('#dataForm :input').prop('disabled', false);
+                const jsonFileName = `data/${itemType}.json`;
+
+                $.getJSON(jsonFileName, function(data) {
+                    const alphanumericCaseInsensitiveSort = (a, b) => {
+                        const regex = /^(\d+)(.*)/i;
+                        const matchA = a.match(regex);
+                        const matchB = b.match(regex);
+                        if (matchA && matchB) {
+                            const numA = parseInt(matchA[1], 10);
+                            const numB = parseInt(matchB[1], 10);
+                            if (numA !== numB) return numA - numB;
+                            return matchA[2].toLowerCase().localeCompare(matchB[2].toLowerCase());
+                        }
+                        return a.toLowerCase().localeCompare(b.toLowerCase());
+                    };
+
+                    // Franchise list
+                    const franchises = [...new Set(data.map(item => item.franchise).filter(Boolean))];
+                    franchises.sort(alphanumericCaseInsensitiveSort);
+                    const franchiseDatalist = $('#franchiseList');
+                    franchiseDatalist.empty();
+                    franchises.forEach(f => franchiseDatalist.append(new Option(f)));
+
+                    // Source list
+                    const sources = [...new Set(data.map(item => item.source).filter(Boolean))];
+                    sources.sort(alphanumericCaseInsensitiveSort);
+                    const sourceDatalist = $('#sourceList');
+                    sourceDatalist.empty();
+                    sources.forEach(f => sourceDatalist.append(new Option(f)));
+
+                    // Size list
+                    const sizes = [...new Set(data.map(item => item["size/model#"]).filter(Boolean))];
+                    sizes.sort(alphanumericCaseInsensitiveSort);
+                    const sizeDatalist = $('#sizeList');
+                    sizeDatalist.empty();
+                    sizes.forEach(f => sizeDatalist.append(new Option(f)));
+
+                    // Is Verified list
+                    const isVerified = [...new Set(data.map(item => item.is_verified).filter(Boolean))];
+                    isVerified.sort();
+                    const isVerifiedDatalist = $('#isVerifiedList');
+                    isVerifiedDatalist.empty();
+                    isVerified.forEach(f => isVerifiedDatalist.append(new Option(f)));
+                }).fail(function() {
+                    alert(`Failed to load ${jsonFileName}.`);
+                });
             });
         });
     </script>
@@ -115,101 +119,98 @@
 <main class="container my-5">
     <h2 class="mb-4 text-center">Add Memorabilia</h2>
     <form id="dataForm" class="bg-light p-4 rounded shadow row" autocomplete="off">
-            <div class="form-group col-md-3">
-                <label for="itemType">Select Item Type:</label>
-                <select id="itemType" name="itemType" class="form-control" required>
-                    <option value="">-- Select Type --</option>
-                    <option value="autographs">Autographs</option>
-                    <option value="collectibles">Collectibles</option>
-                </select>
-            </div>
-            <div class="form-group col-md-9">
-                &nbsp;
-            </div>
-        
-        
-            <div class="form-group col-md-3">
-                <label for="id">ID:</label>
-                <input type="text" id="id" name="id" class="form-control" readonly required>
-            </div>
+        <div class="form-group col-md-3">
+            <label for="itemType">Select Item Type:</label>
+            <select id="itemType" name="itemType" class="form-control" required>
+                <option value="">-- Select Type --</option>
+                <option value="autographs">Autographs</option>
+                <option value="collectibles">Collectibles</option>
+            </select>
+        </div>
+        <div class="form-group col-md-9">
+            &nbsp;
+        </div>
 
-            <div class="form-group col-md-3">
-                <label for="title">Name/Title:</label>
-                <input type="text" id="title" name="title" class="form-control" required>
-            </div>
+        <div class="form-group col-md-3">
+            <label for="id">ID:</label>
+            <input type="text" id="id" name="id" class="form-control" readonly required>
+        </div>
 
-            <div class="form-group col-md-3">
-                <label for="franchise">Franchise:</label>
-                <input list="franchiseList" id="franchise" name="franchise" class="form-control" required>
-                <datalist id="franchiseList"></datalist>
-            </div>
-        
-            <div class="form-group col-md-3">
-                <label for="acquired">Acquired Date:</label>
-                <input type="text" id="acquired" name="acquired" class="form-control" placeholder="mm/dd/yyyy">
-            </div>
+        <div class="form-group col-md-3">
+            <label for="title">Name/Title:</label>
+            <input type="text" id="title" name="title" class="form-control" required>
+        </div>
 
-            <div class="form-group col-md-12">
-                <label for="description">Description:</label>
-                <textarea id="description" name="description" class="form-control"></textarea>
-            </div>
+        <div class="form-group col-md-3">
+            <label for="franchise">Franchise:</label>
+            <input list="franchiseList" id="franchise" name="franchise" class="form-control" required>
+            <datalist id="franchiseList"></datalist>
+        </div>
 
-            <div class="form-group col-md-3">
-                <label for="size">Size:</label>
-                <!-- <input type="text" id="size" name="size" class="form-control"> -->
-                <input type="text" id="size" name="size" list="sizeList" class="form-control">
-                <datalist id="sizeList"></datalist>            </div>
+        <div class="form-group col-md-3">
+            <label for="acquired">Acquired Date:</label>
+            <input type="text" id="acquired" name="acquired" class="form-control" placeholder="mm/dd/yyyy">
+        </div>
 
-            <div class="form-group col-md-3">
-                <label for="source">Source:</label>
-                <input type="text" id="source" name="source" list="sourceList" class="form-control">
-                <!-- <input type="text" id="source" name="source" class="form-control"> -->
-                <datalist id="sourceList"></datalist>
-            </div>
+        <div class="form-group col-md-12">
+            <label for="description">Description:</label>
+            <textarea id="description" name="description" class="form-control"></textarea>
+        </div>
+
+        <div class="form-group col-md-3">
+            <label for="size">Size:</label>
+            <input type="text" id="size" name="size" list="sizeList" class="form-control">
+            <datalist id="sizeList"></datalist>
+        </div>
+
+        <div class="form-group col-md-3">
+            <label for="source">Source:</label>
+            <input type="text" id="source" name="source" list="sourceList" class="form-control">
+            <datalist id="sourceList"></datalist>
+        </div>
 
             <!-- Dropdown for Personalized field -->
             <div class="form-group col-md-3">
-                <label for="personalized">Personalized:</label>
-                <select id="personalized" name="personalized" class="form-control">
-                    <option value="">-- Select --</option>
-                    <option value="Yes">Yes</option>
-                    <option value="No">No</option>
-                    <option value="N/A">N/A</option>
-                    <option value="Unknown">Unknown</option>
-                </select>
-            </div>
-            </div>
+            <label for="personalized">Personalized:</label>
+            <select id="personalized" name="personalized" class="form-control">
+                <option value="">-- Select --</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+                <option value="N/A">N/A</option>
+                <option value="Unknown">Unknown</option>
+            </select>
+        </div>
 
             <!-- Combo box for Is Verified field -->
             <div class="form-group col-md-3">
-                <label for="is_verified">Is Verified:</label>
-                <input list="isVerifiedList" id="is_verified" name="is_verified" class="form-control">
-                <datalist id="isVerifiedList"></datalist>
-            </div>
+            <label for="is_verified">Is Verified:</label>
+            <input list="isVerifiedList" id="is_verified" name="is_verified" class="form-control">
+            <datalist id="isVerifiedList"></datalist>
+        </div>
 
-            <div class="form-group col-md-3">
-                <label for="serialnumber">Serial Number:</label>
-                <input type="text" id="serialnumber" name="serialnumber" class="form-control">
-            </div>
+        <div class="form-group col-md-3">
+            <label for="serialnumber">Serial Number:</label>
+            <input type="text" id="serialnumber" name="serialnumber" class="form-control">
+        </div>
 
-            <div class="form-group col-md-3">
-                <label for="original_cost">Original Cost:</label>
-                <input type="text" id="original_cost" name="original_cost" class="form-control">
-            </div>
+        <div class="form-group col-md-3">
+            <label for="original_cost">Original Cost:</label>
+            <input type="text" id="original_cost" name="original_cost" class="form-control">
+        </div>
 
-            <div class="form-group col-md-3">
-                <label for="current_value">Current Value:</label>
-                <input type="text" id="current_value" name="current_value" class="form-control">
-            </div>
+        <div class="form-group col-md-3">
+            <label for="current_value">Current Value:</label>
+            <input type="text" id="current_value" name="current_value" class="form-control">
+        </div>
 
-            <div class="form-group col-md-3">
-                <label for="image">Image:</label>
-                <input type="text" id="image" name="image" class="form-control">
-            </div>
+        <div class="form-group col-md-3">
+            <label for="image">Image:</label>
+            <input type="text" id="image" name="image" class="form-control">
+        </div>
 
-            <div class="form-group col-md-12">
-                <button type="submit" class="btn btn-primary btn-block">Update Item</button>
-            </div>
+        <div class="form-group col-md-12">
+            <button type="submit" class="btn btn-primary btn-block">Add Item</button>
+        </div>
     </form>
 </main>
 

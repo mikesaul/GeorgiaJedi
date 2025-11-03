@@ -14,9 +14,18 @@
       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-table@1.18.3/dist/bootstrap-table.min.css">
       <link rel="stylesheet" href="css/styles.css">
       <link rel="icon" href="/favicon.ico" type="image/x-icon">
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-    
-</head>
+      <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+      
+    <!-- Admin Auth -->
+    <script src="js/admin-auth.js"></script>
+    <script>
+        // Redirect non-admin users
+        if (!window.isAdminMode || !window.isAdminMode()) {
+            alert("You are not authorized to make updates.");
+            window.location.href = "index.html";
+        }
+    </script>
+    </head>
   <body>
     <header class="d-flex align-items-center justify-content-center py-4">
         <img src="images/GeorgiaJedi-logo-256.jpg" alt="GeorgiaJedi Logo" class="logo mr-3">
@@ -32,7 +41,8 @@
           <ul class="navbar-nav">
             <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
             <li class="nav-item"><a class="nav-link" href="autographs.html">Autographs</a></li>
-            <li class="nav-item"><a class="nav-link" href="collectibles.html">Collectibles</a></li>
+            <li class="nav-item "><a class="nav-link" href="collectibles.html">Collectibles</a></li>
+            <li class="nav-item"><a class="nav-link" href="cast.html">Cast/Crew/Characters</a></li>
             <li class="nav-item active"><a class="nav-link" href="add-item.html">Add Item</a></li>
         </ul>
       </div>
@@ -91,39 +101,14 @@
             console.log(err, fileItem.getMetadata('resize'));
         },
         onpreparefile: (fileItem, outputFiles) => {
-    outputFiles.forEach(output => {
-        const originalFileName = fileItem.filename.split('.').slice(0, -1).join('.'); // Get file name without extension
-        const fileExtension = fileItem.filename.split('.').pop(); // Get the file extension
-        const thumbFileName = `${originalFileName}_thumb.${fileExtension}`; // New file name for the thumbnail
-
-        // Read the thumbnail image as a blob
-        const reader = new FileReader();
-        reader.readAsDataURL(output.file); // Convert the file to a data URL
-
-        reader.onloadend = function () {
-            const base64data = reader.result;
-
-            // Send the image data and file name to the server
-            fetch('saveThumbnail.asp', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    imageData: base64data,
-                    fileName: thumbFileName
-                })
+            outputFiles.forEach(output => {
+            const img = new Image();
+            img.src = URL.createObjectURL(output.file);
+            img.fileName = pond.getFile().filename;
+            alert(img.fileName);
+            document.body.appendChild(img);
             })
-            .then(response => response.text())
-            .then(result => {
-                console.log('Thumbnail saved:', result);
-            })
-            .catch(error => {
-                console.error('Error saving thumbnail:', error);
-            });
-        };
-    });
-}
+        }
         });
 
      
