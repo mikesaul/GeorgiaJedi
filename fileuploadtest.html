@@ -1,124 +1,150 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catalog - Star Wars Memorabilia Gallery</title>
-  <link href="https://unpkg.com/filepond/dist/filepond.css" rel="stylesheet">
+    <title>Thumbnail Generator - Star Wars Memorabilia Gallery</title>
 
-    <!-- Add plugin styles -->
+    <!-- FilePond core and plugins -->
+    <link href="https://unpkg.com/filepond/dist/filepond.css" rel="stylesheet">
     <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet">
 
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-table@1.18.3/dist/bootstrap-table.min.css">
 
-       <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-table@1.18.3/dist/bootstrap-table.min.css">
-      <link rel="stylesheet" href="css/styles.css">
-      <link rel="icon" href="/favicon.ico" type="image/x-icon">
-      <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-      
+    <!-- Custom -->
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
     <!-- Admin Auth -->
     <script src="js/admin-auth.js"></script>
     <script>
-        // Redirect non-admin users
         if (!window.isAdminMode || !window.isAdminMode()) {
-            alert("You are not authorized to make updates.");
-            window.location.href = "index.html";
-        }
+          alert("You are not authorized to make updates.");
+          window.location.href = "index.html";
+      }
     </script>
-    </head>
+
+    <style>
+      body { background-color: #0d0d0d; color: #e0e0e0; }
+      header { background: radial-gradient(circle at center, #111 0%, #000 100%); color: #ffe81f; border-bottom: 2px solid #444; }
+      #preview-container { border-top: 2px solid #333; border-bottom: 2px solid #333; background-color: #111; padding: 1.5rem 1rem; border-radius: 8px; box-shadow: 0 0 10px rgba(255, 232, 31, 0.3); }
+      #preview-container img { border: 2px solid #ffe81f; border-radius: 10px; opacity: 0; transform: scale(0.95); transition: opacity 0.6s ease, transform 0.6s ease, box-shadow 0.3s ease; cursor: pointer; }
+      #preview-container img.loaded { opacity: 1; transform: scale(1); }
+      #preview-container img:hover { transform: scale(1.05); box-shadow: 0 0 20px #ffe81f; }
+      #preview-container .caption { opacity: 0; transition: opacity 0.8s ease; }
+      #preview-container .caption.visible { opacity: 1; }
+      .filepond--root { margin-bottom: 2rem; }
+    </style>
+  </head>
+
   <body>
     <header class="d-flex align-items-center justify-content-center py-4">
-        <img src="images/GeorgiaJedi-logo-256.jpg" alt="GeorgiaJedi Logo" class="logo mr-3">
-        <h1 class="mx-auto">Star Wars Autograph Catalog</h1>
+      <img src="images/GeorgiaJedi-logo-256.jpg" alt="GeorgiaJedi Logo" class="logo mr-3">
+      <h1 class="mx-auto">Collection Image Thumbnail Generator</h1>
     </header>
-  
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
       <a class="navbar-brand" href="#">GeorgiaJedi</a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav">
-            <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
-            <li class="nav-item"><a class="nav-link" href="autographs.html">Autographs</a></li>
-            <li class="nav-item "><a class="nav-link" href="collectibles.html">Collectibles</a></li>
-            <li class="nav-item"><a class="nav-link" href="cast.html">Cast/Crew/Characters</a></li>
-            <li class="nav-item active"><a class="nav-link" href="add-item.html">Add Item</a></li>
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="autographs.html">Autographs</a></li>
+          <li class="nav-item"><a class="nav-link" href="collectibles.html">Collectibles</a></li>
+          <li class="nav-item"><a class="nav-link" href="cast.html">Cast/Crew/Characters</a></li>
+          <li class="nav-item active"><a class="nav-link" href="add-item.html">Add Item</a></li>
         </ul>
       </div>
-  </nav>
+    </nav>
 
-  <main class="container my-5">
-    <input 
-    input type="file" 
-    class="filepond"
-    name="filepond" 
-    multiple 
-    data-allow-reorder="true"
-    data-max-file-size="3MB"
-    data-max-files="40"
->
+    <main class="container my-5">
+      <input 
+        type="file"
+        class="filepond"
+        name="filepond"
+        multiple
+        data-allow-reorder="true"
+        data-max-file-size="3MB"
+        data-max-files="40"
+      >
 
-    <script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
-    <script src="https://unpkg.com/filepond-plugin-image-resize/dist/filepond-plugin-image-resize.js"></script>
-    <script src="https://unpkg.com/filepond-plugin-image-transform/dist/filepond-plugin-image-transform.js"></script>
+      <div id="preview-container" class="row mt-4"></div>
 
-    <!-- add the Image Crop plugin script -->
-    <script src="https://unpkg.com/filepond-plugin-image-crop/dist/filepond-plugin-image-crop.js"></script>
+      <!-- FilePond plugins -->
+      <script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
+      <script src="https://unpkg.com/filepond-plugin-image-resize/dist/filepond-plugin-image-resize.js"></script>
+      <script src="https://unpkg.com/filepond-plugin-image-transform/dist/filepond-plugin-image-transform.js"></script>
+      <script src="https://unpkg.com/filepond-plugin-image-crop/dist/filepond-plugin-image-crop.js"></script>
+      <script src="https://unpkg.com/filepond/dist/filepond.js"></script>
 
-
-    <script src="https://unpkg.com/filepond/dist/filepond.js"></script>
-    <script>
+      <script>
         FilePond.registerPlugin(
-        // register the Image Crop plugin with FilePond
-        FilePondPluginImageCrop,
-        FilePondPluginImagePreview,
-        FilePondPluginImageResize,
-        FilePondPluginImageTransform
+          FilePondPluginImageCrop,
+          FilePondPluginImagePreview,
+          FilePondPluginImageResize,
+          FilePondPluginImageTransform
         );
 
         const inputElement = document.querySelector('input[type="file"]');
+        const previewContainer = document.getElementById('preview-container');
+
         const pond = FilePond.create(inputElement, {
-        // add the Image Crop default aspect ratio
-        imageCropAspectRatio: 1,
-        imageResizeTargetWidth: 256,
-        imageResizeMode: 'contain',
-        imageTransformVariants: {
-            // thumb_medium_: transforms => {
-            // transforms.resize.size.width = 1000;
-
-            // // this will be a landscape crop
-            // // transforms.crop.aspectRatio = .5;
-
-            // return transforms;
-            // },
+          imageCropAspectRatio: 1,
+          imageResizeTargetWidth: 256,
+          imageResizeMode: 'contain',
+          imageTransformVariants: {
             thumb_small_: transforms => {
-            transforms.resize.size.width = 128;
-            return transforms;
+              transforms.resize.size.width = 128;
+              return transforms;
             }
-        },
-        onaddfile: (err, fileItem) => {
-            console.log(err, fileItem.getMetadata('resize'));
-        },
-        onpreparefile: (fileItem, outputFiles) => {
-            outputFiles.forEach(output => {
-            const img = new Image();
-            img.src = URL.createObjectURL(output.file);
-            img.fileName = pond.getFile().filename;
-            alert(img.fileName);
-            document.body.appendChild(img);
-            })
-        }
-        });
+          },
 
-     
-    </script>
-     <script src="js/script.js"></script>
+          // Only show the thumbnail, never the original
+          onpreparefile: (fileItem, outputFiles) => {
+            previewContainer.innerHTML = ''; // clear previous previews
+            outputFiles.forEach(output => {
+              const originalName = fileItem.filename;
+              const dotIndex = originalName.lastIndexOf('.');
+              const base = dotIndex !== -1 ? originalName.substring(0, dotIndex) : originalName;
+              const ext = dotIndex !== -1 ? originalName.substring(dotIndex) : '';
+              const thumbName = `${base}_thumb${ext}`;
+
+              // Wrap thumbnail in a link for proper Save As
+              const link = document.createElement('a');
+              link.href = URL.createObjectURL(output.file);
+              link.download = thumbName;
+
+              const img = new Image();
+              img.src = link.href;
+              img.alt = thumbName;
+              img.className = 'img-thumbnail m-2';
+              img.onload = () => img.classList.add('loaded');
+
+              const col = document.createElement('div');
+              col.className = 'col-6 col-md-3 text-center';
+              const caption = document.createElement('div');
+              caption.textContent = thumbName;
+              caption.className = 'caption small text-muted mt-2 visible';
+
+              link.appendChild(img);
+              col.appendChild(link);
+              col.appendChild(caption);
+              previewContainer.appendChild(col);
+            });
+          }
+        });
+      </script>
+
+      <script src="js/script.js"></script>
     </main>
 
-    <footer class="text-center py-4">
-        <p>&copy; 2024 GeorgiaJedi. All rights reserved.</p>
+    <footer class="text-center py-4 bg-dark text-light">
+      <p>&copy; 2024 GeorgiaJedi. All rights reserved.</p>
     </footer>
-
   </body>
 </html>
