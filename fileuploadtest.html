@@ -21,9 +21,9 @@
     <!-- Admin Auth -->
     <script src="js/admin-auth.js"></script>
     <script>
-        if (!window.isAdminMode || !window.isAdminMode()) {
-          alert("You are not authorized to make updates.");
-          window.location.href = "index.html";
+      if (!window.isAdminMode || !window.isAdminMode()) {
+        alert("You are not authorized to make updates.");
+        window.location.href = "index.html";
       }
     </script>
 
@@ -97,45 +97,53 @@
           imageCropAspectRatio: 1,
           imageResizeTargetWidth: 256,
           imageResizeMode: 'contain',
+          imageTransformOutputMimeType: 'image/jpeg',
+          imageTransformOutputQuality: 0.85,
           imageTransformVariants: {
             thumb_small_: transforms => {
               transforms.resize.size.width = 128;
+              transforms.resize.size.height = 128;
               return transforms;
             }
           },
 
           // Only show the thumbnail, never the original
           onpreparefile: (fileItem, outputFiles) => {
-            previewContainer.innerHTML = ''; // clear previous previews
-            outputFiles.forEach(output => {
-              const originalName = fileItem.filename;
-              const dotIndex = originalName.lastIndexOf('.');
-              const base = dotIndex !== -1 ? originalName.substring(0, dotIndex) : originalName;
-              const ext = dotIndex !== -1 ? originalName.substring(dotIndex) : '';
-              const thumbName = `${base}_thumb${ext}`;
+            // clear preview for each batch
+            if (!previewContainer.dataset.cleared) {
+              previewContainer.innerHTML = '';
+              previewContainer.dataset.cleared = 'true';
+            }
 
-              // Wrap thumbnail in a link for proper Save As
-              const link = document.createElement('a');
-              link.href = URL.createObjectURL(output.file);
-              link.download = thumbName;
+            // Find only the transformed thumbnail
+            const thumbFile = outputFiles.find(f => f.name && f.name.includes('thumb_small_')) || outputFiles[0];
 
-              const img = new Image();
-              img.src = link.href;
-              img.alt = thumbName;
-              img.className = 'img-thumbnail m-2';
-              img.onload = () => img.classList.add('loaded');
+            const originalName = fileItem.filename;
+            const dotIndex = originalName.lastIndexOf('.');
+            const base = dotIndex !== -1 ? originalName.substring(0, dotIndex) : originalName;
+            const thumbName = `${base}_thumb.jpg`; // force jpg
 
-              const col = document.createElement('div');
-              col.className = 'col-6 col-md-3 text-center';
-              const caption = document.createElement('div');
-              caption.textContent = thumbName;
-              caption.className = 'caption small text-muted mt-2 visible';
+            // Wrap thumbnail in link for correct "Save As"
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(thumbFile.file);
+            link.download = thumbName;
 
-              link.appendChild(img);
-              col.appendChild(link);
-              col.appendChild(caption);
-              previewContainer.appendChild(col);
-            });
+            const img = new Image();
+            img.src = link.href;
+            img.alt = thumbName;
+            img.className = 'img-thumbnail m-2';
+            img.onload = () => img.classList.add('loaded');
+
+            const col = document.createElement('div');
+            col.className = 'col-6 col-md-3 text-center';
+            const caption = document.createElement('div');
+            caption.textContent = thumbName;
+            caption.className = 'caption small text-muted mt-2 visible';
+
+            link.appendChild(img);
+            col.appendChild(link);
+            col.appendChild(caption);
+            previewContainer.appendChild(col);
           }
         });
       </script>
