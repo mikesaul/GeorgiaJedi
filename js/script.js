@@ -1,9 +1,31 @@
-// script.js (compact base64 state-preservation for image view; pg/index removed)
-// Sender detection now uses getItemType() for robust page name detection.
-
 let rawData = [];
 
 // ================= Utility & Formatters =================
+function isValidDate(d) { return d instanceof Date && !isNaN(d); }
+
+function parseDate(value) {
+  if (!value) return null;
+  const isoMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (isoMatch) return new Date(`${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}T00:00:00`);
+  const parts = value.split('/');
+  if (parts.length === 3) return new Date(`${parts[2]}-${parts[0]}-${parts[1]}T00:00:00`);
+  return new Date(value);
+}
+
+function dateSorter(a, b, order) {
+  const A = parseDate(a), B = parseDate(b);
+  const aOk = isValidDate(A), bOk = isValidDate(B);
+  if (!aOk && !bOk) return 0;
+  if (!aOk) return order === 'asc' ? 1 : -1;
+  if (!bOk) return order === 'asc' ? -1 : 1;
+  return A - B;
+}
+
+function dateFormatter(value) {
+  const d = parseDate(value);
+  return isValidDate(d) ? d.toISOString().split('T')[0] : value || '';
+}
+
 function detailFormatter(index, row) {
   const html = [];
   html.push('<div class="card" style="display: flex; border: 1px solid #ddd; padding: 10px;">');
@@ -27,9 +49,7 @@ function detailFormatter(index, row) {
   if (row.serialnumber) html.push('<p><b>Serial Number:</b> ' + row.serialnumber + '</p>');
   if (row.original_cost) html.push('<p><b>Original Cost:</b> $' + row.original_cost + '</p>');
   if (row.current_value) html.push('<p><b>Current Value:</b> $' + row.current_value + '</p>');
-  html.push('</div>');
-
-  html.push('</div>');
+  html.push('</div></div>');
   return html.join('');
 }
 
@@ -61,17 +81,6 @@ function imageFooterFormatter(data) {
   return `${count} images`;
 }
 
-function isValidDate(d) { return d instanceof Date && !isNaN(d); }
-
-function dateSorter(a, b, order) {
-  const A = new Date(a); const B = new Date(b);
-  const aOk = isValidDate(A), bOk = isValidDate(B);
-  if (!aOk && !bOk) return 0;
-  if (!aOk) return order === 'asc' ? 1 : -1;
-  if (!bOk) return order === 'asc' ? -1 : 1;
-  return A - B;
-}
-
 function descFormatter(index, row) {
   return row.description ? String(row.description).substr(0, 120) : '';
 }
@@ -81,7 +90,7 @@ function getItemType() {
   return page.split('.').shift();
 }
 
-// ====== Compact base64 helpers (UTF-8 safe) ======
+// ====== Compact base64 helpers ======
 function b64EncodeUnicode(str) {
   // encodeURIComponent -> percent-encoded UTF-8, convert percent encodings to raw bytes, btoa() to base64
   return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function (match, p1) {
@@ -105,7 +114,7 @@ function getTableState() {
   const options = $('#catalog-table').bootstrapTable('getOptions') || {};
   const state = {
     pageNumber: options.pageNumber || 1,
-    pageSize: options.pageSize || options.pageSize || 5,
+    pageSize: options.pageSize || 5,
     sortName: options.sortName || '',
     sortOrder: options.sortOrder || '',
     searchText: (options.searchText !== undefined) ? options.searchText : ''
@@ -115,9 +124,7 @@ function getTableState() {
   $('.column-filter').each(function () {
     const key = $(this).data('column');
     const val = $(this).val();
-    if (val !== undefined && val !== null && String(val) !== '') {
-      filters[key] = val;
-    }
+    if (val !== undefined && val !== null && String(val) !== '') filters[key] = val;
   });
   state.filters = filters;
   return state;
@@ -125,20 +132,16 @@ function getTableState() {
 
 // Modified imageFormatter to include compact base64 state param 's' and drop pg/index
 // Sender detection now uses getItemType() to reliably return 'autographs' or 'collectibles' (etc)
-function imageFormatter(value, row, index) {
-  const sender = getItemType(); // more robust than substring-matching the pathname
+function imageFormatter(value, row) {
+  const sender = getItemType();
   const type = getItemType();
 
   let sParam = '';
   try {
     const state = getTableState();
-    const json = JSON.stringify(state);
-    const b64 = b64EncodeUnicode(json);
-    sParam = encodeURIComponent(b64); // safe for URL
-  } catch (ex) {
-    console.warn('Could not serialize table state:', ex);
-  }
-
+    const b64 = b64EncodeUnicode(JSON.stringify(state));
+    sParam = encodeURIComponent(b64);
+  } catch (ex) { console.warn('Could not serialize table state:', ex); }
   const sQuery = sParam ? `&s=${sParam}` : '';
 
   if (row.image) {
@@ -155,29 +158,13 @@ function rowStyle(row, index) {
   return { classes: index % 2 === 0 ? 'bg-ltgray' : 'bg-ltblue' };
 }
 
-function alphanumericCaseInsensitiveSort(a, b) {
-  const regex = /^(\\d+)(.*)/i;
-  const A = String(a ?? '');
-  const B = String(b ?? '');
-  const mA = A.match(regex), mB = B.match(regex);
-  if (mA && mB) {
-    const nA = parseInt(mA[1], 10), nB = parseInt(mB[1], 10);
-    if (nA !== nB) return nA - nB;
-    return mA[2].toLowerCase().localeCompare(mB[2].toLowerCase());
-  }
-  return A.toLowerCase().localeCompare(B.toLowerCase());
-}
-
-// ================= Filtering =================
 function customNumericFilter(value, filter) {
   if (!filter) return true;
   const match = String(filter).match(/^(<=|>=|=|<|>)?\s*([\d.]+)$/);
   if (!match) return true;
   const [, operator = '=', numberStr] = match;
-  const number = parseFloat(numberStr);
-
-  // Normalize value: remove $ , GBP etc
   const numericVal = parseFloat(String(value).replace(/[^0-9.-]+/g, ''));
+  const number = parseFloat(numberStr);
   if (isNaN(numericVal)) return false;
 
   switch (operator) {
@@ -191,13 +178,16 @@ function customNumericFilter(value, filter) {
 }
 
 function customDateFilter(value, filter) {
-  if (!filter || !value) return true;
-  const match = String(filter).match(/^(<=|>=|=|<|>)?\\s*([\\d/-]+)$/);
+  if (!filter) return true; // no filter applied → include all
+  const match = String(filter).match(/^(<=|>=|=|<|>)?\s*([\d/-]+)$/);
   if (!match) return true;
   const [, operator = '=', dateStr] = match;
-  const filterDate = new Date(dateStr);
-  const rowDate = new Date(value);
-  if (isNaN(filterDate) || isNaN(rowDate)) return true;
+  const filterDate = parseDate(dateStr);
+  const rowDate = parseDate(value);
+
+  // ✅ exclude rows missing or invalid dates when filter is active
+  if (!isValidDate(filterDate) || !isValidDate(rowDate)) return false;
+
   switch (operator) {
     case '<': return rowDate < filterDate;
     case '<=': return rowDate <= filterDate;
@@ -227,14 +217,6 @@ function applyCustomFilters(data) {
   });
 }
 
-function populateDropdownFilter(column, selector) {
-  const uniqueValues = [...new Set(rawData.map(item => item[column]).filter(Boolean))];
-  uniqueValues.sort((a, b) => String(a).localeCompare(String(b), undefined, { sensitivity: 'base' }));
-  const $dropdown = $(`select.column-filter[data-column="${selector}"]`);
-  $dropdown.empty().append('<option value="">All</option>');
-  uniqueValues.forEach(val => $dropdown.append(`<option value="${val}">${val}</option>`));
-}
-
 function injectFilterRow() {
   const $thead = $('#catalog-table thead');
   const $filterRow = $('<tr class="filter-row"></tr>');
@@ -262,22 +244,6 @@ function injectFilterRow() {
   $thead.append($filterRow);
 }
 
-// Compute totals for mobile footer
-function computeTotals(data) {
-  let images = 0, orig = 0, curr = 0;
-  data.forEach(r => {
-    if (r.image) {
-      const filename = String(r.image).split('/').pop().toLowerCase();
-      if (filename !== '100.png') images++;
-    }
-    orig += parseFloat(r.original_cost) || 0;
-    curr += parseFloat(r.current_value) || 0;
-  });
-  return { images, orig, curr };
-}
-
-function isMobileView() { return window.innerWidth < 1200; }
-
 // ================= Init =================
 $(function () {
   $.getJSON('data/' + getItemType() + '.json', function (jsonData) {
@@ -288,111 +254,36 @@ $(function () {
       detailView: true,
       detailViewByClick: true,
       detailFormatter: detailFormatter,
-      cardView: isMobileView(),
+      cardView: window.innerWidth < 1200,
       pagination: true,
       pageList: [5, 10, 25, 50, 100],
       pageSize: 5,
       sidePagination: 'client',
-      showFooter: !isMobileView(),
+      showFooter: window.innerWidth >= 1200,
       onPostBody: function () {
-        const data = $('#catalog-table').bootstrapTable('getData');
-        if (isMobileView()) {
-          const totals = computeTotals(data);
-          $('#custom-footer').html(`
-            <div style="border-top: 1px solid #ccc; padding-top: 10px;">
-              <strong>Total Original Cost:</strong> ${currencyFormatter(totals.orig)}<br>
-              <strong>Total Current Value:</strong> ${currencyFormatter(totals.curr)}<br>
-              <strong>Total Images:</strong> ${totals.images}
-            </div>`);
-        } else {
-          $('#custom-footer').empty();
-        }
-        if (typeof updateAdminVisibility === 'function') {
-          updateAdminVisibility();
-        }
+        if (typeof updateAdminVisibility === 'function') updateAdminVisibility();
       }
     });
 
-    // Inject filter row and populate dropdowns
     injectFilterRow();
-    populateDropdownFilter('franchise', 'franchise');
-    populateDropdownFilter('size/model#', 'size/model#');
-    populateDropdownFilter('source', 'source');
 
-    // If a compact state 's' is provided in the URL, decode and apply it now
-    try {
-      const urlParams = new URLSearchParams(window.location.search);
-      const sRaw = urlParams.get('s');
-      if (sRaw) {
-        const decoded = b64DecodeUnicode(decodeURIComponent(sRaw));
-        if (decoded) {
-          const state = JSON.parse(decoded);
+    const dropdowns = ['franchise', 'size/model#', 'source'];
+    dropdowns.forEach(col => {
+      const uniqueValues = [...new Set(rawData.map(item => item[col]).filter(Boolean))];
+      uniqueValues.sort((a, b) => String(a).localeCompare(String(b), undefined, { sensitivity: 'base' }));
+      const $dropdown = $(`select.column-filter[data-column="${col}"]`);
+      $dropdown.empty().append('<option value="">All</option>');
+      uniqueValues.forEach(val => $dropdown.append(`<option value="${val}">${val}</option>`));
+    });
 
-          // Apply filters first (these operate on client-side data via the column-filter inputs)
-          if (state.filters) {
-            Object.entries(state.filters).forEach(([key, val]) => {
-              // set the filter input/select
-              const $el = $(`.column-filter[data-column="${key}"]`);
-              if ($el.length) {
-                $el.val(val);
-              }
-            });
-            // Trigger input change which will apply custom filtering
-            $('.column-filter').trigger('change');
-          }
-
-          // Apply search text (bootstrap-table option)
-          if (state.searchText) {
-            const $searchInput = $('.fixed-table-toolbar .search input');
-            if ($searchInput.length) $searchInput.val(state.searchText);
-            $('#catalog-table').bootstrapTable('refreshOptions', { searchText: state.searchText });
-          }
-
-          // Apply sorting and page size via refreshOptions
-          const refreshOpts = {};
-          if (state.sortName) refreshOpts.sortName = state.sortName;
-          if (state.sortOrder) refreshOpts.sortOrder = state.sortOrder;
-          if (state.pageSize) refreshOpts.pageSize = state.pageSize;
-          if (Object.keys(refreshOpts).length) {
-            $('#catalog-table').bootstrapTable('refreshOptions', refreshOpts);
-          }
-
-          // Ensure page selection happens after the table has rendered (small timeout)
-          setTimeout(() => {
-            const pg = parseInt(state.pageNumber || 1, 10);
-            if (pg && !isNaN(pg)) {
-              try {
-                $('#catalog-table').bootstrapTable('selectPage', pg);
-              } catch (ex) {
-                // fallback: do nothing
-              }
-            }
-          }, 150);
-        }
-      }
-    } catch (ex) {
-      console.warn('Error applying saved table state:', ex);
-    }
-  });
-
-  // React to filter changes
-  $(document).on('input change', '.column-filter', function () {
-    const filtered = applyCustomFilters(rawData);
-    $('#catalog-table').bootstrapTable('load', filtered);
-  });
-
-  // Re-render on resize to switch card/table mode
-  $(window).on('resize', function () {
-    const options = $('#catalog-table').bootstrapTable('getOptions');
-    const shouldCard = isMobileView();
-    if (options.cardView !== shouldCard) {
-      const data = $('#catalog-table').bootstrapTable('getData');
-      $('#catalog-table').bootstrapTable('destroy').bootstrapTable({
-        ...options,
-        data,
-        cardView: shouldCard,
-        showFooter: !shouldCard
-      });
-    }
+    // Filter inputs debounce
+    let filterTimeout;
+    $(document).on('input change', '.column-filter', function () {
+      clearTimeout(filterTimeout);
+      filterTimeout = setTimeout(() => {
+        const filtered = applyCustomFilters(rawData);
+        $('#catalog-table').bootstrapTable('load', filtered);
+      }, 250);
+    });
   });
 });
