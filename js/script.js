@@ -1,12 +1,13 @@
 let rawData = [];
 
 // ================= Utility & Formatters =================
+
 function isValidDate(d) { return d instanceof Date && !isNaN(d); }
 
 function parseDate(value) {
   if (!value) return null;
-  const isoMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (isoMatch) return new Date(`${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}T00:00:00`);
+  const iso = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (iso) return new Date(`${iso[1]}-${iso[2]}-${iso[3]}T00:00:00`);
   const parts = value.split('/');
   if (parts.length === 3) return new Date(`${parts[2]}-${parts[0]}-${parts[1]}T00:00:00`);
   return new Date(value);
@@ -25,58 +26,27 @@ function dateFormatter(value) {
   const d = parseDate(value);
   return isValidDate(d) ? d.toISOString().split('T')[0] : value || '';
 }
+window.dateFormatter = dateFormatter;
 
-function detailFormatter(index, row) {
-  const html = [];
-  html.push('<div class="card" style="display: flex; border: 1px solid #ddd; padding: 10px;">');
-
-  // Left: image
-  html.push('<div class="card-left" style="flex: 1; text-align: center;">');
-  if (row.image) {
-    html.push('<img src="images/' + row.image + '.jpg" style="width: 500px; border-radius: 5px;" alt="Item Image">');
-  } else {
-    html.push('<img src="images/100.png" style="width: 150px; height: 150px; border-radius: 5px;" alt="No Image">');
-  }
-  html.push('</div>');
-
-  // Right: details
-  html.push('<div class="card-right" style="flex: 2; padding-left: 20px;">');
-  if (row.title) html.push('<h3 style="margin-top: 0;">' + row.title + '</h3>');
-  if (row.franchise) html.push('<p><b>Franchise:</b> ' + row.franchise + '</p>');
-  if (row.description) html.push('<p><b>Description:</b> ' + row.description + '</p>');
-  if (row.size) html.push('<p><b>Size:</b> ' + row.size + '</p>');
-  if (row.source) html.push('<p><b>Source:</b> ' + row.source + '</p>');
-  if (row.serialnumber) html.push('<p><b>Serial Number:</b> ' + row.serialnumber + '</p>');
-  if (row.original_cost) html.push('<p><b>Original Cost:</b> $' + row.original_cost + '</p>');
-  if (row.current_value) html.push('<p><b>Current Value:</b> $' + row.current_value + '</p>');
-  html.push('</div></div>');
-  return html.join('');
-}
 
 function currencyFormatter(value) {
-  if (value === undefined || value === null || value === '') return '';
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(value));
+  if (!value) return '';
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
+    .format(parseFloat(value));
 }
 
 function originalCostFooter(data) {
-  let total = 0;
-  data.forEach(r => total += parseFloat(r.original_cost) || 0);
-  return currencyFormatter(total);
+  return currencyFormatter(data.reduce((t, r) => t + (parseFloat(r.original_cost) || 0), 0));
 }
 
 function currentValueFooter(data) {
-  let total = 0;
-  data.forEach(r => total += parseFloat(r.current_value) || 0);
-  return currencyFormatter(total);
+  return currencyFormatter(data.reduce((t, r) => t + (parseFloat(r.current_value) || 0), 0));
 }
 
 function imageFooterFormatter(data) {
   let count = 0;
   data.forEach(row => {
-    if (row.image) {
-      const filename = String(row.image).split('/').pop().toLowerCase();
-      if (filename !== '100.png') count++;
-    }
+    if (row.image && String(row.image).toLowerCase() !== '100.png') count++;
   });
   return `${count} images`;
 }
@@ -86,136 +56,125 @@ function descFormatter(index, row) {
 }
 
 function getItemType() {
-  const page = window.location.pathname.split('/').pop();
-  return page.split('.').shift();
+  return window.location.pathname.split('/').pop().split('.').shift();
 }
 
-// ====== Compact base64 helpers ======
+// ================= Detail Formatter =================
+
+function detailFormatter(index, row) {
+  return `
+<div class="card" style="display: flex; border: 1px solid #ddd; padding: 10px;">
+  <div style="flex: 1; text-align: center;">
+    <img src="images/${row.image || '100'}.jpg" style="width: 500px; border-radius: 5px;">
+  </div>
+  <div style="flex: 2; padding-left: 20px;">
+    ${row.title ? `<h3>${row.title}</h3>` : ''}
+    ${row.franchise ? `<p><b>Franchise:</b> ${row.franchise}</p>` : ''}
+    ${row.description ? `<p><b>Description:</b> ${row.description}</p>` : ''}
+    ${row.size ? `<p><b>Size:</b> ${row.size}</p>` : ''}
+    ${row.source ? `<p><b>Source:</b> ${row.source}</p>` : ''}
+    ${row.serialnumber ? `<p><b>Serial Number:</b> ${row.serialnumber}</p>` : ''}
+    ${row.original_cost ? `<p><b>Original Cost:</b> $${row.original_cost}</p>` : ''}
+    ${row.current_value ? `<p><b>Current Value:</b> $${row.current_value}</p>` : ''}
+  </div>
+</div>`;
+}
+
+// ================= State Save (for ImageView return) =================
+
 function b64EncodeUnicode(str) {
-  // encodeURIComponent -> percent-encoded UTF-8, convert percent encodings to raw bytes, btoa() to base64
-  return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function (match, p1) {
-    return String.fromCharCode('0x' + p1);
-  }));
-}
-function b64DecodeUnicode(str) {
-  // atob -> binary string of raw bytes, convert each char code to %xx, decodeURIComponent to decode UTF-8
-  try {
-    return decodeURIComponent(Array.prototype.map.call(atob(str), function (c) {
-      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
-  } catch (e) {
-    // fallback: return atob result if decode fails
-    try { return atob(str); } catch (ex) { return null; }
-  }
+  return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
+    (_, p1) => String.fromCharCode('0x' + p1)));
 }
 
-// New: gather table state (page, pageSize, sort, search, custom filters)
 function getTableState() {
-  const options = $('#catalog-table').bootstrapTable('getOptions') || {};
-  const state = {
-    pageNumber: options.pageNumber || 1,
-    pageSize: options.pageSize || 5,
-    sortName: options.sortName || '',
-    sortOrder: options.sortOrder || '',
-    searchText: (options.searchText !== undefined) ? options.searchText : ''
-  };
-
+  const opt = $('#catalog-table').bootstrapTable('getOptions') || {};
   const filters = {};
+
   $('.column-filter').each(function () {
-    const key = $(this).data('column');
-    const val = $(this).val();
-    if (val !== undefined && val !== null && String(val) !== '') filters[key] = val;
+    const k = $(this).data('column');
+    const v = $(this).val();
+    if (v) filters[k] = v;
   });
-  state.filters = filters;
-  return state;
+
+  const start = $('#acquired-start').val();
+  const end = $('#acquired-end').val();
+  if (start || end) filters['acquired_range'] = (start || '') + '|' + (end || '');
+
+  return {
+    pageNumber: opt.pageNumber,
+    pageSize: opt.pageSize,
+    sortName: opt.sortName,
+    sortOrder: opt.sortOrder,
+    searchText: opt.searchText,
+    filters
+  };
 }
 
-// Modified imageFormatter to include compact base64 state param 's' and drop pg/index
-// Sender detection now uses getItemType() to reliably return 'autographs' or 'collectibles' (etc)
 function imageFormatter(value, row) {
-  const sender = getItemType();
   const type = getItemType();
-
-  let sParam = '';
-  try {
-    const state = getTableState();
-    const b64 = b64EncodeUnicode(JSON.stringify(state));
-    sParam = encodeURIComponent(b64);
-  } catch (ex) { console.warn('Could not serialize table state:', ex); }
-  const sQuery = sParam ? `&s=${sParam}` : '';
-
-  if (row.image) {
-    return `<a href="imageview.html?image=${row.image}&sender=${sender}${sQuery}">
-              <img height=128 width=128 src="images/thumbs/${row.image}_thumb.jpg" alt="thumb">
-            </a>
-            <a href="update-item.html?id=${row.id}&itemType=${type}" class="btn btn-sm btn-primary mt-2 admin-only">Edit</a>`;
-  }
-  return `<img height=128 src="images/100.png" alt="no image">
-          <a href="update-item.html?id=${row.id}&itemType=${type}" class="btn btn-sm btn-primary mt-2 admin-only">Edit</a>`;
+  let s = '';
+  try { s = encodeURIComponent(b64EncodeUnicode(JSON.stringify(getTableState()))); } catch(e){}
+  return `
+<a href="imageview.html?image=${row.image}&sender=${type}&s=${s}">
+  <img height=128 width=128 src="images/thumbs/${row.image}_thumb.jpg">
+</a>
+<a href="update-item.html?id=${row.id}&itemType=${type}" class="btn btn-sm btn-primary mt-2 admin-only">Edit</a>`;
 }
 
 function rowStyle(row, index) {
   return { classes: index % 2 === 0 ? 'bg-ltgray' : 'bg-ltblue' };
 }
 
+// ================= Filtering =================
+
 function customNumericFilter(value, filter) {
   if (!filter) return true;
-  const match = String(filter).match(/^(<=|>=|=|<|>)?\s*([\d.]+)$/);
-  if (!match) return true;
-  const [, operator = '=', numberStr] = match;
-  const numericVal = parseFloat(String(value).replace(/[^0-9.-]+/g, ''));
-  const number = parseFloat(numberStr);
-  if (isNaN(numericVal)) return false;
-
-  switch (operator) {
-    case '<': return numericVal < number;
-    case '<=': return numericVal <= number;
-    case '=': return numericVal === number;
-    case '>=': return numericVal >= number;
-    case '>': return numericVal > number;
-    default: return numericVal === number;
-  }
+  const m = filter.match(/^(<=|>=|=|<|>)?\s*([\d.]+)$/);
+  if (!m) return true;
+  const [, op = '=', numStr] = m;
+  const num = parseFloat(numStr);
+  const val = parseFloat(String(value).replace(/[^0-9.-]+/g, ''));
+  if (isNaN(val)) return false;
+  return ({
+    '<': val < num,
+    '<=': val <= num,
+    '=': val === num,
+    '>=': val >= num,
+    '>': val > num
+  })[op];
 }
 
-function customDateFilter(value, filter) {
-  if (!filter) return true; // no filter applied → include all
-  const match = String(filter).match(/^(<=|>=|=|<|>)?\s*([\d/-]+)$/);
-  if (!match) return true;
-  const [, operator = '=', dateStr] = match;
-  const filterDate = parseDate(dateStr);
-  const rowDate = parseDate(value);
-
-  // ✅ exclude rows missing or invalid dates when filter is active
-  if (!isValidDate(filterDate) || !isValidDate(rowDate)) return false;
-
-  switch (operator) {
-    case '<': return rowDate < filterDate;
-    case '<=': return rowDate <= filterDate;
-    case '=': return rowDate.toDateString() === filterDate.toDateString();
-    case '>=': return rowDate >= filterDate;
-    case '>': return rowDate > filterDate;
-    default: return rowDate.toDateString() === filterDate.toDateString();
-  }
+function dateRangeApplies(date, start, end) {
+  if (!start && !end) return true;
+  if (!isValidDate(date)) return false;
+  if (start && date < start) return false;
+  if (end && date > end) return false;
+  return true;
 }
 
 function applyCustomFilters(data) {
+  const start = parseDate($('#acquired-start').val());
+  const end = parseDate($('#acquired-end').val());
+
   const filters = {};
   $('.column-filter').each(function () {
-    const key = $(this).data('column');
-    const val = $(this).val();
-    if (val) filters[key] = val;
+    const k = $(this).data('column');
+    const v = $(this).val();
+    if (v) filters[k] = v.toLowerCase();
   });
+
   return data.filter(row => {
-    return Object.entries(filters).every(([key, val]) => {
-      if (key === 'acquired') return customDateFilter(row[key], val);
-      if (key === 'original_cost' || key === 'current_value') return customNumericFilter(row[key], val);
-      if (key === 'name/brand' || key === 'is_verified') {
-        return String(row[key] || '').toLowerCase().includes(String(val).toLowerCase());
-      }
-      return val === '' || String(row[key] || '').toLowerCase() === String(val).toLowerCase();
+    if (!dateRangeApplies(parseDate(row.acquired), start, end)) return false;
+
+    return Object.entries(filters).every(([k, v]) => {
+      if (k === 'original_cost' || k === 'current_value') return customNumericFilter(row[k], v);
+      return String(row[k] || '').toLowerCase().includes(v);
     });
   });
 }
+
+// ================= Filter Row Injection =================
 
 function injectFilterRow() {
   const $thead = $('#catalog-table thead');
@@ -226,7 +185,11 @@ function injectFilterRow() {
     const $cell = $('<td></td>');
 
     if (field === 'acquired') {
-      $cell.append('<input type="text" class="column-filter form-control form-control-sm" data-column="acquired" placeholder=">= 2023-01-01">');
+      $cell.append(`
+        <div style="display:flex; flex-direction:column; gap:2px;">
+          <input id="acquired-start" type="text" class="form-control form-control-sm" placeholder="Start date">
+          <input id="acquired-end" type="text" class="form-control form-control-sm" placeholder="End date">
+        </div>`);
     } else if (field === 'name/brand') {
       $cell.append('<input type="text" class="column-filter form-control form-control-sm" data-column="name/brand" placeholder="Search title">');
     } else if (field === 'franchise' || field === 'size/model#' || field === 'source') {
@@ -238,13 +201,18 @@ function injectFilterRow() {
     } else if (field === 'is_verified') {
       $cell.append('<input type="text" class="column-filter form-control form-control-sm" data-column="is_verified" placeholder="yes">');
     }
+
     $filterRow.append($cell);
   });
 
   $thead.append($filterRow);
+
+  flatpickr('#acquired-start', { dateFormat: "Y-m-d" });
+  flatpickr('#acquired-end', { dateFormat: "Y-m-d" });
 }
 
 // ================= Init =================
+
 $(function () {
   $.getJSON('data/' + getItemType() + '.json', function (jsonData) {
     rawData = jsonData;
@@ -253,37 +221,28 @@ $(function () {
       data: rawData,
       detailView: true,
       detailViewByClick: true,
-      detailFormatter: detailFormatter,
+      detailFormatter,
       cardView: window.innerWidth < 1200,
       pagination: true,
-      pageList: [5, 10, 25, 50, 100],
       pageSize: 5,
-      sidePagination: 'client',
+      sortReset: true,
       showFooter: window.innerWidth >= 1200,
-      onPostBody: function () {
-        if (typeof updateAdminVisibility === 'function') updateAdminVisibility();
-      }
+      rowStyle
     });
 
     injectFilterRow();
 
-    const dropdowns = ['franchise', 'size/model#', 'source'];
-    dropdowns.forEach(col => {
-      const uniqueValues = [...new Set(rawData.map(item => item[col]).filter(Boolean))];
-      uniqueValues.sort((a, b) => String(a).localeCompare(String(b), undefined, { sensitivity: 'base' }));
-      const $dropdown = $(`select.column-filter[data-column="${col}"]`);
-      $dropdown.empty().append('<option value="">All</option>');
-      uniqueValues.forEach(val => $dropdown.append(`<option value="${val}">${val}</option>`));
+    // Populate dropdown filters
+    ['franchise', 'size/model#', 'source'].forEach(col => {
+      const vals = [...new Set(rawData.map(i => i[col]).filter(Boolean))].sort();
+      const $dd = $(`select.column-filter[data-column="${col}"]`);
+      $dd.empty().append('<option value="">All</option>');
+      vals.forEach(v => $dd.append(`<option value="${v}">${v}</option>`));
     });
 
-    // Filter inputs debounce
-    let filterTimeout;
-    $(document).on('input change', '.column-filter', function () {
-      clearTimeout(filterTimeout);
-      filterTimeout = setTimeout(() => {
-        const filtered = applyCustomFilters(rawData);
-        $('#catalog-table').bootstrapTable('load', filtered);
-      }, 250);
+    // Live filter
+    $(document).on('input change', '.column-filter, #acquired-start, #acquired-end', () => {
+      $('#catalog-table').bootstrapTable('load', applyCustomFilters(rawData));
     });
   });
 });
