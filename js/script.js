@@ -1,17 +1,27 @@
 /**
- * script.js — final, modal-based date-range (SD-B) + year presets from data
- * - Custom Range modal slides down subtly (SD-B)
- * - Acquired dropdown populated from actual years in JSON (descending)
- * - Options: All, Blank only, Custom Range..., <years...>
- * - CR1: dropdown stays on Custom Range... after Apply
- * - Other filters unchanged (text filters, numeric operator support)
+ * script.js — cleaned, integrated
+ * - Date dropdown (All / Blank / Year / Custom Range modal)
+ * - Numeric dropdowns (All / Blank / presets / Custom Range modal) for original_cost & current_value
+ * - Custom modals are injected by this script (no HTML edits required)
+ * - State encoding/decoding via tiny base64 's' param for imageview <-> restore
+ * - Clear All button in first header cell: auto-show when filters active (instant show/hide)
+ * - Exposes formatters & helpers to window for bootstrap-table compatibility
+ *
+ * Ready to paste over your current js/script.js
  */
 
 let rawData = [];
 
+// active ranges (persisted in state)
+const activeDateRange = { start: '', end: '' }; // for date modal
+const activeNumericRange = { // for numeric modal, set before opening modal: { field: 'original'|'current', min:'', max:'' }
+  field: '',
+  min: '',
+  max: ''
+};
+
 // ---------------- Utilities ----------------
 function isValidDate(d) { return d instanceof Date && !isNaN(d); }
-
 function parseDate(value) {
   if (value === undefined || value === null) return null;
   const s = String(value).trim();
@@ -23,8 +33,13 @@ function parseDate(value) {
   const d = new Date(s);
   return isValidDate(d) ? d : null;
 }
+function toNumber(value) {
+  if (value === undefined || value === null || value === '') return NaN;
+  const n = parseFloat(String(value).replace(/[^0-9.-]+/g, ''));
+  return isNaN(n) ? NaN : n;
+}
 
-// ---------------- Formatters & Exported Helpers ----------------
+// ---------------- Formatters & Exports ----------------
 function dateFormatter(value) {
   const d = parseDate(value);
   return isValidDate(d) ? d.toISOString().split('T')[0] : '';
@@ -111,12 +126,22 @@ function b64EncodeUnicode(str) {
     return String.fromCharCode('0x' + p1);
   }));
 }
+function b64DecodeUnicode(str) {
+  try {
+    return decodeURIComponent(Array.prototype.map.call(atob(str), function(c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+  } catch (e) {
+    try { return atob(str); } catch (ex) { return null; }
+  }
+}
 
 function getItemType() {
   const page = window.location.pathname.split('/').pop();
   return page.split('.').shift();
 }
 
+// ---------------- Table state ----------------
 function getTableState() {
   const opt = $('#catalog-table').bootstrapTable('getOptions') || {};
   const state = {
@@ -127,6 +152,7 @@ function getTableState() {
     searchText: opt.searchText ?? ''
   };
 
+  // collect column-filters
   const filters = {};
   $('.column-filter').each(function() {
     const k = $(this).data('column');
@@ -134,19 +160,34 @@ function getTableState() {
     if (v !== undefined && v !== null && String(v) !== '') filters[k] = v;
   });
 
+  // acquired (date) select
   const ac = $('#acquired-select').val();
   if (ac) filters['acquired'] = ac;
   if (ac === '__range__') {
-    const rs = $('#acquired-range-start').val();
-    const re = $('#acquired-range-end').val();
-    if (rs || re) filters['acquired_range'] = (rs || '') + '|' + (re || '');
+    if (activeDateRange.start || activeDateRange.end) filters['acquired_range'] = (activeDateRange.start || '') + '|' + (activeDateRange.end || '');
+  }
+
+  // numeric selects
+  const origSel = $('#original-select').val();
+  if (origSel) {
+    filters['original_select'] = origSel;
+    if (origSel === '__range__' && activeNumericRange.field === 'original') {
+      filters['original_range'] = (activeNumericRange.min || '') + '|' + (activeNumericRange.max || '');
+    }
+  }
+  const currSel = $('#current-select').val();
+  if (currSel) {
+    filters['current_select'] = currSel;
+    if (currSel === '__range__' && activeNumericRange.field === 'current') {
+      filters['current_range'] = (activeNumericRange.min || '') + '|' + (activeNumericRange.max || '');
+    }
   }
 
   state.filters = filters;
   return state;
 }
 
-// imageFormatter with state param
+// ---------------- imageFormatter (encodes state for imageview) ----------------
 function imageFormatter(value, row) {
   const sender = getItemType();
   const type = getItemType();
@@ -164,7 +205,46 @@ function imageFormatter(value, row) {
 }
 window.imageFormatter = imageFormatter;
 
-// ---------------- Filters ----------------
+// ---------------- Numeric option helpers ----------------
+function buildNumericDropdownOptions(presets) {
+  // returns HTML string of <option> elements with data-min/data-max attributes
+  let html = '<option value="">All</option>';
+  html += '<option value="__blank__" data-min="" data-max="">Blank only</option>';
+  presets.forEach(p => {
+    const val = `preset:${p.min || ''}:${p.max || ''}`; // encode min/max in value
+    html += `<option value="${val}" data-min="${p.min || ''}" data-max="${p.max || ''}">${p.label}</option>`;
+  });
+  html += '<option value="__range__" data-min="" data-max="">Custom Range…</option>';
+  return html;
+}
+
+// ---------------- Filters core ----------------
+function customNumericCompare(value, minStr, maxStr, blankOnly) {
+  // blankOnly true => match only if value is blank
+  const valNum = toNumber(value);
+  const isBlank = isNaN(valNum);
+
+  if (blankOnly) return isBlank;
+  if (isBlank) return false;
+
+  // if minStr starts with operator, allow that
+  if (minStr && /^(\s*(<=|>=|=|<|>))/i.test(minStr)) {
+    if (!customNumericFilter(value, minStr)) return false;
+  } else if (minStr) {
+    const mn = parseFloat(String(minStr).replace(/[^0-9.-]+/g, ''));
+    if (!isNaN(mn) && valNum < mn) return false;
+  }
+
+  if (maxStr && /^(\s*(<=|>=|=|<|>))/i.test(maxStr)) {
+    if (!customNumericFilter(value, maxStr)) return false;
+  } else if (maxStr) {
+    const mx = parseFloat(String(maxStr).replace(/[^0-9.-]+/g, ''));
+    if (!isNaN(mx) && valNum > mx) return false;
+  }
+
+  return true;
+}
+
 function customNumericFilter(value, filter) {
   if (!filter) return true;
   const m = String(filter).match(/^(<=|>=|=|<|>)?\s*([\d,.]+)$/);
@@ -183,16 +263,20 @@ function customNumericFilter(value, filter) {
   }
 }
 
-// applyCustomFilters supports acquired select values:
-// '' -> no date filter; '__blank__' -> blank only; 'year:YYYY' -> that year;
-// '__range__' -> use modal start/end if present (if both empty then no date filter)
+// ---------------- Apply all custom filters ----------------
 function applyCustomFilters(data) {
+  // acquired (date)
   const acVal = $('#acquired-select').val();
-  const startStr = $('#acquired-range-start').val();
-  const endStr = $('#acquired-range-end').val();
+  const startStr = activeDateRange.start || $('#acquired-range-start').val() || $('#date-range-start').val();
+  const endStr   = activeDateRange.end   || $('#acquired-range-end').val()   || $('#date-range-end').val();
   const startDate = startStr ? parseDate(startStr) : null;
   const endDate = endStr ? parseDate(endStr) : null;
 
+  // numeric selects
+  const origSel = $('#original-select').val();
+  const currSel = $('#current-select').val();
+
+  // collect text column filters
   const filters = {};
   $('.column-filter').each(function() {
     const k = $(this).data('column');
@@ -201,30 +285,57 @@ function applyCustomFilters(data) {
   });
 
   return data.filter(row => {
-    // Acquired handling
+    // ---------- Date filtering ----------
     if (acVal === '__blank__') {
-      // show only rows with blank/invalid acquired
       if (isValidDate(parseDate(row.acquired))) return false;
     } else if (acVal && acVal.startsWith('year:')) {
       const year = parseInt(acVal.split(':')[1], 10);
       const d = parseDate(row.acquired);
       if (!isValidDate(d) || d.getFullYear() !== year) return false;
     } else if (acVal === '__range__') {
-      // If both start and end are empty -> treat as no date filter
-      if (!startDate && !endDate) {
-        // no filtering
-      } else {
+      if (startDate || endDate) {
         const d = parseDate(row.acquired);
         if (!isValidDate(d)) return false;
         if (startDate && d < startDate) return false;
         if (endDate && d > endDate) return false;
       }
     }
-    // else acVal '' => no date filtering
 
-    // Other filters
+    // ---------- Numeric original_cost ----------
+    if (origSel === '__blank__') {
+      if (!isNaN(toNumber(row.original_cost))) return false; // only blanks allowed
+    } else if (origSel && origSel.startsWith('preset:')) {
+      // preset: min:max
+      const parts = origSel.split(':').slice(1); // [min,max]
+      const min = parts[0] || '';
+      const max = parts[1] || '';
+      if (!customNumericCompare(row.original_cost, min, max, false)) return false;
+    } else if (origSel === '__range__') {
+      if (activeNumericRange.field === 'original') {
+        if (!customNumericCompare(row.original_cost, activeNumericRange.min, activeNumericRange.max, false)) return false;
+      } else {
+        // if no active range for this field, treat as no filter
+      }
+    }
+
+    // ---------- Numeric current_value ----------
+    if (currSel === '__blank__') {
+      if (!isNaN(toNumber(row.current_value))) return false;
+    } else if (currSel && currSel.startsWith('preset:')) {
+      const parts = currSel.split(':').slice(1);
+      const min = parts[0] || '';
+      const max = parts[1] || '';
+      if (!customNumericCompare(row.current_value, min, max, false)) return false;
+    } else if (currSel === '__range__') {
+      if (activeNumericRange.field === 'current') {
+        if (!customNumericCompare(row.current_value, activeNumericRange.min, activeNumericRange.max, false)) return false;
+      }
+    }
+
+    // ---------- Other column filters ----------
     for (const [k, v] of Object.entries(filters)) {
       if (k === 'original_cost' || k === 'current_value') {
+        // legacy support if someone typed operator in column-filter (rare)
         if (!customNumericFilter(row[k], v)) return false;
       } else {
         const cell = String(row[k] || '').toLowerCase();
@@ -237,7 +348,7 @@ function applyCustomFilters(data) {
 }
 window.applyCustomFilters = applyCustomFilters;
 
-// ---------------- Filter row injection ----------------
+// ---------------- Filter Row Injection & Modals ----------------
 function populateAcquiredOptions() {
   const years = [...new Set(rawData
     .map(r => parseDate(r.acquired))
@@ -252,26 +363,86 @@ function populateAcquiredOptions() {
   $sel.html(opt);
 }
 
+function injectModalsIfNeeded() {
+  // Date modal: if page already has #date-range-modal we leave it; else inject a minimal one
+  if (!$('#date-range-modal').length) {
+    const dateModal = `
+<div id="date-range-modal" style="display:none;">
+  <div class="modal-backdrop-custom" style="position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.45);z-index:1999;"></div>
+  <div class="modal-box" style="position:fixed;left:50%;transform:translateX(-50%) translateY(-12px);top:100px;background:#fff;padding:12px;border-radius:6px;z-index:2000;box-shadow:0 8px 24px rgba(0,0,0,0.25);transition:transform 220ms ease, opacity 220ms ease;opacity:0;">
+    <h5 style="margin-top:0;margin-bottom:10px;">Select Acquired Date Range</h5>
+    <div style="margin-bottom:8px;"><label style="display:block;font-size:0.9em">From:</label><input id="acquired-range-start" type="date" class="form-control form-control-sm"></div>
+    <div style="margin-bottom:8px;"><label style="display:block;font-size:0.9em">To:</label><input id="acquired-range-end" type="date" class="form-control form-control-sm"></div>
+    <div style="text-align:right;"><button id="acquired-range-cancel" class="btn btn-sm btn-secondary">Cancel</button> <button id="acquired-range-apply" class="btn btn-sm btn-primary">Apply</button></div>
+  </div>
+</div>`;
+    $('body').append(dateModal);
+  }
+
+  // Numeric modal (single modal used for both original & current; activeNumericRange.field controls which field)
+  if (!$('#numeric-range-modal').length) {
+    const numModal = `
+<div id="numeric-range-modal" style="display:none;">
+  <div class="modal-backdrop-custom" style="position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.45);z-index:1999;"></div>
+  <div class="modal-box" style="position:fixed;left:50%;transform:translateX(-50%) translateY(-12px);top:120px;background:#fff;padding:12px;border-radius:6px;z-index:2000;box-shadow:0 8px 24px rgba(0,0,0,0.25);transition:transform 220ms ease, opacity 220ms ease;opacity:0;">
+    <h5 style="margin-top:0;margin-bottom:10px;">Custom Numeric Range</h5>
+    <div style="margin-bottom:8px;"><label style="display:block;font-size:0.9em">Min:</label><input id="numeric-range-min" type="text" class="form-control form-control-sm" placeholder="e.g. 10 or >= 50"></div>
+    <div style="margin-bottom:8px;"><label style="display:block;font-size:0.9em">Max:</label><input id="numeric-range-max" type="text" class="form-control form-control-sm" placeholder="e.g. 500 or <= 1000"></div>
+    <div style="text-align:right;"><button id="numeric-range-cancel" class="btn btn-sm btn-secondary">Cancel</button> <button id="numeric-range-apply" class="btn btn-sm btn-primary">Apply</button></div>
+  </div>
+</div>`;
+    $('body').append(numModal);
+  }
+}
+
+function buildNumericDropdown(presets) {
+  // returns HTML string for select element options
+  return buildNumericDropdownOptions(presets);
+}
+
 function injectFilterRow() {
   const $thead = $('#catalog-table thead');
   const $filterRow = $('<tr class="filter-row"></tr>');
 
-  $thead.find('th').each(function() {
+  // Make sure to create Clear All button placeholder in first cell (image column)
+  $thead.find('th').each(function(i) {
     const field = $(this).data('field');
     const $cell = $('<td></td>');
 
-    if (field === 'acquired') {
+    if (field === 'image') {
+      // Clear All button (hidden by default). We'll show/hide instantly via updateClearButtonVisibility()
+      $cell.append(`<button id="clear-filters" class="btn btn-sm btn-warning w-100" style="font-size:0.8em; display:none; margin-top:4px; margin-bottom:2px;">Clear All</button>`);
+    }
+    else if (field === 'acquired') {
       $cell.append(`<select id="acquired-select" class="form-control form-control-sm" data-column="acquired"></select>`);
-    } else if (field === 'name/brand') {
+    }
+    else if (field === 'name/brand') {
       $cell.append('<input type="text" class="column-filter form-control form-control-sm" data-column="name/brand" placeholder="Search title">');
     } else if (field === 'franchise' || field === 'size/model#' || field === 'source') {
       $cell.append(`<select class="column-filter form-control form-control-sm" data-column="${field}"><option value="">All</option></select>`);
     } else if (field === 'original_cost') {
-      $cell.append('<input type="text" class="column-filter form-control form-control-sm" data-column="original_cost" placeholder="e.g. >= 100">');
+      // numeric dropdown for original cost (presets)
+      const origPresets = [
+        { label: 'Under $25', min: '', max: '25' },
+        { label: 'Under $100', min: '', max: '100' },
+        { label: 'Over $500', min: '500', max: '' },
+        { label: 'Over $1k', min: '1000', max: '' }
+      ];
+      const selHtml = `<select id="original-select" class="form-control form-control-sm" data-column="original_cost">${buildNumericDropdown(origPresets)}</select>`;
+      $cell.append(selHtml);
     } else if (field === 'current_value') {
-      $cell.append('<input type="text" class="column-filter form-control form-control-sm" data-column="current_value" placeholder="e.g. <= 500">');
+      const currPresets = [
+        { label: 'Under $25', min: '', max: '25' },
+        { label: 'Under $100', min: '', max: '100' },
+        { label: 'Over $500', min: '500', max: '' },
+        { label: 'Over $1k', min: '1000', max: '' }
+      ];
+      const selHtml = `<select id="current-select" class="form-control form-control-sm" data-column="current_value">${buildNumericDropdown(currPresets)}</select>`;
+      $cell.append(selHtml);
     } else if (field === 'is_verified') {
       $cell.append('<input type="text" class="column-filter form-control form-control-sm" data-column="is_verified" placeholder="yes">');
+    } else {
+      // leave empty cell for columns without a filter
     }
 
     $filterRow.append($cell);
@@ -279,69 +450,167 @@ function injectFilterRow() {
 
   $thead.append($filterRow);
 
-  // events
+  // after injecting row, populate dynamic selects
+  populateAcquiredOptions();
+  ['franchise', 'size/model#', 'source'].forEach(col => {
+    const unique = [...new Set(rawData.map(i => i[col]).filter(Boolean))].sort((a,b) => String(a).localeCompare(String(b), undefined, { sensitivity: 'base' }));
+    const $sel = $(`select.column-filter[data-column="${col}"]`);
+    $sel.empty().append('<option value="">All</option>');
+    unique.forEach(v => $sel.append(`<option value="${v}">${v}</option>`));
+  });
+
+  // Ensure modals exist
+  injectModalsIfNeeded();
+
+  // ---------- Events ----------
+
+  // Acquired select change
   $(document).on('change', '#acquired-select', function() {
     const val = $(this).val();
     if (val === '__range__') {
-      // open modal (slide-down subtle)
-      showDateRangeModal();
+      // prefill modal from activeDateRange
+      $('#acquired-range-start').val(activeDateRange.start);
+      $('#acquired-range-end').val(activeDateRange.end);
+      // show modal (SD-B subtle)
+      $('#date-range-modal').show();
+      $('#date-range-modal .modal-box').css({ transform: 'translateY(0)', opacity: 1 });
     } else {
-      hideDateRangeModal();
+      // hide modal if open
+      $('#date-range-modal .modal-box').css({ transform: 'translateY(-12px)', opacity: 0 });
+      setTimeout(() => { $('#date-range-modal').hide(); }, 220);
       $('#catalog-table').bootstrapTable('load', applyCustomFilters(rawData));
+      updateClearButtonVisibility();
     }
   });
 
-  // debounce other filters
-  let t;
+  // column-filter text/select change (debounced)
+  let debounceT;
   $(document).on('input change', '.column-filter', function() {
-    clearTimeout(t);
-    t = setTimeout(() => $('#catalog-table').bootstrapTable('load', applyCustomFilters(rawData)), 200);
+    clearTimeout(debounceT);
+    debounceT = setTimeout(() => {
+      $('#catalog-table').bootstrapTable('load', applyCustomFilters(rawData));
+      updateClearButtonVisibility();
+    }, 200);
   });
 
-  // Custom Range Apply / Cancel handlers (buttons live in the modal)
+  // numeric select change (original/current)
+  $(document).on('change', '#original-select', function() {
+    const val = $(this).val();
+    if (val === '__range__') {
+      // open numeric modal for original
+      activeNumericRange.field = 'original';
+      $('#numeric-range-min').val(activeNumericRange.min || '');
+      $('#numeric-range-max').val(activeNumericRange.max || '');
+      $('#numeric-range-modal').show();
+      $('#numeric-range-modal .modal-box').css({ transform: 'translateY(0)', opacity: 1 });
+    } else {
+      // apply filters immediately
+      $('#catalog-table').bootstrapTable('load', applyCustomFilters(rawData));
+      updateClearButtonVisibility();
+    }
+  });
+  $(document).on('change', '#current-select', function() {
+    const val = $(this).val();
+    if (val === '__range__') {
+      activeNumericRange.field = 'current';
+      $('#numeric-range-min').val(activeNumericRange.min || '');
+      $('#numeric-range-max').val(activeNumericRange.max || '');
+      $('#numeric-range-modal').show();
+      $('#numeric-range-modal .modal-box').css({ transform: 'translateY(0)', opacity: 1 });
+    } else {
+      $('#catalog-table').bootstrapTable('load', applyCustomFilters(rawData));
+      updateClearButtonVisibility();
+    }
+  });
+
+  // date modal apply/cancel
   $(document).on('click', '#acquired-range-apply', function(e) {
     e.preventDefault();
-    // keep dropdown at '__range__' (CR1) — modal remains open until user closes or switches
+    activeDateRange.start = $('#acquired-range-start').val() || '';
+    activeDateRange.end   = $('#acquired-range-end').val() || '';
     $('#catalog-table').bootstrapTable('load', applyCustomFilters(rawData));
-    hideDateRangeModal(); // user pressed apply -> hide modal (but dropdown stays __range__). This is a reasonable UX.
+    // hide modal
+    $('#date-range-modal .modal-box').css({ transform: 'translateY(-12px)', opacity: 0 });
+    setTimeout(()=> { $('#date-range-modal').hide(); }, 220);
+    updateClearButtonVisibility();
   });
-
   $(document).on('click', '#acquired-range-cancel', function(e) {
     e.preventDefault();
-    // If user cancels, reset inputs? We'll leave inputs as-is so user can reopen and continue.
-    hideDateRangeModal();
-    // Do not change dropdown (keeps CR1 - user still on Custom Range unless they change)
+    $('#date-range-modal .modal-box').css({ transform: 'translateY(-12px)', opacity: 0 });
+    setTimeout(()=> { $('#date-range-modal').hide(); }, 220);
+    // keep activeDateRange unchanged
   });
 
-  // initialize flatpickr if available
-  if (typeof flatpickr === 'function') {
-    flatpickr('#acquired-range-start', { dateFormat: 'Y-m-d' });
-    flatpickr('#acquired-range-end',   { dateFormat: 'Y-m-d' });
-  }
-}
-
-// ---------------- Modal show/hide with SD-B subtle slide ----------------
-function showDateRangeModal() {
-  const $m = $('#date-range-modal');
-  if (!$m.length) return;
-  $m.show().removeClass('modal-hidden').addClass('modal-visible');
-  // small delay to allow CSS transition
-  window.requestAnimationFrame(() => {
-    $m.find('.modal-box').css({ transform: 'translateY(0)', opacity: 1 });
+  // numeric modal apply/cancel
+  $(document).on('click', '#numeric-range-apply', function(e) {
+    e.preventDefault();
+    const min = $('#numeric-range-min').val() || '';
+    const max = $('#numeric-range-max').val() || '';
+    if (!activeNumericRange.field) return;
+    activeNumericRange.min = min;
+    activeNumericRange.max = max;
+    // apply filters
+    $('#catalog-table').bootstrapTable('load', applyCustomFilters(rawData));
+    // hide modal
+    $('#numeric-range-modal .modal-box').css({ transform: 'translateY(-12px)', opacity: 0 });
+    setTimeout(()=> { $('#numeric-range-modal').hide(); }, 220);
+    updateClearButtonVisibility();
   });
-}
-function hideDateRangeModal() {
-  const $m = $('#date-range-modal');
-  if (!$m.length) return;
-  $m.find('.modal-box').css({ transform: 'translateY(-12px)', opacity: 0 });
-  setTimeout(() => { $m.removeClass('modal-visible').addClass('modal-hidden').hide(); }, 220);
+  $(document).on('click', '#numeric-range-cancel', function(e) {
+    e.preventDefault();
+    $('#numeric-range-modal .modal-box').css({ transform: 'translateY(-12px)', opacity: 0 });
+    setTimeout(()=> { $('#numeric-range-modal').hide(); }, 220);
+  });
+
+  // Clear All button handler
+  $(document).on('click', '#clear-filters', function(e) {
+    e.preventDefault();
+    // reset all filters & active ranges
+    $('.column-filter').val('');
+    $('#acquired-select').val('');
+    $('#original-select').val('');
+    $('#current-select').val('');
+    activeDateRange.start = activeDateRange.end = '';
+    activeNumericRange.field = activeNumericRange.min = activeNumericRange.max = '';
+    // hide modals if present
+    $('#date-range-modal, #numeric-range-modal').hide();
+    // reload full dataset
+    $('#catalog-table').bootstrapTable('load', rawData);
+    updateClearButtonVisibility();
+  });
+
+  // ensure clear button visibility initially
+  updateClearButtonVisibility();
 }
 
-// ---------------- Init ----------------
+// ---------------- Clear button visibility ----------------
+function anyFilterActive() {
+  // any column-filter with value
+  const hasColumnFilters = $('.column-filter').filter(function() { return $(this).val() && $(this).val().toString().trim() !== ''; }).length > 0;
+  // acquired select active
+  const hasAcquired = $('#acquired-select').length && $('#acquired-select').val() && $('#acquired-select').val() !== '';
+  // numeric selects active
+  const hasOrig = $('#original-select').length && $('#original-select').val() && $('#original-select').val() !== '';
+  const hasCurr = $('#current-select').length && $('#current-select').val() && $('#current-select').val() !== '';
+  // active ranges set
+  const hasDateRange = (activeDateRange.start && activeDateRange.start.trim() !== '') || (activeDateRange.end && activeDateRange.end.trim() !== '');
+  const hasNumericRange = Boolean(activeNumericRange.field && (activeNumericRange.min || activeNumericRange.max));
+  return hasColumnFilters || hasAcquired || hasOrig || hasCurr || hasDateRange || hasNumericRange;
+}
+function updateClearButtonVisibility() {
+  $('#clear-filters').toggle(anyFilterActive());
+}
+
+// ---------------- Init & State restoration ----------------
 $(function() {
+  // Fetch data
   $.getJSON('data/' + getItemType() + '.json', function(jsonData) {
     rawData = jsonData || [];
 
+    // Ensure modals exist
+    injectModalsIfNeeded();
+
+    // Create table
     $('#catalog-table').bootstrapTable('destroy').bootstrapTable({
       data: rawData,
       detailView: true,
@@ -356,25 +625,89 @@ $(function() {
       rowStyle: rowStyle
     });
 
+    // Inject filter row and wire events
     injectFilterRow();
+
+    // Populate acquired + numeric dropdowns (from data + presets done in injectFilterRow)
     populateAcquiredOptions();
 
-    // populate simple dropdowns
-    ['franchise', 'size/model#', 'source'].forEach(col => {
-      const unique = [...new Set(rawData.map(i => i[col]).filter(Boolean))].sort((a,b) => String(a).localeCompare(String(b), undefined, { sensitivity: 'base' }));
-      const $sel = $(`select.column-filter[data-column="${col}"]`);
-      $sel.empty().append('<option value="">All</option>');
-      unique.forEach(v => $sel.append(`<option value="${v}">${v}</option>`));
-    });
+    // If compact state 's' found in URL, decode and apply
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const sRaw = urlParams.get('s');
+      if (sRaw) {
+        const decoded = b64DecodeUnicode(decodeURIComponent(sRaw));
+        if (decoded) {
+          const state = JSON.parse(decoded);
+          // Apply column filters
+          if (state.filters) {
+            // text/select filters
+            Object.entries(state.filters).forEach(([k,v]) => {
+              if (k === 'acquired') {
+                $('#acquired-select').val(v);
+              } else if (k === 'original_select') {
+                $('#original-select').val(v);
+              } else if (k === 'current_select') {
+                $('#current-select').val(v);
+              } else if (k === 'acquired_range') {
+                const [s,e] = String(v).split('|');
+                activeDateRange.start = s || '';
+                activeDateRange.end = e || '';
+                $('#acquired-range-start').val(activeDateRange.start);
+                $('#acquired-range-end').val(activeDateRange.end);
+              } else if (k === 'original_range') {
+                const [mn,mx] = String(v).split('|');
+                activeNumericRange.field = 'original';
+                activeNumericRange.min = mn || '';
+                activeNumericRange.max = mx || '';
+              } else if (k === 'current_range') {
+                const [mn,mx] = String(v).split('|');
+                activeNumericRange.field = 'current';
+                activeNumericRange.min = mn || '';
+                activeNumericRange.max = mx || '';
+              } else {
+                // generic column-filter inputs
+                const $el = $(`.column-filter[data-column="${k}"]`);
+                if ($el.length) $el.val(v);
+              }
+            });
+          }
 
-    // ensure modal is initially hidden and modal-box positioned subtle off
-    const $m = $('#date-range-modal');
-    if ($m.length) {
-      $m.hide();
-      $m.find('.modal-box').css({ transform: 'translateY(-12px)', opacity: 0, transition: 'transform 220ms ease, opacity 220ms ease' });
+          // Apply table search and options if provided
+          if (state.searchText) {
+            const $searchInput = $('.fixed-table-toolbar .search input');
+            if ($searchInput.length) $searchInput.val(state.searchText);
+            $('#catalog-table').bootstrapTable('refreshOptions', { searchText: state.searchText });
+          }
+          const refreshOpts = {};
+          if (state.sortName) refreshOpts.sortName = state.sortName;
+          if (state.sortOrder) refreshOpts.sortOrder = state.sortOrder;
+          if (state.pageSize) refreshOpts.pageSize = state.pageSize;
+          if (Object.keys(refreshOpts).length) $('#catalog-table').bootstrapTable('refreshOptions', refreshOpts);
+
+          // small timeout then set pageNumber
+          setTimeout(() => {
+            const pg = parseInt(state.pageNumber || 1, 10);
+            if (pg && !isNaN(pg)) {
+              try { $('#catalog-table').bootstrapTable('selectPage', pg); } catch (ex) { /* ignore */ }
+            }
+            // After page set, apply filtered data to table
+            $('#catalog-table').bootstrapTable('load', applyCustomFilters(rawData));
+            updateClearButtonVisibility();
+          }, 150);
+        }
+      } else {
+        // no state: just show all
+        $('#catalog-table').bootstrapTable('load', rawData);
+        updateClearButtonVisibility();
+      }
+    } catch (ex) {
+      console.warn('Error applying saved table state:', ex);
+      $('#catalog-table').bootstrapTable('load', rawData);
+      updateClearButtonVisibility();
     }
 
-    // expose helpers
+    // Expose helpers
     window.getTableState = getTableState;
   });
 });
