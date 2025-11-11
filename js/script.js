@@ -435,6 +435,8 @@
          $cell.append('<input type="text" class="column-filter form-control form-control-sm" data-column="name/brand" placeholder="Search title">');
        } else if (field === 'franchise' || field === 'size/model#' || field === 'source') {
          $cell.append(`<select class="column-filter form-control form-control-sm" data-column="${field}"><option value="">All</option></select>`);
+       } else if (field === 'description') {
+         $cell.append('<input type="text" class="column-filter form-control form-control-sm" data-column="description" placeholder="Search description">');
        } else if (field === 'original_cost') {
          $cell.append(buildNumericSelectHtml('original'));
        } else if (field === 'current_value') {
