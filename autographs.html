@@ -45,6 +45,10 @@
       transition: transform 220ms ease, opacity 220ms ease;
     }
     #date-range-modal.modal-visible .modal-box { transform: translateY(0); opacity: 1; }
+
+    /* modal-backdrop simple layout for numeric modals */
+    .modal-backdrop { position: fixed; left:0;top:0;right:0;bottom:0; display:flex; align-items:center; justify-content:center; z-index:2000; }
+    .modal-box { position: relative; background: #fff; padding: 16px 20px; border-radius: 6px; max-width: 420px; width: 100%; box-shadow: 0 8px 32px rgba(0,0,0,0.25); }
   </style>
 </head>
 <body>
@@ -86,10 +90,81 @@
         <input type="text" id="acquired-range-end" class="form-control form-control-sm" placeholder="YYYY-MM-DD">
       </div>
       <div class="text-right">
-        <button id="acquired-range-apply" class="btn btn-sm btn-primary">Apply</button>
-        <button id="acquired-range-cancel" class="btn btn-sm btn-secondary">Cancel</button>
+        <button id="date-range-apply" class="btn btn-sm btn-primary">Apply</button>
+        <button id="date-range-cancel" class="btn btn-sm btn-secondary">Cancel</button>
       </div>
     </div>
+  </div>
+
+  <!-- Numeric range modals for original and current value -->
+  <div id="numeric-range-modal-original" style="display:none;">
+    <div class="modal-box">
+      <h5>Original Cost — Custom Range</h5>
+      <div class="form-group">
+        <label for="orig-range-min">Min</label>
+        <input id="orig-range-min" class="form-control form-control-sm" placeholder="Min">
+      </div>
+      <div class="form-group">
+        <label for="orig-range-max">Max</label>
+        <input id="orig-range-max" class="form-control form-control-sm" placeholder="Max">
+      </div>
+      <div class="form-group form-check">
+        <input id="orig-range-blank" type="checkbox" class="form-check-input">
+        <label for="orig-range-blank" class="form-check-label">Include blanks</label>
+      </div>
+      <div class="text-right">
+        <button id="orig-range-apply" class="btn btn-sm btn-primary">Apply</button>
+        <button id="orig-range-cancel" class="btn btn-sm btn-secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="numeric-range-modal-current" style="display:none;">
+    <div class="modal-box">
+      <h5>Current Value — Custom Range</h5>
+      <div class="form-group">
+        <label for="curr-range-min">Min</label>
+        <input id="curr-range-min" class="form-control form-control-sm" placeholder="Min">
+      </div>
+      <div class="form-group">
+        <label for="curr-range-max">Max</label>
+        <input id="curr-range-max" class="form-control form-control-sm" placeholder="Max">
+      </div>
+      <div class="form-group form-check">
+        <input id="curr-range-blank" type="checkbox" class="form-check-input">
+        <label for="curr-range-blank" class="form-check-label">Include blanks</label>
+      </div>
+      <div class="text-right">
+        <button id="curr-range-apply" class="btn btn-sm btn-primary">Apply</button>
+        <button id="curr-range-cancel" class="btn btn-sm btn-secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXPORT TOOLBAR (explicit All / Filtered / Visible / Selected) -->
+  <div id="toolbar" class="mb-2 d-flex flex-wrap align-items-center">
+    <div class="btn-group mr-3 mb-2">
+      <!-- Four explicit modes -->
+      <button id="exportModeBtn" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Export Mode: All Rows
+      </button>
+      <div class="dropdown-menu">
+        <a class="dropdown-item export-mode" href="#" data-mode="all">All Rows</a>
+        <a class="dropdown-item export-mode active" href="#" data-mode="filtered">Filtered Rows</a>
+        <a class="dropdown-item export-mode" href="#" data-mode="page">Visible Data</a>
+        <a class="dropdown-item export-mode" href="#" data-mode="selected">Selected Rows</a>
+      </div>
+    </div>
+
+    <div class="btn-group mb-2 mr-2">
+      <button id="export-csv" class="btn btn-sm btn-success">Export CSV</button>
+      <button id="export-excel" class="btn btn-sm btn-success">Export Excel</button>
+      <button id="export-json" class="btn btn-sm btn-success">Export JSON</button>
+      <button id="export-pdf" class="btn btn-sm btn-success">Export PDF</button>
+    </div>
+
+    <input id="export-filename" type="text" class="form-control form-control-sm d-inline-block ml-2 mb-2"
+           style="width:220px;" placeholder="Filename (optional)">
   </div>
 
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
@@ -99,9 +174,16 @@
   <!-- flatpickr -->
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
-  <script src="https://cdn.jsdelivr.net/npm/tableexport.jquery.plugin@1.29.0/tableExport.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/tableexport.jquery.plugin@1.29.0/libs/jsPDF/jspdf.umd.min.js"></script>
+  <!-- jsPDF + AutoTable must load BEFORE tableExport -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
+  <!-- Bootstrap Table Export extension and tableExport plugin -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.18.3/extensions/export/bootstrap-table-export.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tableexport.jquery.plugin@1.29.0/tableExport.min.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<!-- Site logic -->
   <script src="js/script.js"></script>
 
   <table id="catalog-table" class="table table-bordered"
@@ -113,9 +195,13 @@
     data-detail-view="true"
     data-detail-view-by-click="true"
     data-detail-formatter="detailFormatter"
-    data-row-style="rowStyle">
+    data-row-style="rowStyle"
+    data-toolbar="#toolbar"
+    data-click-to-select="true"
+    data-id-field="id">
     <thead>
       <tr>
+        <th data-field="state" data-checkbox="true"></th>
         <th data-field="image" data-formatter="imageFormatter" data-footer-formatter="imageFooterFormatter"></th>
         <th data-field="id" data-sortable="true">ID</th>
         <th data-field="acquired" data-sortable="true" data-sorter="dateSorter" data-formatter="dateFormatter">Acquired</th>
