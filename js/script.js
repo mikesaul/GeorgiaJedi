@@ -900,6 +900,57 @@ function exportToExcel(data, fileName) {
     }
   });
 
+  // Inserted: updateExportModeLabel() — ensures dropdown label matches exportMode and active item
+  function updateExportModeLabel() {
+    try {
+      const labels = {
+        all: 'All Rows',
+        filtered: 'Filtered Rows',
+        page: 'Current Page',
+        selected: 'Selected Rows'
+      };
+      const labelText = labels[exportMode] || 'All Rows';
+
+      // Preferred explicit label element
+      const $label = $('#export-mode-label');
+      if ($label.length) {
+        $label.text(labelText);
+      } else {
+        // Try a button with id export-mode-btn
+        const $btn = $('#export-mode-btn');
+        if ($btn.length) {
+          const $inner = $btn.find('.export-mode-label');
+          if ($inner.length) $inner.text(labelText);
+          else $btn.text(labelText);
+          $btn.attr('data-mode', exportMode);
+        } else {
+          // Try common dropdown toggle patterns
+          const $toggle = $('.export-mode-toggle .dropdown-toggle, .export-dropdown .dropdown-toggle').first();
+          if ($toggle.length) {
+            const $inner = $toggle.find('.export-mode-label');
+            if ($inner.length) $inner.text(labelText);
+            else $toggle.text(labelText);
+          } else {
+            // Last resort: set parent dropdown text based on matching menu item
+            const $matching = $(`.export-mode[data-mode="${exportMode}"]`).first();
+            if ($matching.length) {
+              const $parentToggle = $matching.closest('.dropdown').find('.dropdown-toggle').first();
+              if ($parentToggle.length) {
+                $parentToggle.text($matching.text());
+              }
+            }
+          }
+        }
+      }
+
+      // Update active class on menu items
+      $('.export-mode').removeClass('active');
+      $(`.export-mode[data-mode="${exportMode}"]`).addClass('active');
+    } catch (e) {
+      console.warn('updateExportModeLabel failed', e);
+    }
+  }
+
   window.performExport = performExport;
 
 })(); // end closure
