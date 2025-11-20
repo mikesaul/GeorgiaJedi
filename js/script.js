@@ -763,12 +763,12 @@ function exportToExcel(data, fileName) {
       // Bind change handlers for dynamic selects
       $(document).on('change', '#acquired-select', function () {
         const v = $(this).val() || '';
-        if (v === '__range__') { showDateRangeModal(); updateClearButtonVisibility(); updateExportModeLabel(); return; }
+        if (v === '__range__') { showDateRangeModal(); updateClearButtonVisibility(); return; }
         hideDateRangeModal();
         const f = applyCustomFilters(rawData);
         $('#catalog-table').bootstrapTable('load', f);
+        autoSwitchExportModeIfFilteredActive();
         updateClearButtonVisibility();
-        updateExportModeLabel();
       });
 
       $(document).on('change', '.numeric-select', function () {
@@ -778,12 +778,12 @@ function exportToExcel(data, fileName) {
         if (val === '__custom__') {
           if (who === 'original') { $('#orig-range-min').val($('#orig-range-min').val() || ''); $('#orig-range-max').val($('#orig-range-max').val() || ''); $('#orig-range-blank').prop('checked', $('#orig-range-blank').is(':checked')); showNumericModal('original'); }
           else { $('#curr-range-min').val($('#curr-range-min').val() || ''); $('#curr-range-max').val($('#curr-range-max').val() || ''); $('#curr-range-blank').prop('checked', $('#curr-range-blank').is(':checked')); showNumericModal('current'); }
-          updateClearButtonVisibility(); updateExportModeLabel(); return;
+          updateClearButtonVisibility(); return;
         }
         const f = applyCustomFilters(rawData);
         $('#catalog-table').bootstrapTable('load', f);
+        autoSwitchExportModeIfFilteredActive();
         updateClearButtonVisibility();
-        updateExportModeLabel();
       });
 
       let debounceT;
@@ -792,8 +792,8 @@ function exportToExcel(data, fileName) {
         debounceT = setTimeout(() => {
           const f = applyCustomFilters(rawData);
           $('#catalog-table').bootstrapTable('load', f);
+          autoSwitchExportModeIfFilteredActive();
           updateClearButtonVisibility();
-          updateExportModeLabel();
         }, 200);
       });
 
@@ -803,28 +803,27 @@ function exportToExcel(data, fileName) {
         hideDateRangeModal();
         const f = applyCustomFilters(rawData);
         $('#catalog-table').bootstrapTable('load', f);
+        autoSwitchExportModeIfFilteredActive();
         updateClearButtonVisibility();
-        updateExportModeLabel();
       });
       $(document).on('click', '#date-range-cancel', function (e) {
         e.preventDefault();
         hideDateRangeModal();
         updateClearButtonVisibility();
-        updateExportModeLabel();
       });
 
       // Numeric modals
       $(document).on('click', '#orig-range-apply', function (e) {
-        e.preventDefault(); hideNumericModal('original'); const f = applyCustomFilters(rawData); $('#catalog-table').bootstrapTable('load', f); updateClearButtonVisibility(); updateExportModeLabel();
+        e.preventDefault(); hideNumericModal('original'); const f = applyCustomFilters(rawData); $('#catalog-table').bootstrapTable('load', f); autoSwitchExportModeIfFilteredActive(); updateClearButtonVisibility(); 
       });
       $(document).on('click', '#orig-range-cancel', function (e) {
-        e.preventDefault(); hideNumericModal('original'); updateClearButtonVisibility(); updateExportModeLabel();
+        e.preventDefault(); hideNumericModal('original'); updateClearButtonVisibility(); 
       });
       $(document).on('click', '#curr-range-apply', function (e) {
-        e.preventDefault(); hideNumericModal('current'); const f = applyCustomFilters(rawData); $('#catalog-table').bootstrapTable('load', f); updateClearButtonVisibility(); updateExportModeLabel();
+        e.preventDefault(); hideNumericModal('current'); const f = applyCustomFilters(rawData); $('#catalog-table').bootstrapTable('load', f); autoSwitchExportModeIfFilteredActive(); updateClearButtonVisibility(); 
       });
       $(document).on('click', '#curr-range-cancel', function (e) {
-        e.preventDefault(); hideNumericModal('current'); updateClearButtonVisibility(); updateExportModeLabel();
+        e.preventDefault(); hideNumericModal('current'); updateClearButtonVisibility(); 
       });
 
       // Clear all
@@ -839,19 +838,54 @@ function exportToExcel(data, fileName) {
         $('#orig-range-blank, #curr-range-blank').prop('checked', false);
         hideDateRangeModal(); hideNumericModal('original'); hideNumericModal('current');
         $('#catalog-table').bootstrapTable('load', rawData);
+
+        // Reset export mode to All when clearing filters
+        exportMode = "all";
+        $('#exportModeBtn').text("Export Mode: All Rows");
+        $('.export-mode').removeClass('active');
+        $('.export-mode[data-mode="all"]').addClass('active');
+
         updateClearButtonVisibility();
-        updateExportModeLabel();
       });
+
+      // AUTO-SWITCH EXPORT MODE TO FILTERED WHEN ANY FILTER IS ACTIVE
+      function autoSwitchExportModeIfFilteredActive() {
+        // Only switch if user hasn't manually chosen a different mode
+        if (exportMode === "all") {
+            exportMode = "filtered";
+
+            // Update button label
+            $('#exportModeBtn').text("Export Mode: Filtered Rows");
+
+            // Update dropdown active state
+            $('.export-mode').removeClass('active');
+            $('.export-mode[data-mode="filtered"]').addClass('active');
+        }
+      }
 
       // Export mode selection
       $(document).on('click', '.export-mode', function (e) {
         e.preventDefault();
+
         const mode = $(this).data('mode');
         if (!mode) return;
+
+        // Update internal state
         exportMode = mode;
+
+        // Update active highlight
         $('.export-mode').removeClass('active');
         $(this).addClass('active');
-        updateExportModeLabel();
+
+        // Update button label text
+        const labelMap = {
+            all: "All Rows",
+            filtered: "Filtered Rows",
+            page: "Visible Data",
+            selected: "Selected Rows"
+        };
+
+        $('#exportModeBtn').text("Export Mode: " + labelMap[mode]);
       });
 
       // Export buttons
@@ -896,60 +930,8 @@ function exportToExcel(data, fileName) {
 
       // initial UI state
       updateClearButtonVisibility();
-      updateExportModeLabel();
     }
   });
-
-  // Inserted: updateExportModeLabel() — ensures dropdown label matches exportMode and active item
-  function updateExportModeLabel() {
-    try {
-      const labels = {
-        all: 'All Rows',
-        filtered: 'Filtered Rows',
-        page: 'Current Page',
-        selected: 'Selected Rows'
-      };
-      const labelText = labels[exportMode] || 'All Rows';
-
-      // Preferred explicit label element
-      const $label = $('#export-mode-label');
-      if ($label.length) {
-        $label.text(labelText);
-      } else {
-        // Try a button with id export-mode-btn
-        const $btn = $('#export-mode-btn');
-        if ($btn.length) {
-          const $inner = $btn.find('.export-mode-label');
-          if ($inner.length) $inner.text(labelText);
-          else $btn.text(labelText);
-          $btn.attr('data-mode', exportMode);
-        } else {
-          // Try common dropdown toggle patterns
-          const $toggle = $('.export-mode-toggle .dropdown-toggle, .export-dropdown .dropdown-toggle').first();
-          if ($toggle.length) {
-            const $inner = $toggle.find('.export-mode-label');
-            if ($inner.length) $inner.text(labelText);
-            else $toggle.text(labelText);
-          } else {
-            // Last resort: set parent dropdown text based on matching menu item
-            const $matching = $(`.export-mode[data-mode="${exportMode}"]`).first();
-            if ($matching.length) {
-              const $parentToggle = $matching.closest('.dropdown').find('.dropdown-toggle').first();
-              if ($parentToggle.length) {
-                $parentToggle.text($matching.text());
-              }
-            }
-          }
-        }
-      }
-
-      // Update active class on menu items
-      $('.export-mode').removeClass('active');
-      $(`.export-mode[data-mode="${exportMode}"]`).addClass('active');
-    } catch (e) {
-      console.warn('updateExportModeLabel failed', e);
-    }
-  }
 
   window.performExport = performExport;
 

@@ -8,22 +8,6 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.18.3/bootstrap-table.min.css">
   <link rel="stylesheet" href="css/styles.css">
-  {
-    "id": "3",
-    "acquired": "",
-    "type": "autographs",
-    "name/brand": "Alec Guinness",
-    "franchise": "Star Wars",
-    "description": "Obi-Wan Kenobi promotional postcard (Original cost was 220.00 GBP / $297.49). Obtained through a local London auction house after making an offer.<BR />Current value is 520 GBP / $850.00 USD as per recent eBay sales.",
-    "size/model#": "5X7",
-    "source": "",
-    "special": "No",
-    "is_verified": "No",
-    "serialnumber": "",
-    "original_cost": "297.49",
-    "current_value": "850",
-    "image": "AlecGuinness_Postcard"
-  },
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
@@ -61,6 +45,10 @@
       transition: transform 220ms ease, opacity 220ms ease;
     }
     #date-range-modal.modal-visible .modal-box { transform: translateY(0); opacity: 1; }
+
+    /* modal-backdrop simple layout for numeric modals */
+    .modal-backdrop { position: fixed; left:0;top:0;right:0;bottom:0; display:flex; align-items:center; justify-content:center; z-index:2000; }
+    .modal-box { position: relative; background: #fff; padding: 16px 20px; border-radius: 6px; max-width: 420px; width: 100%; box-shadow: 0 8px 32px rgba(0,0,0,0.25); }
   </style>
 </head>
 <body>
@@ -108,30 +96,69 @@
     </div>
   </div>
 
-  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <!-- EXPORT TOOLBAR (All / Filtered / Visible / Selected) -->
+  <div id="toolbar" class="mb-2 d-flex flex-wrap align-items-center">
+    <div class="btn-group mr-3 mb-2">
+        <!-- Four explicit modes -->
+        <button id="exportModeBtn" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Export Mode: All Rows
+      </button>
+      <div class="dropdown-menu">
+        <a class="dropdown-item export-mode" href="#" data-mode="all">All Rows</a>
+        <a class="dropdown-item export-mode active" href="#" data-mode="filtered">Filtered Rows</a>
+        <a class="dropdown-item export-mode" href="#" data-mode="page">Visible Data</a>
+        <a class="dropdown-item export-mode" href="#" data-mode="selected">Selected Rows</a>
+      </div>
+    </div>
+
+    <div class="btn-group mb-2 mr-2">
+      <button id="export-csv" class="btn btn-sm btn-success">Export CSV</button>
+      <button id="export-excel" class="btn btn-sm btn-success">Export Excel</button>
+      <button id="export-json" class="btn btn-sm btn-success">Export JSON</button>
+      <button id="export-pdf" class="btn btn-sm btn-success">Export PDF</button>
+  </div>
+
+  <input id="export-filename" type="text" class="form-control form-control-sm d-inline-block ml-2 mb-2"
+  style="width:220px;" placeholder="Filename (optional)">
+
+  </div>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.18.3/bootstrap-table.min.js"></script>
 
   <!-- flatpickr -->
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
-  <script src="https://cdn.jsdelivr.net/npm/tableexport.jquery.plugin@1.29.0/tableExport.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/tableexport.jquery.plugin@1.29.0/libs/jsPDF/jspdf.umd.min.js"></script>
+  <!-- jsPDF + AutoTable must load BEFORE tableExport -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
-  <script src="js/script.js"></script>
+  <!-- Bootstrap Table Export extension and tableExport plugin -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.18.3/extensions/export/bootstrap-table-export.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tableexport.jquery.plugin@1.29.0/tableExport.min.js"></script>
+
+<!-- SheetJS for native Excel export (autographs uses this) -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<!-- Site logic -->
+<script src="js/script.js"></script>
 
   <table id="catalog-table" class="table table-bordered"
-    data-toggle="table"
-    data-search="true"
-    data-pagination="true"
-    data-pagination-v-align="both"
-    data-show-footer="true"
-    data-detail-view="true"
-    data-detail-view-by-click="true"
-    data-detail-formatter="detailFormatter"
-    data-row-style="rowStyle">
-    <thead>
+  data-toggle="table"
+  data-search="true"
+  data-pagination="true"
+  data-pagination-v-align="both"
+  data-show-footer="true"
+  data-detail-view="true"
+  data-detail-view-by-click="true"
+  data-detail-formatter="detailFormatter"
+  data-row-style="rowStyle"
+  data-toolbar="#toolbar"
+  data-click-to-select="true"
+  data-id-field="id">
+  <thead>
       <tr>
+        <th data-field="state" data-checkbox="true"></th>
         <th data-field="image" data-formatter="imageFormatter" data-footer-formatter="imageFooterFormatter"></th>
         <th data-field="id" data-sortable="true">ID</th>
         <th data-field="acquired" data-sortable="true" data-sorter="dateSorter" data-formatter="dateFormatter">Acquired</th>
