@@ -23,7 +23,7 @@
   const DEFAULT_PAGE_SIZE = 5;
   let rawData = [];
   let currentFiltered = [];
-  let exportMode = 'filtered'; // 'all' | 'filtered' | 'page' | 'selected'
+  let exportMode = 'all'; // 'all' | 'filtered' | 'page' | 'selected'
 
   /* =========================
      Utilities
