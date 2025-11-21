@@ -787,7 +787,7 @@ function exportToExcel(data, fileName) {
         pageSize: DEFAULT_PAGE_SIZE,
         pageList: [5, 10, 25, 50, 100],
         toolbar: '#toolbar',
-        clickToSelect: true,
+        clickToSelect: false,
         idField: 'id',
         detailView: true,
         detailViewByClick: true,
