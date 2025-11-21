@@ -76,6 +76,44 @@
     }
   }
 
+      // ---------------------------
+    // Small reusable helpers
+    // ---------------------------
+    // Debounce helper used by filter wiring
+    function debounce(fn, delay) {
+      let timer = null;
+      return function (...args) {
+        const ctx = this;
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(() => {
+          timer = null;
+          fn.apply(ctx, args);
+        }, delay);
+      };
+    }
+
+    // CSV escape helper used by manual CSV builder
+    function csvEscape(val) {
+      if (val === null || val === undefined) return '';
+      const s = String(val);
+      if (/[",\n\r]/.test(s)) {
+        return '"' + s.replace(/"/g, '""') + '"';
+      }
+      return s;
+    }
+
+    // Escape HTML to avoid injection and rendering issues
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+
   /* =========================
      Formatters (exposed to window for bootstrap-table)
      ========================= */
@@ -148,6 +186,10 @@
   window.rowStyle = rowStyle;
 
   function detailFormatter(index, row) {
+    // Cache HTML per row to avoid rebuilding repeatedly
+    if (!row) return '';
+    if (row.__detail_html) return row.__detail_html;
+  
     const img = row.image ? `images/${row.image}.jpg` : 'images/100.png';
     const title = row['name/brand'] || row.title || '';
     const description = row.description || '';
@@ -156,24 +198,29 @@
     const source = row.source || '';
     const orig = currencyFormatter(row.original_cost);
     const curr = currencyFormatter(row.current_value);
-
-    return `
+  
+    const html = `
       <div class="card" style="display:flex; border:1px solid #ddd; padding:10px;">
         <div style="flex:1; text-align:center;">
           <img src="${img}" style="max-width:100%; width:420px; border-radius:6px;">
         </div>
         <div style="flex:2; padding-left:20px;">
-          <h4>${title}</h4>
-          ${franchise ? `<p><b>Franchise:</b> ${franchise}</p>` : ''}
-          ${description ? `<p>${description}</p>` : ''}
-          ${source ? `<p><b>Source:</b> ${source}</p>` : ''}
-          ${serial ? `<p><b>Serial#:</b> ${serial}</p>` : ''}
-          ${orig ? `<p><b>Original Cost:</b> ${orig}</p>` : ''}
-          ${curr ? `<p><b>Current Value:</b> ${curr}</p>` : ''}
+          <h4>${escapeHtml(title)}</h4>
+          ${franchise ? `<p><b>Franchise:</b> ${escapeHtml(franchise)}</p>` : ''}
+          ${description ? `<p>${escapeHtml(description)}</p>` : ''}
+          ${source ? `<p><b>Source:</b> ${escapeHtml(source)}</p>` : ''}
+          ${serial ? `<p><b>Serial#:</b> ${escapeHtml(serial)}</p>` : ''}
+          ${orig ? `<p><b>Original Cost:</b> ${escapeHtml(orig)}</p>` : ''}
+          ${curr ? `<p><b>Current Value:</b> ${escapeHtml(curr)}</p>` : ''}
         </div>
       </div>
     `;
+  
+    // store cached HTML on row object
+    try { row.__detail_html = html; } catch (e) { /* ignore if row is immutable */ }
+    return html;
   }
+
   window.detailFormatter = detailFormatter;
 
   /* =========================
@@ -670,30 +717,26 @@ function exportToExcel(data, fileName) {
     }
 
     if (format === 'csv') {
-      // use tableExport for CSV by building temporary table
-      const $tmp = $('<table>').attr('id', 'tmp-export-table').css('display', 'none').appendTo('body');
-      const cols = Object.keys(mapped[0]);
-      const $thead = $('<thead>');
-      const $htr = $('<tr>');
-      cols.forEach(c => $htr.append(`<th>${c}</th>`));
-      $thead.append($htr); $tmp.append($thead);
-      const $tbody = $('<tbody>');
-      mapped.forEach(row => {
-        const $r = $('<tr>');
-        cols.forEach(c => $r.append(`<td>${row[c] ?? ''}</td>`));
-        $tbody.append($r);
+      const cols = Object.keys(mapped[0] || {});
+      // build header
+      const rowsCsv = [];
+      rowsCsv.push(cols.map(c => csvEscape(c)).join(','));
+      // build rows
+      mapped.forEach(r => {
+        const line = cols.map(c => csvEscape(r[c] ?? '')).join(',');
+        rowsCsv.push(line);
       });
-      $tmp.append($tbody);
-      // ensure tableExport is available
-      if ($.fn.tableExport) {
-        $tmp.tableExport({ fileName: filename, type: 'csv', escape: 'false', exportDataType: 'all' });
-      } else {
-        // fallback: simple CSV generation
-        const csv = [cols.join(',')].concat(mapped.map(r => cols.map(c => `"${String(r[c] || '').replace(/"/g, '""')}"`).join(','))).join('\n');
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename + '.csv'; a.click();
-      }
-      $tmp.remove();
+      const csv = rowsCsv.join('\r\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename + '.csv';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(a.href);
+      }, 150);
       return;
     }
 
@@ -786,16 +829,22 @@ function exportToExcel(data, fileName) {
         updateClearButtonVisibility();
       });
 
-      let debounceT;
+// PATCH part 3 20251121
+
+      // centralized filter application (debounced)
+      function applyFiltersImmediate() {
+        const f = applyCustomFilters(rawData);
+        $('#catalog-table').bootstrapTable('load', f);
+        autoSwitchExportModeIfFilteredActive();
+        updateClearButtonVisibility();
+      }
+      const applyFiltersDebounced = debounce(applyFiltersImmediate, 200);
+
+      // wire inputs to centralized debounced function
       $(document).on('input change', '.column-filter', function () {
-        clearTimeout(debounceT);
-        debounceT = setTimeout(() => {
-          const f = applyCustomFilters(rawData);
-          $('#catalog-table').bootstrapTable('load', f);
-          autoSwitchExportModeIfFilteredActive();
-          updateClearButtonVisibility();
-        }, 200);
+        applyFiltersDebounced();
       });
+
 
       // Date modal apply/cancel
       $(document).on('click', '#date-range-apply', function (e) {
