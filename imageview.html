@@ -4,35 +4,63 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Viewer</title>
+    <title>Star Wars Memorabilia Gallery</title>
 
+    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css" />
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-  
+
     <style>
       body {
-        background: #111;
+        background: #ffffff;
         color: #eee;
       }
 
+      header img.logo { height: 64px; margin-right: 12px; }
+
       .viewer-container {
-        max-width: 900px;
+        max-width: 1000px;
         margin: 20px auto;
         text-align: center;
       }
 
-      .viewer-container img {
-        max-width: 100%;
-        border-radius: 6px;
-        background: #222;
+      /* Carousel image styling */
+      .image-carousel .carousel-item img {
+        max-height: 800px;
+        object-fit: contain;
+        margin: 0 auto;
+        border-radius: 20px;
+        background: #dadada;
         padding: 6px;
       }
 
       .btn-back {
         margin-top: 20px;
       }
+
+      .carousel-indicators [data-bs-target] {
+        background-color: #fff;
+        opacity: 0.7;
+      }
+
+      /* Optional small thumbnail strip below the carousel (used in commented Option B) */
+      .thumb-strip {
+        display:flex;
+        gap:8px;
+        justify-content:center;
+        margin-top:12px;
+        flex-wrap:wrap;
+      }
+      .thumb-strip img {
+        height:64px;
+        width:auto;
+        border-radius:4px;
+        cursor:pointer;
+        border:2px solid transparent;
+      }
+      .thumb-strip img.active-thumb { border-color:#ffc107; }
     </style>
   </head>
 
@@ -43,48 +71,58 @@
     </header>
 
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <a class="navbar-brand" href="#">GeorgiaJedi</a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
-        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav">
-          <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="autographs.html">Autographs</a></li>
-          <li class="nav-item"><a class="nav-link" href="collectibles.html">Collectibles</a></li>
-          <li class="nav-item"><a class="nav-link" href="cast.html">Cast/Crew/Characters</a></li>
-          <li class="nav-item"><a class="nav-link admin-only" href="add-item.html">Add Item</a></li>
-          <li class="nav-item"><a class="nav-link" href="#" id="logoutAdmin" style="display:none;">Logout Admin</a></li>
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">GeorgiaJedi</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+          aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav">
+            <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+            <li class="nav-item"><a class="nav-link" href="autographs.html">Autographs</a></li>
+            <li class="nav-item"><a class="nav-link" href="collectibles.html">Collectibles</a></li>
+            <li class="nav-item"><a class="nav-link" href="cast.html">Cast/Crew/Characters</a></li>
+            <li class="nav-item"><a class="nav-link admin-only" href="add-item.html">Add Item</a></li>
+            <li class="nav-item"><a class="nav-link" href="#" id="logoutAdmin" style="display:none;">Logout Admin</a></li>
           </ul>
+        </div>
       </div>
     </nav>
-        <div class="viewer-container">
-      <h2 class="mb-4">Image Viewer</h2>
 
-      <!-- Main image -->
-      <img id="main-image" src="images/100.png" alt="Image" />
+    <main class="viewer-container container">
+      <!--h2 class="mb-4">Image Viewer</h2-->
+
+      <!-- Carousel container (dynamically built) -->
+      <div id="imageCarouselContainer" class="mb-3"></div>
+
+      <!-- Fallback single image (will be used if carousel not built) -->
+      <img id="main-image" src="images/100.png" alt="Image" style="display:none;" />
 
       <!-- Back link -->
       <div>
-        <a id="backLink" class="btn btn-warning btn-back">Back to Catalog</a>
+        <a id="backLink" class="backnav">Back to Catalog</a>
       </div>
-    </div>
+    </main>
 
-    <!-- Bootstrap -->
+    <footer class="text-center py-4">
+      <p>&copy; 2024 GeorgiaJedi. All rights reserved.</p>
+    </footer>
+
+    <!-- Bootstrap bundle (no jQuery dependency for bootstrap) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- jQuery MUST load before script.js -->
+    <!-- jQuery BEFORE script.js (script.js expects jQuery) -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
-    <!-- Watermark module -->
+    <!-- Watermark module (your working module) -->
     <script src="js/watermark-module.js"></script>
 
-    <!-- Main logic (your full script.js) -->
+    <!-- Your full script.js (unchanged) -->
     <script src="js/script.js"></script>
 
     <script>
-      (function () {
+      (async function () {
         function getParam(name) {
           try {
             const qs = new URLSearchParams(window.location.search);
@@ -92,33 +130,241 @@
           } catch (e) { return null; }
         }
 
-        const imageId   = getParam("image");
-        const sender    = getParam("sender") || "autographs";
-        const stateBase64 = getParam("s");
+        const imageIdRaw   = getParam("image");   // e.g. OPIX_AmyAllen_AylaSecura
+        const sender       = getParam("sender") || "autographs";
+        const stateBase64  = getParam("s");
 
-        // Build "Back to Catalog" link with persistent state
+        // Build Back link (preserve compact state if present)
         const suffix = stateBase64 ? ("?s=" + encodeURIComponent(stateBase64)) : "";
         const target = sender === "collectibles" ? "collectibles.html" : "autographs.html";
-        document.getElementById("backLink").href = target + suffix;
+        const backEl = document.getElementById("backLink");
+        if (backEl) backEl.href = target + suffix;
 
-        // Main image element
-        const mainImg = document.getElementById("main-image");
-
-        if (imageId) {
-          // Correct path for original image
-          mainImg.src = "images/" + imageId + ".jpg";
-
-          // Watermark swap (async, fast-path through cache)
-          if (window.getWatermarkedDataUrl) {
-            window.getWatermarkedDataUrl(imageId, "full").then(dataUrl => {
-              if (dataUrl) {
-                try { mainImg.src = dataUrl; } catch (e) {}
-              }
-            }).catch(() => {});
-          }
+        if (!imageIdRaw) {
+          // nothing to show
+          return;
         }
+
+        // Normalize base name (strip extension if provided)
+        const imageBase = imageIdRaw.replace(/\.[^/.]+$/, "");
+
+        // Load images.json (should contain 'root' and possibly other groups)
+        let imagesJson = null;
+        try {
+          const resp = await fetch("data/images.json");
+          imagesJson = await resp.json();
+        } catch (err) {
+          console.error("Failed to load images.json", err);
+          imagesJson = null;
+        }
+        if (!imagesJson) {
+          // As fallback attempt to show direct path
+          const fallbackPath = `images/${imageBase}.jpg`;
+          const mainImg = document.getElementById("main-image");
+          mainImg.src = fallbackPath;
+          mainImg.style.display = 'block';
+          // attempt watermark swap
+          if (window.getWatermarkedDataUrl) {
+            try {
+              const dataUrl = await window.getWatermarkedDataUrl(fallbackPath, "full");
+              if (dataUrl) mainImg.src = dataUrl;
+            } catch (e) { console.warn(e); }
+          }
+          return;
+        }
+
+        // Choose group: if sender present and exists, prefer that, else default to root
+        const group = (sender && imagesJson[sender]) ? sender : "root";
+        const allImages = imagesJson[group] || imagesJson.root || [];
+
+        // Find matching images where filename base starts with the base name (covers -serial, -1 variations)
+        const matches = allImages.filter(p => {
+          const base = p.split("/").pop().replace(/\.[^.]+$/, "");
+          return base.startsWith(imageBase);
+        });
+
+        // If nothing in sender group, also search root as a fallback
+        if (!matches.length && group !== 'root') {
+          const allRoot = imagesJson.root || [];
+          const fallbackMatches = allRoot.filter(p => {
+            const base = p.split("/").pop().replace(/\.[^.]+$/, "");
+            return base.startsWith(imageBase);
+          });
+          fallbackMatches.forEach(m => matches.push(m));
+        }
+
+        if (!matches.length) {
+          // no matching images found � try direct path
+          const direct = `images/${imageBase}.jpg`;
+          const mainImg = document.getElementById("main-image");
+          mainImg.src = direct;
+          mainImg.style.display = 'block';
+          if (window.getWatermarkedDataUrl) {
+            try {
+              const dataUrl = await window.getWatermarkedDataUrl(direct, "full");
+              if (dataUrl) mainImg.src = dataUrl;
+            } catch (e) { console.warn(e); }
+          }
+          return;
+        }
+
+        // Sort matches: prefer base (no dash) first, then others (keeps main image first)
+        matches.sort((a, b) => {
+          const na = a.split("/").pop();
+          const nb = b.split("/").pop();
+          const da = na.indexOf('-') === -1 ? 0 : 1;
+          const db = nb.indexOf('-') === -1 ? 0 : 1;
+          if (da !== db) return da - db;
+          return na.localeCompare(nb);
+        });
+
+        // Build bootstrap carousel (Bootstrap 5 markup)
+        const container = document.getElementById("imageCarouselContainer");
+        container.innerHTML = ''; // clear
+
+        const carouselId = 'imageCarousel';
+        const carousel = document.createElement('div');
+        carousel.id = carouselId;
+        carousel.className = 'carousel slide image-carousel';
+        carousel.setAttribute('data-bs-ride', 'carousel');
+
+        // Indicators
+        const ol = document.createElement('div');
+        ol.className = 'carousel-indicators';
+        matches.forEach((m, idx) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.setAttribute('data-bs-target', '#' + carouselId);
+          btn.setAttribute('data-bs-slide-to', String(idx));
+          if (idx === 0) { btn.className = 'active'; btn.setAttribute('aria-current', 'true'); }
+          btn.setAttribute('aria-label', 'Slide ' + (idx + 1));
+          ol.appendChild(btn);
+        });
+
+        // Inner carousel
+        const inner = document.createElement('div');
+        inner.className = 'carousel-inner';
+
+        // Build slides
+        matches.forEach((imgPath, idx) => {
+          const item = document.createElement('div');
+          item.className = 'carousel-item' + (idx === 0 ? ' active' : '');
+
+          const img = document.createElement('img');
+          img.className = 'd-block w-100';
+          img.alt = `Image ${idx + 1}`;
+          img.src = imgPath; // show original quickly
+
+          // store the resolved path in data attribute so watermark swap can reference it easily
+          img.dataset.resolved = imgPath;
+
+          // add to slide
+          item.appendChild(img);
+          inner.appendChild(item);
+
+          // async: try to replace with watermarked dataURL when ready
+          if (window.getWatermarkedDataUrl) {
+            // call and ignore errors; when ready, update the slide img
+            (async (path, el) => {
+              try {
+                const dataUrl = await window.getWatermarkedDataUrl(path, 'full');
+                if (dataUrl && el) {
+                  el.src = dataUrl;
+                }
+              } catch (e) {
+                // if watermark fails just leave the original src
+                console.warn('Watermark generation failed for', path, e);
+              }
+            })(imgPath, img);
+          }
+        });
+
+        // Controls
+        const prev = document.createElement('button');
+        prev.className = 'carousel-control-prev';
+        prev.type = 'button';
+        prev.setAttribute('data-bs-target', '#' + carouselId);
+        prev.setAttribute('data-bs-slide', 'prev');
+        prev.innerHTML = '<span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">Previous</span>';
+
+        const next = document.createElement('button');
+        next.className = 'carousel-control-next';
+        next.type = 'button';
+        next.setAttribute('data-bs-target', '#' + carouselId);
+        next.setAttribute('data-bs-slide', 'next');
+        next.innerHTML = '<span class="carousel-control-next-icon" aria-hidden="true"></span><span class="visually-hidden">Next</span>';
+
+        // assemble carousel
+        carousel.appendChild(ol);
+        carousel.appendChild(inner);
+        carousel.appendChild(prev);
+        carousel.appendChild(next);
+        container.appendChild(carousel);
+
+        // Optionally: create a small thumbnail strip beneath that allows clicking to jump to slide
+        // (kept minimal so it doesn't break styling)
+        const thumbStrip = document.createElement('div');
+        thumbStrip.className = 'thumb-strip mt-3';
+        matches.forEach((p, i) => {
+          const tn = document.createElement('img');
+          // Use the same path (could point to a dedicated thumbs folder if you have thumbs)
+          tn.src = p;
+          tn.dataset.index = String(i);
+          if (i === 0) tn.classList.add('active-thumb');
+          tn.addEventListener('click', (ev) => {
+            const idx = parseInt(ev.currentTarget.dataset.index, 10);
+            const bsCarouselEl = document.getElementById(carouselId);
+            const bs = bootstrap.Carousel.getOrCreateInstance(bsCarouselEl);
+            bs.to(idx);
+          });
+          thumbStrip.appendChild(tn);
+        });
+        container.appendChild(thumbStrip);
+
+        // Keep main-image hidden (we use the carousel)
+        const mainImage = document.getElementById("main-image");
+        if (mainImage) mainImage.style.display = 'none';
+
+        // Sync active thumb when carousel slides
+        const bsEl = document.getElementById(carouselId);
+        if (bsEl) {
+          bsEl.addEventListener('slide.bs.carousel', function (e) {
+            const nextIndex = e.to;
+            // remove active-thumb class and set on matching thumb
+            thumbStrip.querySelectorAll('img').forEach(img => img.classList.remove('active-thumb'));
+            const nextThumb = thumbStrip.querySelector(`img[data-index="${nextIndex}"]`);
+            if (nextThumb) nextThumb.classList.add('active-thumb');
+          });
+        }
+
+        /* ===========================================================
+           Option B: alternative layout with visible thumbnail strip
+           (You asked to "go with A, and include code for B as a comment".
+           Below is a short commented suggestion for Option B � swap in if
+           you'd prefer a different thumbnail interaction/layout.)
+           ===========================================================
+
+           // Option B (commented): small thumbnail strip with selected image shown above
+           // Replace the carousel building above with a layout like:
+           //
+           // <div class="d-flex flex-column align-items-center">
+           //   <div class="mb-2" id="singleLarge"><img id="singleLargeImg" src="..." class="img-fluid" /></div>
+           //   <div class="thumb-strip">{ thumbnails }</div>
+           // </div>
+           //
+           // Then wire thumbnails' click handlers to set document.getElementById('singleLargeImg').src = watermarkedDataUrl || original;
+           // This is a simpler UI (no carousel controls), good for galleries with many small alternate shots.
+           //
+           // Implementation notes:
+           // - Keep the watermark swap exactly the same: call getWatermarkedDataUrl(path, 'full') and set the large image src when resolved.
+           // - Use CSS to horizontally scroll the thumb-strip if many thumbnails exist.
+           //
+           // End of Option B comment block.
+           =========================================================== */
+
       })();
     </script>
 
+    <script src="js/admin-auth.js"></script>
   </body>
 </html>
