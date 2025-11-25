@@ -1,15 +1,12 @@
-
 /**
  * script.js — Complete updated version for autographs.html
  *
- * Features:
- * - Loads data from data/<page>.json
- * - Injects filter row, date and numeric range modals
- * - Clear All button visibility
- * - Formatters for bootstrap-table (date, currency, detail)
- * - Image link state encoding for imageview
- * - Export: CSV (tableExport), JSON (manual), Excel (SheetJS), PDF (jsPDF + AutoTable)
- * - Export modes: all | filtered | page | selected
+ * Revisions:
+ * - Robust image path normalization (accepts base id, full path, or filename with extension)
+ * - Cache key uses basename (no path, no extension)
+ * - getWatermarkedDataUrl handles thumb/full modes safely
+ * - imageFormatter no longer double-encodes the `s` table-state param (preserves state when returning)
+ * - Font-face loader tries absolute and relative font URLs
  *
  * Replace your existing /js/script.js with this file.
  */
@@ -24,6 +21,19 @@
   let rawData = [];
   let currentFiltered = [];
   let exportMode = 'all'; // 'all' | 'filtered' | 'page' | 'selected'
+
+  // Watermark cache (in-memory, page lifetime)
+  // Map key: `${imageKey}:${mode}` where imageKey is basename (no path, no ext)
+  const WATERMARK_CACHE = new Map();
+
+  // Font load cache/promise
+  const FONT_NAME = 'SFDistantGalaxy';
+  const FONT_URL_RAW = 'css/fonts/SF Distant Galaxy AltOutline.ttf';
+  const FONT_URL_CANDIDATES = [
+    '/' + FONT_URL_RAW,        // absolute path (root)
+    FONT_URL_RAW               // relative path
+  ].map(u => encodeURI(u));
+  let FONT_LOAD_PROMISE = null;
 
   /* =========================
      Utilities
@@ -45,10 +55,8 @@
     if (value === undefined || value === null) return null;
     const s = String(value).trim();
     if (!s) return null;
-    // try yyyy-mm-dd
     const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
     if (iso) return new Date(`${iso[1]}-${iso[2]}-${iso[3]}T00:00:00`);
-    // try mm/dd/yyyy
     const parts = s.split('/');
     if (parts.length === 3) {
       const mm = parts[0].padStart(2, '0');
@@ -76,43 +84,344 @@
     }
   }
 
-      // ---------------------------
-    // Small reusable helpers
-    // ---------------------------
-    // Debounce helper used by filter wiring
-    function debounce(fn, delay) {
-      let timer = null;
-      return function (...args) {
-        const ctx = this;
-        if (timer) clearTimeout(timer);
-        timer = setTimeout(() => {
-          timer = null;
-          fn.apply(ctx, args);
-        }, delay);
+  function debounce(fn, delay) {
+    let timer = null;
+    return function (...args) {
+      const ctx = this;
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        timer = null;
+        fn.apply(ctx, args);
+      }, delay);
+    };
+  }
+
+  function csvEscape(val) {
+    if (val === null || val === undefined) return '';
+    const s = String(val);
+    if (/[",\n\r]/.test(s)) {
+      return '"' + s.replace(/"/g, '""') + '"';
+    }
+    return s;
+  }
+
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  /* =========================
+     Font Loading
+     ========================= */
+  function ensureFontLoaded() {
+    if (FONT_LOAD_PROMISE) return FONT_LOAD_PROMISE;
+
+    // Try multiple candidate URLs to reduce chance of 404
+    if (window.FontFace) {
+      // attempt candidate URLs one-by-one until one succeeds
+      const tryLoad = (idx) => {
+        if (idx >= FONT_URL_CANDIDATES.length) {
+          return Promise.resolve(true); // fallback
+        }
+        const url = FONT_URL_CANDIDATES[idx];
+        try {
+          const ff = new FontFace(FONT_NAME, `url("${url}")`, { style: 'normal', weight: '400' });
+          return ff.load().then(loadedFace => {
+            try { document.fonts.add(loadedFace); } catch (e) {}
+            return document.fonts.load(`12px "${FONT_NAME}"`).then(() => true).catch(() => true);
+          }).catch(() => {
+            // try next candidate
+            return tryLoad(idx + 1);
+          });
+        } catch (e) {
+          return tryLoad(idx + 1);
+        }
+      };
+      FONT_LOAD_PROMISE = tryLoad(0).catch(() => true);
+    } else {
+      if (document.fonts && document.fonts.load) {
+        FONT_LOAD_PROMISE = document.fonts.load(`12px "${FONT_NAME}"`).then(() => true).catch(() => true);
+      } else {
+        FONT_LOAD_PROMISE = Promise.resolve(true);
+      }
+    }
+    return FONT_LOAD_PROMISE;
+  }
+
+  /* =========================
+     Helpers: image path normalization & cache key
+     ========================= */
+
+  // Returns: { imageKey, fullSrc, thumbSrc }
+  // imageInput may be:
+  //  - base id like "OPIX_AmyAllen_AylaSecura"
+  //  - filename like "OPIX_AmyAllen_AylaSecura.jpg"
+  //  - relative path like "images/OPIX_...jpg"
+  function normalizeImagePaths(imageInput) {
+    if (!imageInput) {
+      return {
+        imageKey: '',
+        fullSrc: 'images/100.png',
+        thumbSrc: 'images/100.png'
       };
     }
 
-    // CSV escape helper used by manual CSV builder
-    function csvEscape(val) {
-      if (val === null || val === undefined) return '';
-      const s = String(val);
-      if (/[",\n\r]/.test(s)) {
-        return '"' + s.replace(/"/g, '""') + '"';
+    let input = String(imageInput).trim();
+
+    // If input was provided with URL-encoding, decode it (defensive)
+    try { input = decodeURIComponent(input); } catch (e) { /* ignore */ }
+
+    // extract basename (no path, no ext)
+    const filename = input.split('/').pop();
+    const base = filename.replace(/\.[^/.]+$/, '');
+
+    const imageKey = base;
+
+    // Determine fullSrc:
+    // - if input looks like a path or has an extension, use it as fullSrc
+    // - else assume images/<base>.jpg
+    const hasPathOrExt = input.indexOf('/') !== -1 || /\.[a-zA-Z0-9]{2,4}$/.test(input);
+    let fullSrc = '';
+    if (hasPathOrExt) {
+      fullSrc = input;
+    } else {
+      fullSrc = `images/${base}.jpg`;
+    }
+
+    // Determine thumbSrc:
+    // prefer images/thumbs/<base>_thumb.jpg if that matches your structure,
+    // otherwise images/thumbs/<base>.jpg or images/<base>_thumb.jpg as fallback
+    const thumbCandidates = [
+      `images/thumbs/${base}_thumb.jpg`,
+      `images/thumbs/${base}.jpg`,
+      `images/${base}_thumb.jpg`,
+      `images/${base}.jpg`
+    ];
+    // We can't synchronously check their existence without network requests, but we'll return the first candidate.
+    // The watermark rendering will attempt to load the thumb and fall back if it fails.
+    const thumbSrc = thumbCandidates[0];
+
+    return { imageKey, fullSrc, thumbSrc };
+  }
+
+  /* =========================
+     Scheduling helper
+     ========================= */
+  function scheduleWork(fn) {
+    if (typeof requestIdleCallback === 'function') {
+      requestIdleCallback(fn, { timeout: 500 });
+    } else {
+      setTimeout(fn, 16);
+    }
+  }
+
+  /* =========================
+     Watermark rendering & cache
+     ========================= */
+
+  // render watermark onto a canvas and return dataURL
+  function renderWatermarkedDataUrl(imageUrl, watermarkText = 'GeorgiaJedi', sizeHints = null, rotation = -0.6, alpha = 0.5, fontSize = null) {
+    return new Promise((resolve, reject) => {
+      try {
+        const img = new Image();
+
+        // set crossOrigin only if host differs
+        try {
+          const u = new URL(imageUrl, window.location.href);
+          if (u.origin !== window.location.origin) img.crossOrigin = 'anonymous';
+        } catch (e) {
+          // if URL parsing fails, don't set crossOrigin
+        }
+
+        img.onload = function () {
+          ensureFontLoaded().then(() => {
+            scheduleWork(() => {
+              try {
+                const naturalW = img.naturalWidth || img.width || (sizeHints && sizeHints.width) || 800;
+                const naturalH = img.naturalHeight || img.height || (sizeHints && sizeHints.height) || Math.round(naturalW * 0.75);
+
+                let w = naturalW;
+                let h = naturalH;
+                if (sizeHints && sizeHints.width) w = sizeHints.width;
+                if (sizeHints && sizeHints.height) h = sizeHints.height;
+
+                const MAX_DIM = 1600;
+                if (w > MAX_DIM) {
+                  const ratio = MAX_DIM / w;
+                  w = Math.round(w * ratio);
+                  h = Math.round(h * ratio);
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = canvas.getContext('2d');
+
+                ctx.drawImage(img, 0, 0, w, h);
+
+                ctx.save();
+                ctx.translate(w / 2, h / 2);
+                ctx.rotate(rotation);
+                ctx.globalAlpha = alpha;
+
+                const defaultFontPx = fontSize ? fontSize : Math.max(18, Math.round(w / 12));
+                ctx.font = `${defaultFontPx}px "${FONT_NAME}", Arial`;
+                ctx.fillStyle = '#ffffff';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+
+                ctx.shadowColor = 'rgba(0,0,0,0.6)';
+                ctx.shadowBlur = 4;
+                ctx.shadowOffsetX = 1;
+                ctx.shadowOffsetY = 1;
+
+                const step = Math.max(defaultFontPx * 4, 80);
+                const span = Math.max(w, h) * 2;
+                for (let x = -span; x <= span; x += step) {
+                  for (let y = -span; y <= span; y += step * 1.5) {
+                    const dx = x + (((y / step) % 2) ? step / 2 : 0);
+                    ctx.fillText(watermarkText, dx, y);
+                  }
+                }
+
+                ctx.restore();
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                resolve(dataUrl);
+              } catch (err) {
+                reject(err);
+              }
+            });
+          }).catch(() => {
+            // fallback path if font load fails
+            scheduleWork(() => {
+              try {
+                const naturalW = img.naturalWidth || img.width || (sizeHints && sizeHints.width) || 800;
+                const naturalH = img.naturalHeight || img.height || (sizeHints && sizeHints.height) || Math.round(naturalW * 0.75);
+
+                let w = naturalW;
+                let h = naturalH;
+                if (sizeHints && sizeHints.width) w = sizeHints.width;
+                if (sizeHints && sizeHints.height) h = sizeHints.height;
+
+                const MAX_DIM = 1600;
+                if (w > MAX_DIM) {
+                  const ratio = MAX_DIM / w;
+                  w = Math.round(w * ratio);
+                  h = Math.round(h * ratio);
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = canvas.getContext('2d');
+
+                ctx.drawImage(img, 0, 0, w, h);
+
+                ctx.save();
+                ctx.translate(w / 2, h / 2);
+                ctx.rotate(rotation);
+                ctx.globalAlpha = alpha;
+
+                const defaultFontPx = fontSize ? fontSize : Math.max(18, Math.round(w / 12));
+                ctx.font = `${defaultFontPx}px Arial`;
+                ctx.fillStyle = '#ffffff';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.shadowColor = 'rgba(0,0,0,0.6)';
+                ctx.shadowBlur = 4;
+                ctx.shadowOffsetX = 1;
+                ctx.shadowOffsetY = 1;
+
+                const step = Math.max(defaultFontPx * 4, 80);
+                const span = Math.max(w, h) * 2;
+                for (let x = -span; x <= span; x += step) {
+                  for (let y = -span; y <= span; y += step * 1.5) {
+                    const dx = x + (((y / step) % 2) ? step / 2 : 0);
+                    ctx.fillText(watermarkText, dx, y);
+                  }
+                }
+
+                ctx.restore();
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                resolve(dataUrl);
+              } catch (err) {
+                reject(err);
+              }
+            });
+          });
+        };
+
+        img.onerror = function () {
+          reject(new Error('Image failed to load: ' + imageUrl));
+        };
+
+        img.src = imageUrl;
+      } catch (err) {
+        reject(err);
       }
-      return s;
+    });
+  }
+
+  // getWatermarkedDataUrl accepts either:
+  //  - a base id (e.g. "OPIX_AmyAllen_AylaSecura")
+  //  - a filename or path (e.g. "OPIX_AmyAllen_AylaSecura.jpg" or "images/OPIX_....jpg")
+  // mode: 'thumb'|'full'
+  function getWatermarkedDataUrl(imageInput, mode = 'thumb') {
+    if (!imageInput) return Promise.resolve(null);
+
+    // Normalize to get imageKey and candidate source URLs
+    const { imageKey, fullSrc, thumbSrc } = normalizeImagePaths(imageInput);
+    if (!imageKey) return Promise.resolve(null);
+    const key = `${imageKey}:${mode}`;
+
+    const existing = WATERMARK_CACHE.get(key);
+    if (existing) {
+      if (existing.status === 'ready') return Promise.resolve(existing.dataUrl);
+      return existing.promise;
     }
 
-    // Escape HTML to avoid injection and rendering issues
-    function escapeHtml(str) {
-      if (str === null || str === undefined) return '';
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-    }
+    // Decide which source URL to feed the renderer
+    const srcUrl = (mode === 'thumb') ? thumbSrc : fullSrc;
+    const hints = (mode === 'thumb') ? { width: 256, height: 256 } : null;
+    const fontSize = (mode === 'thumb') ? 14 : null;
 
+    // placeholder promise
+    let resolveFn, rejectFn;
+    const p = new Promise((resolve, reject) => {
+      resolveFn = resolve;
+      rejectFn = reject;
+    });
+    WATERMARK_CACHE.set(key, { status: 'pending', promise: p, dataUrl: null });
+
+    scheduleWork(() => {
+      renderWatermarkedDataUrl(srcUrl, 'GeorgiaJedi', hints, -0.6, 0.5, fontSize)
+        .then(dataUrl => {
+          if (dataUrl) {
+            WATERMARK_CACHE.set(key, { status: 'ready', promise: Promise.resolve(dataUrl), dataUrl });
+            resolveFn(dataUrl);
+          } else {
+            WATERMARK_CACHE.set(key, { status: 'error', promise: Promise.resolve(null), dataUrl: null });
+            resolveFn(null);
+          }
+        })
+        .catch(err => {
+          console.warn('Watermark render failed:', srcUrl, err);
+          WATERMARK_CACHE.set(key, { status: 'error', promise: Promise.resolve(null), dataUrl: null });
+          resolveFn(null);
+        });
+    });
+
+    return p;
+  }
+
+  // Expose for debugging
+  window._WATERMARK_CACHE = WATERMARK_CACHE;
+  window.getWatermarkedDataUrl = getWatermarkedDataUrl;
 
   /* =========================
      Formatters (exposed to window for bootstrap-table)
@@ -185,12 +494,21 @@
   }
   window.rowStyle = rowStyle;
 
+  // detailFormatter optimized to use cached watermarked image when available.
   function detailFormatter(index, row) {
-    // Cache HTML per row to avoid rebuilding repeatedly
     if (!row) return '';
     if (row.__detail_html) return row.__detail_html;
-  
-    const img = row.image ? `images/${row.image}.jpg` : 'images/100.png';
+
+    const detailImgId = `detail-img-${escapeHtml(String(row.id))}`;
+
+    // Compute normalized paths for the row image
+    const { imageKey, fullSrc } = normalizeImagePaths(row.image || '');
+    let initialSrc = fullSrc || 'images/100.png';
+    const cached = imageKey ? WATERMARK_CACHE.get(`${imageKey}:full`) : null;
+    if (cached && cached.status === 'ready' && cached.dataUrl) {
+      initialSrc = cached.dataUrl;
+    }
+
     const title = row['name/brand'] || row.title || '';
     const description = row.description || '';
     const serial = row.serialnumber || '';
@@ -198,11 +516,11 @@
     const source = row.source || '';
     const orig = currencyFormatter(row.original_cost);
     const curr = currencyFormatter(row.current_value);
-  
+
     const html = `
       <div class="card" style="display:flex; border:1px solid #ddd; padding:10px;">
         <div style="flex:1; text-align:center;">
-          <img src="${img}" style="max-width:100%; width:420px; border-radius:6px;">
+          <img id="${detailImgId}" data-original="${escapeHtml(row.image || '')}" src="${initialSrc}" style="max-width:100%; width:420px; border-radius:6px;">
         </div>
         <div style="flex:2; padding-left:20px;">
           <h4>${escapeHtml(title)}</h4>
@@ -215,16 +533,22 @@
         </div>
       </div>
     `;
-  
-    // store cached HTML on row object
-    try { row.__detail_html = html; } catch (e) { /* ignore if row is immutable */ }
+
+    try { row.__detail_html = html; } catch (e) {}
+
+    if (row.image && (!cached || cached.status !== 'ready')) {
+      row.__needs_detail_update = true;
+    } else {
+      row.__needs_detail_update = false;
+    }
+
     return html;
   }
 
   window.detailFormatter = detailFormatter;
 
   /* =========================
-     Image formatter (with state)
+     Image formatter (thumbnails not watermarked)
      ========================= */
   function getTableState() {
     const opt = $('#catalog-table').bootstrapTable('getOptions') || {};
@@ -276,15 +600,28 @@
 
   function imageFormatter(value, row) {
     const sender = getItemType();
+
+    // IMPORTANT: do NOT double-encode here. Produce raw base64 string.
     let sParam = '';
-    try { sParam = encodeURIComponent(b64EncodeUnicode(JSON.stringify(getTableState()))); } catch (e) {}
-    const sQuery = sParam ? `&s=${sParam}` : '';
-    if (row.image) {
-      return `<a href="imageview.html?image=${row.image}&sender=${sender}${sQuery}">
-                <img height="128" width="128" src="images/thumbs/${row.image}_thumb.jpg" alt="thumb">
+    try { sParam = b64EncodeUnicode(JSON.stringify(getTableState())); } catch (e) { sParam = ''; }
+    const sQuery = sParam ? `&s=${encodeURIComponent(sParam)}` : '';
+
+    // row.image may be a base id or full path - use it directly in the href 'image' param
+    // the imageview page's script expects image param to match thumbnails/full names; it will normalize.
+    const imgInput = row.image || '';
+    const { imageKey, fullSrc, thumbSrc } = normalizeImagePaths(imgInput);
+    const thumbSrcResolved = thumbSrc || 'images/100.png';
+    const thumbId = `thumb-${escapeHtml(String(row.id))}`;
+
+    const initialSrc = thumbSrcResolved;
+
+    if (imgInput) {
+      return `<a href="imageview.html?image=${encodeURIComponent(imgInput)}&sender=${sender}${sQuery}">
+                <img id="${thumbId}" class="wj-thumb" height="128" width="128" src="${initialSrc}" alt="thumb">
               </a>
               <a href="update-item.html?id=${encodeURIComponent(row.id)}&itemType=${sender}" class="btn btn-sm btn-primary mt-2 admin-only">Edit</a>`;
     }
+
     return `<img height="128" src="images/100.png" alt="no image">
             <a href="update-item.html?id=${encodeURIComponent(row.id)}&itemType=${sender}" class="btn btn-sm btn-primary mt-2 admin-only">Edit</a>`;
   }
@@ -362,7 +699,7 @@
     });
 
     const filtered = (data || []).filter(row => {
-      // acquired date rules
+      // acquired date
       if (acVal === '__blank__') {
         if (isValidDate(parseDate(row.acquired))) return false;
       } else if (acVal && acVal.startsWith('year:')) {
@@ -432,7 +769,7 @@
   window.applyCustomFilters = applyCustomFilters;
 
   /* =========================
-     UI: build filter row and modals
+     UI: filter row / modals
      ========================= */
   function buildNumericSelectHtml(id) {
     let html = `<select id="${id}-select" class="form-control form-control-sm numeric-select" data-column="${id}">`;
@@ -535,16 +872,15 @@
       return $(this).val() && String($(this).val()).trim() !== '';
     }).length > 0;
     const ac = $('#acquired-select').val();
-    const hasAc = ac && ac !== '';
     const origSel = $('#original-select').val();
     const currSel = $('#current-select').val();
     const hasNumericSelect = (origSel && origSel !== '') || (currSel && currSel !== '');
     const hasNumericModalValues = ($('#orig-range-min').val() && $('#orig-range-min').val().trim() !== '') ||
-                                  ($('#orig-range-max').val() && $('#orig-range-max').val().trim() !== '') ||
-                                  ($('#curr-range-min').val() && $('#curr-range-min').val().trim() !== '') ||
-                                  ($('#curr-range-max').val() && $('#curr-range-max').val().trim() !== '') ||
-                                  $('#orig-range-blank').is(':checked') || $('#curr-range-blank').is(':checked');
-    return hasColumnFilters || hasAc || hasNumericSelect || hasNumericModalValues;
+      ($('#orig-range-max').val() && $('#orig-range-max').val().trim() !== '') ||
+      ($('#curr-range-min').val() && $('#curr-range-min').val().trim() !== '') ||
+      ($('#curr-range-max').val() && $('#curr-range-max').val().trim() !== '') ||
+      $('#orig-range-blank').is(':checked') || $('#curr-range-blank').is(':checked');
+    return hasColumnFilters || (ac && ac !== '') || hasNumericSelect || hasNumericModalValues;
   }
 
   function updateClearButtonVisibility() {
@@ -552,85 +888,77 @@
   }
 
   /* =========================
-     Exports: native excel/pdf + csv/json via tableExport
+     Exports
      ========================= */
 
-  // Native Excel using SheetJS (dynamic import)
-// Native Excel using SheetJS (dynamic import)
-function exportToExcel(data, fileName) {
-  if (typeof XLSX === 'undefined') {
-    alert("SheetJS (XLSX) library not loaded.");
-    return;
-  }
-  if (!data || !data.length) {
-    alert("No data to export.");
-    return;
-  }
-
-  try {
-    // Clone data so we don't modify original
-    const cleanData = data.map(row => {
-      const newRow = { ...row };
-      ["OriginalCost", "CurrentValue"].forEach(key => {
-        if (newRow[key] != null) {
-          // Remove all non-digit/non-dot characters (like $ or GBP)
-          const num = parseFloat(newRow[key].toString().replace(/[^0-9.-]+/g,""));
-          newRow[key] = isNaN(num) ? 0 : num;
-        }
-      });
-      return newRow;
-    });
-
-    const ws = XLSX.utils.json_to_sheet(cleanData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Export");
-
-    // Find column indices for OriginalCost and CurrentValue
-    const headers = Object.keys(cleanData[0]);
-    const origIdx = headers.indexOf("OriginalCost");
-    const currIdx = headers.indexOf("CurrentValue");
-
-    if (origIdx !== -1 || currIdx !== -1) {
-      const totalRowNum = cleanData.length + 2; // +1 for header, +1 for 1-based indexing
-      const totalLabelCell = XLSX.utils.encode_cell({ r: totalRowNum - 1, c: headers.length - 3 });
-      ws[totalLabelCell] = { t: "s", v: "Total:" };
-
-      ["OriginalCost", "CurrentValue"].forEach((key, i) => {
-        const idx = key === "OriginalCost" ? origIdx : currIdx;
-        if (idx !== -1) {
-          const col = XLSX.utils.encode_col(idx);
-          const formula = `SUM(${col}2:${col}${cleanData.length + 1})`;
-          const cellRef = XLSX.utils.encode_cell({ r: totalRowNum - 1, c: idx });
-          ws[cellRef] = { t: "n", f: formula, z: "$#,##0.00" }; // currency format
-        }
-      });
-
-      ws["!ref"] = XLSX.utils.encode_range({
-        s: { r: 0, c: 0 },
-        e: { r: totalRowNum - 1, c: headers.length - 1 }
-      });
-
-      // Optional: set currency format for all rows
-      cleanData.forEach((row, rowIndex) => {
-        ["OriginalCost", "CurrentValue"].forEach(key => {
-          const idx = headers.indexOf(key);
-          if (idx !== -1) {
-            const cellRef = XLSX.utils.encode_cell({ r: rowIndex + 1, c: idx });
-            if (ws[cellRef]) ws[cellRef].z = "$#,##0.00";
-          }
-        });
-      });
+  function exportToExcel(data, fileName) {
+    if (typeof XLSX === 'undefined') {
+      alert("SheetJS (XLSX) library not loaded.");
+      return;
+    }
+    if (!data || !data.length) {
+      alert("No data to export.");
+      return;
     }
 
-    XLSX.writeFile(wb, fileName + ".xlsx");
-  } catch (err) {
-    console.error("Excel export failed:", err);
-    alert("Excel export failed.");
-  }
-}
+    try {
+      const cleanData = data.map(row => {
+        const newRow = { ...row };
+        ["OriginalCost", "CurrentValue"].forEach(key => {
+          if (newRow[key] != null) {
+            const num = parseFloat(newRow[key].toString().replace(/[^0-9.-]+/g,""));
+            newRow[key] = isNaN(num) ? 0 : num;
+          }
+        });
+        return newRow;
+      });
 
-  
-  // Native PDF using jsPDF + AutoTable
+      const ws = XLSX.utils.json_to_sheet(cleanData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Export");
+
+      const headers = Object.keys(cleanData[0]);
+      const origIdx = headers.indexOf("OriginalCost");
+      const currIdx = headers.indexOf("CurrentValue");
+
+      if (origIdx !== -1 || currIdx !== -1) {
+        const totalRowNum = cleanData.length + 2;
+        const totalLabelCell = XLSX.utils.encode_cell({ r: totalRowNum - 1, c: headers.length - 3 });
+        ws[totalLabelCell] = { t: "s", v: "Total:" };
+
+        ["OriginalCost", "CurrentValue"].forEach((key) => {
+          const idx = key === "OriginalCost" ? origIdx : currIdx;
+          if (idx !== -1) {
+            const col = XLSX.utils.encode_col(idx);
+            const formula = `SUM(${col}2:${col}${cleanData.length + 1})`;
+            const cellRef = XLSX.utils.encode_cell({ r: totalRowNum - 1, c: idx });
+            ws[cellRef] = { t: "n", f: formula, z: "$#,##0.00" };
+          }
+        });
+
+        ws["!ref"] = XLSX.utils.encode_range({
+          s: { r: 0, c: 0 },
+          e: { r: totalRowNum - 1, c: headers.length - 1 }
+        });
+
+        cleanData.forEach((row, rowIndex) => {
+          ["OriginalCost", "CurrentValue"].forEach(key => {
+            const idx = headers.indexOf(key);
+            if (idx !== -1) {
+              const cellRef = XLSX.utils.encode_cell({ r: rowIndex + 1, c: idx });
+              if (ws[cellRef]) ws[cellRef].z = "$#,##0.00";
+            }
+          });
+        });
+      }
+
+      XLSX.writeFile(wb, fileName + ".xlsx");
+    } catch (err) {
+      console.error("Excel export failed:", err);
+      alert("Excel export failed.");
+    }
+  }
+
   function exportToPDF(data, fileName) {
     const jspdfPresent = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
     if (!jspdfPresent) {
@@ -645,11 +973,9 @@ function exportToExcel(data, fileName) {
     const { jsPDF } = window.jspdf || { jsPDF: window.jsPDF };
     const doc = new jsPDF({ orientation: 'l', unit: 'pt', format: 'a4' });
 
-    // Build headers and body
     const headers = Object.keys(data[0] || {});
     const body = data.map(row => headers.map(h => row[h] ?? ''));
 
-    // optional title
     doc.setFontSize(12);
     doc.text(fileName, 40, 30);
 
@@ -664,7 +990,6 @@ function exportToExcel(data, fileName) {
     doc.save(fileName + '.pdf');
   }
 
-  // performExport uses native Excel & PDF handlers, tableExport for CSV
   function performExport(format) {
     const $table = $('#catalog-table');
     let dataToExport = [];
@@ -683,7 +1008,7 @@ function exportToExcel(data, fileName) {
       }
     } else if (exportMode === 'filtered') {
       dataToExport = applyCustomFilters(rawData);
-    } else { // 'all'
+    } else {
       dataToExport = rawData.slice();
     }
 
@@ -692,18 +1017,28 @@ function exportToExcel(data, fileName) {
       return;
     }
 
-    // map to a clean object list for export (consistent columns)
-    const mapped = dataToExport.map(r => ({
-      ID: r.id,
-      Acquired: r.acquired,
-      Title: r['name/brand'] || r.title || '',
-      Franchise: r.franchise || '',
-      Description: r.description || '',
-      Source: r.source || '',
-      OriginalCost: r.original_cost || '',
-      CurrentValue: r.current_value || '',
-      IsVerified: r.is_verified || ''
-    }));
+    const mapped = dataToExport.map(r => {
+      const baseImageInput = r.image ? r.image : '';
+      const { imageKey, fullSrc } = normalizeImagePaths(baseImageInput);
+      const cachedFull = imageKey ? WATERMARK_CACHE.get(`${imageKey}:full`) : null;
+      const cachedThumb = imageKey ? WATERMARK_CACHE.get(`${imageKey}:thumb`) : null;
+      const imageForExport = (cachedFull && cachedFull.status === 'ready' && cachedFull.dataUrl) ? cachedFull.dataUrl :
+                              (cachedThumb && cachedThumb.status === 'ready' && cachedThumb.dataUrl) ? cachedThumb.dataUrl :
+                              (fullSrc || '');
+
+      return {
+        ID: r.id,
+        Acquired: r.acquired,
+        Title: r['name/brand'] || r.title || '',
+        Franchise: r.franchise || '',
+        Description: r.description || '',
+        Source: r.source || '',
+        OriginalCost: r.original_cost || '',
+        CurrentValue: r.current_value || '',
+        IsVerified: r.is_verified || '',
+        WatermarkedImage: imageForExport
+      };
+    });
 
     const filename = ($('#export-filename').val().trim() || getItemType() + '-export');
 
@@ -718,10 +1053,8 @@ function exportToExcel(data, fileName) {
 
     if (format === 'csv') {
       const cols = Object.keys(mapped[0] || {});
-      // build header
       const rowsCsv = [];
       rowsCsv.push(cols.map(c => csvEscape(c)).join(','));
-      // build rows
       mapped.forEach(r => {
         const line = cols.map(c => csvEscape(r[c] ?? '')).join(',');
         rowsCsv.push(line);
@@ -760,11 +1093,9 @@ function exportToExcel(data, fileName) {
     const type = getItemType();
     const path = `data/${type}.json`;
 
-    // Ensure jsPDF global alias if loaded via UMD
     if (window.jspdf && !window.jsPDF) {
       try { window.jsPDF = window.jspdf.jsPDF; } catch (e) {}
     }
-    // Also provide fallback alias if jsPDF already present as window.jsPDF
     if (window.jsPDF && !window.jspdf) {
       try { window.jspdf = { jsPDF: window.jsPDF }; } catch (e) {}
     }
@@ -798,12 +1129,10 @@ function exportToExcel(data, fileName) {
 
       injectFilterRow();
 
-      // initial hide modals
       $('#date-range-modal').hide();
       $('#numeric-range-modal-original').hide();
       $('#numeric-range-modal-current').hide();
 
-      // Bind change handlers for dynamic selects
       $(document).on('change', '#acquired-select', function () {
         const v = $(this).val() || '';
         if (v === '__range__') { showDateRangeModal(); updateClearButtonVisibility(); return; }
@@ -829,9 +1158,6 @@ function exportToExcel(data, fileName) {
         updateClearButtonVisibility();
       });
 
-// PATCH part 3 20251121
-
-      // centralized filter application (debounced)
       function applyFiltersImmediate() {
         const f = applyCustomFilters(rawData);
         $('#catalog-table').bootstrapTable('load', f);
@@ -840,13 +1166,10 @@ function exportToExcel(data, fileName) {
       }
       const applyFiltersDebounced = debounce(applyFiltersImmediate, 200);
 
-      // wire inputs to centralized debounced function
       $(document).on('input change', '.column-filter', function () {
         applyFiltersDebounced();
       });
 
-
-      // Date modal apply/cancel
       $(document).on('click', '#date-range-apply', function (e) {
         e.preventDefault();
         hideDateRangeModal();
@@ -861,21 +1184,19 @@ function exportToExcel(data, fileName) {
         updateClearButtonVisibility();
       });
 
-      // Numeric modals
       $(document).on('click', '#orig-range-apply', function (e) {
-        e.preventDefault(); hideNumericModal('original'); const f = applyCustomFilters(rawData); $('#catalog-table').bootstrapTable('load', f); autoSwitchExportModeIfFilteredActive(); updateClearButtonVisibility(); 
+        e.preventDefault(); hideNumericModal('original'); const f = applyCustomFilters(rawData); $('#catalog-table').bootstrapTable('load', f); autoSwitchExportModeIfFilteredActive(); updateClearButtonVisibility();
       });
       $(document).on('click', '#orig-range-cancel', function (e) {
-        e.preventDefault(); hideNumericModal('original'); updateClearButtonVisibility(); 
+        e.preventDefault(); hideNumericModal('original'); updateClearButtonVisibility();
       });
       $(document).on('click', '#curr-range-apply', function (e) {
-        e.preventDefault(); hideNumericModal('current'); const f = applyCustomFilters(rawData); $('#catalog-table').bootstrapTable('load', f); autoSwitchExportModeIfFilteredActive(); updateClearButtonVisibility(); 
+        e.preventDefault(); hideNumericModal('current'); const f = applyCustomFilters(rawData); $('#catalog-table').bootstrapTable('load', f); autoSwitchExportModeIfFilteredActive(); updateClearButtonVisibility();
       });
       $(document).on('click', '#curr-range-cancel', function (e) {
-        e.preventDefault(); hideNumericModal('current'); updateClearButtonVisibility(); 
+        e.preventDefault(); hideNumericModal('current'); updateClearButtonVisibility();
       });
 
-      // Clear all
       $(document).on('click', '#clear-filters', function (e) {
         e.preventDefault();
         $('.column-filter').val('');
@@ -888,7 +1209,6 @@ function exportToExcel(data, fileName) {
         hideDateRangeModal(); hideNumericModal('original'); hideNumericModal('current');
         $('#catalog-table').bootstrapTable('load', rawData);
 
-        // Reset export mode to All when clearing filters
         exportMode = "all";
         $('#exportModeBtn').text("Export Mode: All Rows");
         $('.export-mode').removeClass('active');
@@ -897,91 +1217,201 @@ function exportToExcel(data, fileName) {
         updateClearButtonVisibility();
       });
 
-      // AUTO-SWITCH EXPORT MODE TO FILTERED WHEN ANY FILTER IS ACTIVE
       function autoSwitchExportModeIfFilteredActive() {
-        // Only switch if user hasn't manually chosen a different mode
         if (exportMode === "all") {
-            exportMode = "filtered";
-
-            // Update button label
-            $('#exportModeBtn').text("Export Mode: Filtered Rows");
-
-            // Update dropdown active state
-            $('.export-mode').removeClass('active');
-            $('.export-mode[data-mode="filtered"]').addClass('active');
+          exportMode = "filtered";
+          $('#exportModeBtn').text("Export Mode: Filtered Rows");
+          $('.export-mode').removeClass('active');
+          $('.export-mode[data-mode="filtered"]').addClass('active');
         }
       }
 
-      // Export mode selection
       $(document).on('click', '.export-mode', function (e) {
         e.preventDefault();
-
         const mode = $(this).data('mode');
         if (!mode) return;
-
-        // Update internal state
         exportMode = mode;
-
-        // Update active highlight
         $('.export-mode').removeClass('active');
         $(this).addClass('active');
-
-        // Update button label text
-        const labelMap = {
-            all: "All Rows",
-            filtered: "Filtered Rows",
-            page: "Visible Data",
-            selected: "Selected Rows"
-        };
-
+        const labelMap = { all: "All Rows", filtered: "Filtered Rows", page: "Visible Data", selected: "Selected Rows" };
         $('#exportModeBtn').text("Export Mode: " + labelMap[mode]);
       });
 
-      // Export buttons
       $(document).on('click', '#export-csv', function () { performExport('csv'); });
       $(document).on('click', '#export-excel', function () { performExport('excel'); });
       $(document).on('click', '#export-json', function () { performExport('json'); });
       $(document).on('click', '#export-pdf', function () { performExport('pdf'); });
 
-      // Sync label when filters change
       $(document).on('change input', '.column-filter, #acquired-select, .numeric-select, #orig-range-min, #orig-range-max, #curr-range-min, #curr-range-max, #orig-range-blank, #curr-range-blank', function () {
         setTimeout(updateExportModeLabel, 10);
       });
 
-      // post-body callback: render canvas watermarks if present
+      // updateExportModeLabel helper (keeps UI in sync)
+      function updateExportModeLabel() {
+        const labelMap = { all: "All Rows", filtered: "Filtered Rows", page: "Visible Data", selected: "Selected Rows" };
+        $('#exportModeBtn').text("Export Mode: " + (labelMap[exportMode] || "All Rows"));
+      }
+
+      // post-body: update detail imgs to cached watermarked images when ready
       $('#catalog-table').on('post-body.bs.table', function () {
-        $('#catalog-table canvas[data-src]').each(function () {
-          try {
-            const c = this;
-            const ctx = c.getContext('2d');
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = function () {
-              const w = c.width, h = c.height;
-              ctx.clearRect(0, 0, w, h);
-              ctx.drawImage(img, 0, 0, w, h);
-              ctx.save();
-              ctx.translate(w / 2, h / 2);
-              ctx.rotate(-0.6);
-              ctx.globalAlpha = 0.22;
-              ctx.font = '36px Arial';
-              ctx.fillStyle = '#ffffff';
-              ctx.textAlign = 'center';
-              ctx.fillText('GeorgiaJedi', 0, 0);
-              ctx.restore();
-            };
-            img.src = $(c).attr('data-src');
-          } catch (e) {
-            console.warn('canvas render failed', e);
+        $('.bootstrap-table .detail-view .card img[id^="detail-img-"]').each(function () {
+          const el = this;
+          const idAttr = $(el).attr('id') || '';
+          const match = idAttr.match(/^detail-img-(.+)$/);
+          if (!match) return;
+          const rowId = match[1];
+          const row = (rawData || []).find(r => String(r.id) === String(rowId));
+          if (!row || !row.image) return;
+          const { imageKey } = normalizeImagePaths(row.image);
+          if (!imageKey) return;
+          const key = `${imageKey}:full`;
+          const cacheEntry = WATERMARK_CACHE.get(key);
+          if (cacheEntry && cacheEntry.status === 'ready' && cacheEntry.dataUrl) {
+            if (el.src !== cacheEntry.dataUrl) el.src = cacheEntry.dataUrl;
+            return;
           }
+          getWatermarkedDataUrl(row.image, 'full').then(dataUrl => {
+            if (dataUrl) {
+              try { el.src = dataUrl; } catch (e) {}
+            }
+          }).catch(() => {});
         });
       });
 
-      // initial UI state
+      // expand-row: ensure detail image updates immediately
+      $('#catalog-table').on('expand-row.bs.table', function (e, index, row, $detail) {
+        try {
+          if (!row || !row.image) return;
+          const { imageKey } = normalizeImagePaths(row.image);
+          if (!imageKey) return;
+          const $img = $detail.find(`img#detail-img-${escapeHtml(String(row.id))}`);
+          if ($img && $img.length) {
+            const el = $img.get(0);
+            const key = `${imageKey}:full`;
+            const cacheEntry = WATERMARK_CACHE.get(key);
+            if (cacheEntry && cacheEntry.status === 'ready' && cacheEntry.dataUrl) {
+              if (el.src !== cacheEntry.dataUrl) el.src = cacheEntry.dataUrl;
+            } else {
+              getWatermarkedDataUrl(row.image, 'full').then(dataUrl => {
+                if (dataUrl) {
+                  try { el.src = dataUrl; } catch (e) {}
+                }
+              }).catch(() => {});
+            }
+          } else {
+            $detail.find('img').each(function () {
+              const el = this;
+              const dataOriginal = $(el).attr('data-original') || '';
+              if (String(dataOriginal) === String(row.image) || (el.src && el.src.indexOf(row.image) !== -1)) {
+                getWatermarkedDataUrl(row.image, 'full').then(dataUrl => {
+                  if (dataUrl) {
+                    try { el.src = dataUrl; } catch (e) {}
+                  }
+                }).catch(() => {});
+              }
+            });
+          }
+        } catch (err) {
+          console.warn('expand-row watermark update failed', err);
+        }
+      });
+
       updateClearButtonVisibility();
     }
   });
 
   window.performExport = performExport;
+
+  /* =========================
+     imageview.html integration
+     - Will replace carousel / main images with the cached watermarked full image (when possible)
+     - Works whether the image query param contains a base id or full path
+     ========================= */
+  (function wireImageviewIntegration() {
+    function getQueryParam(name) {
+      try {
+        const qs = new URLSearchParams(window.location.search);
+        return qs.get(name);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function applyWatermarkToImageElements(imageParam) {
+      if (!imageParam) return;
+      // imageParam may be base id or a path - normalize
+      const { imageKey } = normalizeImagePaths(imageParam);
+      if (!imageKey) return;
+
+      // First, try to update common main selectors
+      const primarySelectors = ['#imageview-img', '#main-image', '.imageview-main img', 'img.viewer', 'img#viewer', '#imageCarousel img', '.carousel-inner img'];
+      primarySelectors.forEach(sel => {
+        document.querySelectorAll(sel).forEach(el => {
+          if (!el) return;
+          // fast path: if cached
+          const cacheEntry = WATERMARK_CACHE.get(`${imageKey}:full`);
+          if (cacheEntry && cacheEntry.status === 'ready' && cacheEntry.dataUrl) {
+            if (el.src !== cacheEntry.dataUrl) el.src = cacheEntry.dataUrl;
+          } else {
+            // attempt to generate & update
+            getWatermarkedDataUrl(imageParam, 'full').then(dataUrl => {
+              if (dataUrl && el) {
+                try { el.src = dataUrl; } catch (e) {}
+              }
+            }).catch(() => {});
+          }
+        });
+      });
+
+      // update any img[data-imageid="<param>"]
+      document.querySelectorAll(`img[data-imageid="${imageParam}"]`).forEach(el => {
+        const cacheEntry = WATERMARK_CACHE.get(`${imageKey}:full`);
+        if (cacheEntry && cacheEntry.status === 'ready' && cacheEntry.dataUrl) {
+          if (el.src !== cacheEntry.dataUrl) el.src = cacheEntry.dataUrl;
+        } else {
+          getWatermarkedDataUrl(imageParam, 'full').then(dataUrl => {
+            if (dataUrl && el) {
+              try { el.src = dataUrl; } catch (e) {}
+            }
+          }).catch(() => {});
+        }
+      });
+
+      // as a last measure update any <img> whose src contains the basename
+      document.querySelectorAll('img').forEach(el => {
+        try {
+          if (!el.src) return;
+          if (el.src.indexOf(imageKey) !== -1) {
+            const cacheEntry = WATERMARK_CACHE.get(`${imageKey}:full`);
+            if (cacheEntry && cacheEntry.status === 'ready' && cacheEntry.dataUrl) {
+              if (el.src !== cacheEntry.dataUrl) el.src = cacheEntry.dataUrl;
+            } else {
+              getWatermarkedDataUrl(imageParam, 'full').then(dataUrl => {
+                if (dataUrl && el) {
+                  try { el.src = dataUrl; } catch (e) {}
+                }
+              }).catch(() => {});
+            }
+          }
+        } catch (e) { /* ignore cross-origin read errors */ }
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        const qImage = getQueryParam('image');
+        if (qImage) applyWatermarkToImageElements(qImage);
+      });
+    } else {
+      const qImage = getQueryParam('image');
+      if (qImage) applyWatermarkToImageElements(qImage);
+    }
+  })();
+
+  // helper used earlier in bindings
+  function updateExportModeLabel() {
+    const labelMap = { all: "All Rows", filtered: "Filtered Rows", page: "Visible Data", selected: "Selected Rows" };
+    $('#exportModeBtn').text("Export Mode: " + (labelMap[exportMode] || "All Rows"));
+  }
 
 })(); // end closure
