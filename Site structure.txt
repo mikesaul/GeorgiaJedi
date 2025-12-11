@@ -23,7 +23,7 @@
     +-- updateJSON.js
 +-- css
     +-- fonts
-        +-- SF Distant Galaxy AltOutline.ttf
+        +-- SFDistantGalaxyAltOutline.ttf
     +-- styles.css
 +-- data
     +-- autographs.json
