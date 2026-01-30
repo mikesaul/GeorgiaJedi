@@ -2078,5 +2078,21 @@
     "original_cost": "",
     "current_value": "",
     "image": "DaveProwse_ForceIsStrongWithYou"
+  },
+  {
+    "id": "130",
+    "acquired": "",
+    "type": "autographs",
+    "name/brand": "Dave Prowse",
+    "franchise": "Star Wars",
+    "description": "Dave Prowse as Darth Vader - \"What is thy bidding, my master?\"",
+    "size/model#": "8X10",
+    "source": "Dave Prowse",
+    "special": "No",
+    "is_verified": "Yes - Dave Prowse site",
+    "serialnumber": "",
+    "original_cost": "",
+    "current_value": "",
+    "image": "DaveProwse_WhatIsThyBidding"
   }
 ]
