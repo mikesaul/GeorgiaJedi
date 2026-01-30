@@ -17,7 +17,7 @@
   /* =========================
      Globals & Configuration
      ========================= */
-  const DEFAULT_PAGE_SIZE = 5;
+  const DEFAULT_PAGE_SIZE = 10;
   let rawData = [];
   let currentFiltered = [];
   let exportMode = 'all'; // 'all' | 'filtered' | 'page' | 'selected'
