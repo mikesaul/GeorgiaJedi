@@ -2062,5 +2062,21 @@
     "original_cost": "120",
     "current_value": "240",
     "image": "IanMcDiarmid_EmperorPalpatine_ROTS"
+  },
+  {
+    "id": "129",
+    "acquired": "",
+    "type": "autographs",
+    "name/brand": "Dave Prowse",
+    "franchise": "Star Wars",
+    "description": "Dave Prowse as Darth Vader - \"The Force is strong with you\".",
+    "size/model#": "8X10",
+    "source": "Dave Prowse",
+    "special": "No",
+    "is_verified": "Yes - Dave Prowse site",
+    "serialnumber": "",
+    "original_cost": "",
+    "current_value": "",
+    "image": "DaveProwse_ForceIsStrongWithYou"
   }
 ]
