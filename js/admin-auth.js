@@ -28,7 +28,7 @@
     localStorage.removeItem(ADMIN_KEY);
     localStorage.removeItem(ADMIN_TIMEOUT_KEY);
     alert("🚪 Admin mode disabled.");
-    updateAdminVisibility();
+    window.location.replace("index.html");
   }
 
   function updateAdminVisibility() {

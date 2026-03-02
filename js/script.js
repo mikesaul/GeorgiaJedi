@@ -616,14 +616,26 @@
     const initialSrc = thumbSrcResolved;
 
     if (imgInput) {
+      const editButton =
+      (window.isAdminMode && window.isAdminMode())
+        ? `<a href="update-item.html?id=${encodeURIComponent(row.id)}&itemType=${sender}"
+             class="btn btn-sm btn-primary mt-2">Edit</a>`
+        : '';
+    
       return `<a href="imageview.html?image=${encodeURIComponent(imgInput)}&sender=${sender}${sQuery}">
-                <img id="${thumbId}" class="wj-thumb" height="128" width="128" src="${initialSrc}" alt="thumb">
-              </a>
-              <a href="update-item.html?id=${encodeURIComponent(row.id)}&itemType=${sender}" class="btn btn-sm btn-primary mt-2 admin-only">Edit</a>`;
+              <img id="${thumbId}" class="wj-thumb" height="128" width="128" src="${initialSrc}" alt="thumb">
+            </a>
+            ${editButton}`;
     }
 
-    return `<img height="128" src="images/100.png" alt="no image">
-            <a href="update-item.html?id=${encodeURIComponent(row.id)}&itemType=${sender}" class="btn btn-sm btn-primary mt-2 admin-only">Edit</a>`;
+    const editButton =
+    (window.isAdminMode && window.isAdminMode())
+      ? `<a href="update-item.html?id=${encodeURIComponent(row.id)}&itemType=${sender}"
+           class="btn btn-sm btn-primary mt-2">Edit</a>`
+      : '';
+  
+  return `<img height="128" src="images/100.png" alt="no image">
+          ${editButton}`;
   }
   window.imageFormatter = imageFormatter;
 
